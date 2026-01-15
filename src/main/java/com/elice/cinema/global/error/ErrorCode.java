@@ -1,4 +1,4 @@
-package com.elice.cinema.global;
+package com.elice.cinema.global.error;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

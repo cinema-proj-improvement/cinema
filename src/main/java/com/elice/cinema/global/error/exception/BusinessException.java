@@ -1,6 +1,6 @@
-package com.elice.cinema.global.exception;
+package com.elice.cinema.global.error.exception;
 
-import com.elice.cinema.global.ErrorCode;
+import com.elice.cinema.global.error.ErrorCode;
 import lombok.Getter;
 
 @Getter

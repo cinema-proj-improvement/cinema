@@ -1,6 +1,6 @@
-package com.elice.cinema.global;
+package com.elice.cinema.global.error;
 
-import com.elice.cinema.global.exception.BusinessException;
+import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
