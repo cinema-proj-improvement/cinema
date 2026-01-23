@@ -1,0 +1,56 @@
+######################################
+# 학습용으로 실제로는 다른 방식으로 할 것!
+######################################
+variables:
+  TARGET_BRANCH: "dev"
+stages:
+  - build
+  - test
+  - deploy
+build_job:
+  stage: build
+  tags:
+    - cinema-deploy
+  script:
+    - echo "빌드 작업을 시작합니다..."
+    - chmod +x ./gradlew
+    - ./gradlew clean build -x test
+  artifacts:
+    paths:
+      - build/libs/*.jar
+    expire_in: 1 day
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $TARGET_BRANCH
+test_job:
+  stage: test
+  tags:
+    - cinema-deploy
+  script:
+    - echo "코드 테스트를 수행합니다..."
+    - chmod +x ./gradlew
+    - ./gradlew test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $TARGET_BRANCH
+deploy_job:
+  stage: deploy
+  needs:
+    - build_job
+    - test_job
+  tags:
+    - cinema-deploy
+  script:
+    - echo "운영 서버 배포를 시작합니다..."
+    - sudo pkill -f 'java' || true
+    - sleep 5
+    - export DB_USERNAME="$DB_USERNAME"
+    - export DB_PASSWORD="$DB_PASSWORD"
+    - export DB_URL="$DB_URL"
+    - nohup java -Dspring.profiles.active=dev -jar build/libs/*SNAPSHOT.jar > app.log 2>&1 &
+    - echo "배포가 완료되었습니다!"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $TARGET_BRANCH
+######################################
+# 학습용으로 실제로는 다른 방식으로 할 것!
+######################################
