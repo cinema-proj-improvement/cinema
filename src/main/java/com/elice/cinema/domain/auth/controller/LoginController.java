@@ -1,4 +1,4 @@
-package com.elice.cinema.global.security;
+package com.elice.cinema.domain.auth.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
