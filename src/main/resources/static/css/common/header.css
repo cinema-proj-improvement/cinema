@@ -11,25 +11,24 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: relative;
+    position: relative; /* nav absolute 기준 */
 }
 
-/* 좌/우 영역: 반드시 flex + nowrap */
+/* 좌/우 영역 */
 .header-side {
     display: flex;
     align-items: center;
     gap: 16px;
     min-width: 220px;
-    flex-wrap: nowrap;        /* ✅ 줄바꿈 금지 */
-    white-space: nowrap;      /* ✅ 텍스트 줄바꿈 금지 */
+    flex-wrap: nowrap;
+    white-space: nowrap;
 }
 
-/* RIGHT 정렬 */
 .header-right {
     justify-content: flex-end;
 }
 
-/* ✅ 중앙 고정 nav */
+/* 중앙 고정 nav */
 .nav {
     position: absolute;
     left: 50%;
@@ -41,15 +40,51 @@
 }
 
 .nav a {
-    text-decoration: none;
-    color: #111;
-    font-weight: 600;
-    padding: 8px 4px;
+    font-size: 16px;      /* 중앙 메뉴 크기 */
+    font-weight: 700;     /* 굵게 */
+    color: #111;          /* 진한 검정 */
+    letter-spacing: -0.2px;
 }
 
-.nav a:hover { opacity: 0.7; }
+.nav a:hover {
+    background: #f3f3f3;
+    opacity: 1;          /* 연해지는 효과 방지 */
+}
 
-/* 로그인/회원가입 */
+
+/* ===== 공통 클릭 요소 스타일(헤더 전체 통일) ===== */
+.header a,
+.header .logout-btn {
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #111;
+}
+
+/* hover 통일 */
+.header a:hover,
+.header .logout-btn:hover {
+    background: #f3f3f3;
+}
+
+/* visited 색(보라색) 방지 */
+.header a:visited {
+    color: #111;
+}
+
+/* ===== 로고 ===== */
+.logo {
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    padding: 0 10px; /* 공통 규칙과 통일 */
+}
+
+/* ===== 로그인/회원가입 ===== */
 .auth-links {
     display: flex;
     align-items: center;
@@ -59,36 +94,14 @@
 }
 
 .auth-links a {
-    height: 44px;
-    display: inline-flex;
-    align-items: center;
-    text-decoration: none;
-    color: #111;
     font-size: 14px;
     font-weight: 600;
-    padding: 0 2px;
 }
 
-.auth-links a:hover { opacity: 0.7; }
-
-/* ✅ 아이콘 버튼: 링크 색(visited) 영향 차단 */
+/* ===== 아이콘 버튼(검색/마이페이지) ===== */
 .icon-btn {
     width: 44px;
-    height: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    text-decoration: none;
-    color: #111 !important;        /* ✅ 보라색 방지 */
-}
-
-.icon-btn:visited {
-    color: #111 !important;        /* ✅ 보라색 방지 */
-}
-
-.icon-btn:hover {
-    background: #f3f3f3;
+    padding: 0; /* 공통 padding 제거 */
 }
 
 .icon {
@@ -96,36 +109,12 @@
     height: 22px;
 }
 
-/* 로그아웃 버튼 */
+/* ===== 로그아웃 버튼 ===== */
 .logout-btn {
-    height: 44px;
-    display: inline-flex;
-    align-items: center;
     background: none;
     border: none;
-    padding: 0 2px;
+    cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    color: #111;
-    cursor: pointer;
-}
-
-.logout-btn:hover { opacity: 0.7; }
-
-/* 로고 (임시) */
-.logo {
-    height: 44px;                 /* 아이콘과 높이 맞춤 */
-    display: inline-flex;
-    align-items: center;
-    text-decoration: none;
-    color: #111;
-    font-weight: 800;
-    font-size: 16px;
-    letter-spacing: 0.5px;
-    padding: 0 6px;
-    border-radius: 10px;
-}
-
-.logo:hover {
-    background: #f3f3f3;
+    padding: 0 10px; /* 공통 규칙과 동일 */
 }
