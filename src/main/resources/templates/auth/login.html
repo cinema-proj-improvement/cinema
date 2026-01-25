@@ -1,12 +1,110 @@
 <!DOCTYPE html>
-<html>
-<body>
-<form th:action="@{/auth/login}" method="post">
-    <input name="username" placeholder="아이디">
-    <input name="password" type="password" placeholder="비밀번호">
-    <button type="submit">로그인</button>
-</form>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인 | MOVIE BOOKING</title>
 
-<p th:if="${param.error}">로그인 실패</p>
+    <!-- 공용 CSS -->
+    <link rel="stylesheet" th:href="@{/css/common/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/common/header.css}">
+    <link rel="stylesheet" th:href="@{/css/common/footer.css}">
+
+    <!-- 로그인 전용 CSS -->
+    <link rel="stylesheet" th:href="@{/css/auth/login.css}">
+</head>
+<body>
+
+<!-- HEADER -->
+<div th:replace="fragments/header :: header"></div>
+
+<main class="login-page">
+
+    <!-- 배경 이미지 + 어둡게 오버레이 -->
+    <div class="login-bg" aria-hidden="true"></div>
+    <div class="login-overlay" aria-hidden="true"></div>
+
+    <!-- 로그인 카드 -->
+    <section class="login-card" aria-label="로그인 폼">
+        <h1 class="login-title">로그인</h1>
+        <p class="login-desc">영화 예매 및 예약 관리를 위해 로그인하세요.</p>
+
+        <!-- 에러/로그아웃 메시지 (Spring Security 파라미터 기반) -->
+        <p class="alert error" th:if="${param.error}">이메일 또는 비밀번호가 올바르지 않습니다.</p>
+        <p class="alert info" th:if="${param.logout}">로그아웃 되었습니다.</p>
+
+        <form class="login-form" th:action="@{/login}" method="post">
+            <!-- CSRF 토큰(기본 활성화일 때 필요) -->
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="field">
+                <label for="email">이메일</label>
+                <input id="email"
+                       name="username"
+                       type="email"
+                       placeholder="example@email.com"
+                       autocomplete="username"
+                       required>
+            </div>
+
+            <div class="field">
+                <label for="password">비밀번호</label>
+
+                <div class="password-wrap">
+                    <input id="password"
+                           name="password"
+                           type="password"
+                           placeholder="비밀번호를 입력하세요"
+                           autocomplete="current-password"
+                           required>
+
+                    <button type="button" class="eye-btn" id="togglePw" aria-label="비밀번호 보기/숨기기">
+                        <!-- eye icon -->
+                        <svg class="eye-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"
+                                  stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                                  stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="row">
+                <label class="checkbox">
+                    <input type="checkbox" name="remember-me">
+                    <span>로그인 상태 유지</span>
+                </label>
+
+                <a class="link" href="/password/find">비밀번호 찾기</a>
+            </div>
+
+            <button class="submit" type="submit">로그인</button>
+
+            <p class="signup">
+                계정이 없으신가요? <a class="link" href="/signup">회원가입</a>
+            </p>
+        </form>
+    </section>
+
+</main>
+
+<!-- FOOTER -->
+<div th:replace="fragments/footer :: footer"></div>
+
+<script>
+    // 비밀번호 보기/숨기기
+    const toggle = document.getElementById('togglePw');
+    const pw = document.getElementById('password');
+
+    if (toggle && pw) {
+        toggle.addEventListener('click', () => {
+            const isPw = pw.getAttribute('type') === 'password';
+            pw.setAttribute('type', isPw ? 'text' : 'password');
+        });
+    }
+</script>
+
 </body>
 </html>
