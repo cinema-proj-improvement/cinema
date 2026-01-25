@@ -5,10 +5,10 @@ import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -17,20 +17,22 @@ public class MovieReadService {
 
     private final MovieRepository movieRepository;
 
-    // status 없는 전체 조회
-    public List<MovieResponse> getMovies() {
-        return movieRepository.findAll()
-                .stream()
-                .map(MovieResponse::from)
-                .toList();
+    // 관리자 영화 목록 조회 (페이지네이션 + 정렬)
+    public Page<MovieResponse> getMovies(Pageable pageable) {
+        return movieRepository.findAll(pageable)
+                .map(MovieResponse::from);
     }
 
-    // status 조건 조회
-    public List<MovieResponse> getMovies(MovieStatus status) {
-        return movieRepository.findByStatus(status)
-                .stream()
-                .map(MovieResponse::from)
-                .toList();
+    // 상태별 영화 목록 조회 (페이지네이션 + 정렬)
+    public Page<MovieResponse> getMovies(MovieStatus status, Pageable pageable) {
+        return movieRepository.findByStatus(status, pageable)
+                .map(MovieResponse::from);
+    }
+
+    // 영화 검색 조회 (페이지네이션 + 정렬)
+    public Page<MovieResponse> searchMovies(String keyword, Pageable pageable) {
+        return movieRepository.findByTitleContainingIgnoreCase(keyword, pageable)
+                .map(MovieResponse::from);
     }
 
     // 상세 조회
@@ -38,13 +40,5 @@ public class MovieReadService {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new IllegalArgumentException("영화를 찾을 수 없습니다."));
         return MovieResponse.from(movie);
-    }
-
-    // 영화 검색 조회
-    public List<MovieResponse> searchMovies(String keyword) {
-        return movieRepository.findByTitleContainingIgnoreCase(keyword)
-                .stream()
-                .map(MovieResponse::from)
-                .toList();
     }
 }

@@ -2,14 +2,15 @@ package com.elice.cinema.domain.movie.repository;
 
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.List;
 
 public interface MovieRepository extends JpaRepository<Movie, Long> {
 
-    List<Movie> findByStatus(MovieStatus status);
+    // 상태별 조회
+    Page<Movie> findByStatus(MovieStatus status, Pageable pageable);
 
     // 제목 검색 (부분 일치)
-    List<Movie> findByTitleContainingIgnoreCase(String title);
+    Page<Movie> findByTitleContainingIgnoreCase(String title, Pageable pageable);
 }
