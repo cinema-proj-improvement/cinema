@@ -37,15 +37,14 @@ public class AdminMovieController {
         return "movie/movie-list";
     }
 
-    // 영화 상세 조회
+    // 관리자 영화 상세 조회
     @GetMapping("/{movieId}")
-    public String getMovie(
+    public String getMovieDetail(
             @PathVariable Long movieId,
             Model model
     ) {
         MovieResponse movie = movieReadService.getMovie(movieId);
         model.addAttribute("movie", movie);
-
-        return "movie/movie-detail";
+        return "admin/movie/movie-detail";
     }
 }
