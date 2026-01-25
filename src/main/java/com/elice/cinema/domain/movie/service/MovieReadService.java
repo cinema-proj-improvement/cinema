@@ -39,4 +39,12 @@ public class MovieReadService {
                 .orElseThrow(() -> new IllegalArgumentException("영화를 찾을 수 없습니다."));
         return MovieResponse.from(movie);
     }
+
+    // 영화 검색 조회
+    public List<MovieResponse> searchMovies(String keyword) {
+        return movieRepository.findByTitleContainingIgnoreCase(keyword)
+                .stream()
+                .map(MovieResponse::from)
+                .toList();
+    }
 }

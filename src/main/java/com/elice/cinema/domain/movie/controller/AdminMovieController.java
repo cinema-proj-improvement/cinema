@@ -47,4 +47,28 @@ public class AdminMovieController {
         model.addAttribute("movie", movie);
         return "admin/movie/movie-detail";
     }
+
+    // 검색 조회
+    @GetMapping
+    public String getMovies(
+            @RequestParam(required = false) MovieStatus status,
+            @RequestParam(required = false) String keyword,
+            Model model
+    ) {
+        List<MovieResponse> movies;
+
+        if (keyword != null && !keyword.isBlank()) {
+            movies = movieReadService.searchMovies(keyword);
+        } else if (status != null) {
+            movies = movieReadService.getMovies(status);
+        } else {
+            movies = movieReadService.getMovies();
+        }
+
+        model.addAttribute("movies", movies);
+        model.addAttribute("status", status);
+        model.addAttribute("keyword", keyword);
+
+        return "admin/movie/movie-list"; // html 추후
+    }
 }

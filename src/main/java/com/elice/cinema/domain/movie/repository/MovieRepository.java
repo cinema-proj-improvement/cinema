@@ -9,4 +9,7 @@ import java.util.List;
 public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     List<Movie> findByStatus(MovieStatus status);
+
+    // 제목 검색 (부분 일치)
+    List<Movie> findByTitleContainingIgnoreCase(String title);
 }
