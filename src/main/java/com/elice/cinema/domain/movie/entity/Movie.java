@@ -51,7 +51,7 @@ public class Movie extends BaseEntity {
     private MovieStatus status;
 
     // Movie 객체를 생성 시 사용하는 정적 팩토리 메서드 (params는 MovieCreateReq에서 들어올 값들입니다. 서비스 메서드에서 이 메서드를 호출하여 생성합니다)
-    public static Movie create(
+    public static Movie of(
             String title,
             int runningTimeMinutes,
             LocalDate releaseDate,
@@ -69,7 +69,7 @@ public class Movie extends BaseEntity {
                 .thumbnailImageUrl(thumbnailImageUrl)
                 .avgScore(0.0)
                 .advanceReservationRate(0.0)
-                .status(MovieStatus.UPCOMING)  // TODO: releaseDate는 무조건 생성일자 이후여야 하는지 (개봉예정으로만 만들 수 있는지) 협의 필요
+                .status(MovieStatus.UPCOMING)
                 .build();
     }
 }

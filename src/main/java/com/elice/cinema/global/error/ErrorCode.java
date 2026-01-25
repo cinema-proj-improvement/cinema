@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
     // 400 Bad Request
-
+    MOVIE_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "MV01", "상영 종료일은 개봉일 이후여야 합니다."),
     // 401 Unauthorized
 
     // 403 Forbidden
