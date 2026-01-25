@@ -4,10 +4,12 @@ import com.elice.cinema.domain.movie.entity.AgeRating;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
 import com.elice.cinema.global.entity.BaseEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDate;
 
 @Entity
+@Getter
 @Table(name = "movie")
 public class Movie extends BaseEntity {
 
