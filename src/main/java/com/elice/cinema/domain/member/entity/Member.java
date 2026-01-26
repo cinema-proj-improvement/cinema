@@ -19,24 +19,25 @@ import lombok.*;
 public class Member extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "email", nullable = false, length = 255)
     private String email;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "name", nullable = false, length = 50)
     private String name;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "nickname", nullable = false, length = 50)
     private String nickname;
 
-    @Column(nullable = false)
-    private Integer age;
+    @Column(name = "age", nullable = false)
+    private int age;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "role", nullable = false, length = 20)
     private Role role;
 }
