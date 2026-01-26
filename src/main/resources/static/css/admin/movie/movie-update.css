@@ -1,0 +1,305 @@
+/* /css/admin/movie/movie-update.css */
+
+/* ====== Page head ====== */
+.page-head{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin: 6px 0 18px;
+}
+.back-link{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    background:#fff;
+    border:1px solid #e6eaf2;
+    color:#111827;
+    text-decoration:none;
+    font-size:20px;
+    line-height:1;
+}
+.page-title{
+    font-size:28px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+    margin:0;
+}
+
+/* ====== Form card ====== */
+.movie-form{
+    width:100%;
+}
+.form-card{
+    background:#fff;
+    border:1px solid #e7eaf2;
+    border-radius:16px;
+    padding:24px;
+    box-shadow: 0 6px 20px rgba(17, 24, 39, 0.06);
+}
+
+/* 그리드(좌: 포스터, 우: 폼) */
+.form-grid{
+    display:grid;
+    grid-template-columns: 320px 1fr;
+    gap:28px;
+    align-items:start;
+}
+
+/* ====== Poster block ====== */
+.poster-block .field-label{
+    font-size:13px;
+    font-weight:700;
+    color:#111827;
+    margin-bottom:10px;
+}
+.req{
+    color:#ef4444;
+    font-weight:800;
+    margin-left:2px;
+}
+
+.poster-preview{
+    width:100%;
+    border-radius:14px;
+    overflow:hidden;
+    border:1px solid #e6eaf2;
+    background:#f8fafc;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.6);
+}
+.poster-preview img{
+    display:block;
+    width:100%;
+    height:420px;             /* 스샷처럼 큰 대표 포스터 */
+    object-fit:cover;
+}
+
+.poster-btn{
+    margin-top:12px;
+    width:100%;
+}
+
+/* ====== Field base ====== */
+.fields-block{
+    min-width:0;
+}
+.field{
+    margin-bottom:16px;
+}
+.field-label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:#111827;
+    margin: 0 0 8px;
+}
+.input, .select, .textarea{
+    width:100%;
+    border:1px solid #e6eaf2;
+    border-radius:12px;
+    padding:12px 14px;
+    font-size:14px;
+    outline:none;
+    background:#fff;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.input::placeholder,
+.textarea::placeholder{
+    color:#9aa4b2;
+}
+.input:focus,
+.select:focus,
+.textarea:focus{
+    border-color:#2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+}
+.textarea{
+    resize: vertical;
+    min-height: 140px;
+    line-height:1.5;
+}
+
+/* 한 줄에 2개 필드 */
+.field-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+}
+
+/* ====== Chip group ====== */
+.chip-group{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+}
+.chip{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:9px 14px;
+    border-radius:999px;
+    border:1px solid #e6eaf2;
+    background:#f3f4f6;              /* 스샷의 회색 pill */
+    color:#374151;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    user-select:none;
+    transition: background .15s ease, border-color .15s ease, color .15s ease, transform .05s ease;
+}
+.chip:hover{
+    border-color:#cfd6e4;
+}
+.chip:active{
+    transform: translateY(1px);
+}
+.chip.active{
+    background:#2563eb;              /* 스샷의 파란 선택 */
+    border-color:#2563eb;
+    color:#fff;
+}
+
+/* ====== Extra images ====== */
+.extra-image-section{
+    margin-top:22px;
+    padding-top:18px;
+    border-top:1px solid #eef2f7;
+}
+.section-title{
+    font-size:14px;
+    font-weight:800;
+    color:#111827;
+    margin-bottom:12px;
+}
+
+.extra-image-grid{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap:14px;
+}
+
+.extra-thumb{
+    border:1px solid #e6eaf2;
+    border-radius:14px;
+    overflow:hidden;
+    background:#f8fafc;
+}
+.extra-thumb img{
+    display:block;
+    width:100%;
+    height:120px;
+    object-fit:cover;
+}
+
+.extra-uploader{
+    border:2px dashed #d6dbe6;       /* 스샷 점선 박스 */
+    border-radius:14px;
+    height:120px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    cursor:pointer;
+    background:#fbfcff;
+    transition: border-color .15s ease, background .15s ease;
+}
+.extra-uploader:hover{
+    border-color:#9db6ff;
+    background:#f5f9ff;
+}
+.upload-icon{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    border:1px solid #e6eaf2;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:900;
+    color:#64748b;
+    background:#fff;
+}
+.upload-text{
+    font-size:13px;
+    font-weight:800;
+    color:#6b7280;
+}
+
+/* ====== Actions (취소 / 수정 완료) ====== */
+.form-actions{
+    display:flex;
+    gap:14px;
+    margin-top:22px;
+}
+.form-actions .btn{
+    flex:1;
+    height:48px;
+    border-radius:12px;
+    font-weight:800;
+}
+
+/* 버튼 클래스가 프로젝트마다 다를 수 있어, 여기서 안전하게 보정 */
+.btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding: 0 16px;
+    border-radius:12px;
+    border:1px solid transparent;
+    text-decoration:none;
+    cursor:pointer;
+    font-size:14px;
+}
+.btn.outline{
+    background:#fff;
+    border-color:#e6eaf2;
+    color:#111827;
+}
+.btn.outline:hover{
+    background:#f8fafc;
+}
+.btn.primary{
+    background:#2563eb;
+    color:#fff;
+}
+.btn.primary:hover{
+    filter: brightness(0.97);
+}
+
+/* ====== Responsive ====== */
+@media (max-width: 1100px){
+    .form-grid{
+        grid-template-columns: 280px 1fr;
+    }
+    .poster-preview img{
+        height:380px;
+    }
+}
+@media (max-width: 900px){
+    .form-card{
+        padding:18px;
+    }
+    .form-grid{
+        grid-template-columns: 1fr;
+    }
+    .poster-preview img{
+        height:360px;
+    }
+    .field-row{
+        grid-template-columns: 1fr;
+    }
+    .extra-image-grid{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (max-width: 520px){
+    .extra-image-grid{
+        grid-template-columns: 1fr;
+    }
+    .page-title{
+        font-size:22px;
+    }
+}

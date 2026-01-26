@@ -1,5 +1,6 @@
 package com.elice.cinema.domain.movie.controller;
 
+import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieResponse;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
 import com.elice.cinema.domain.movie.service.MovieService;
@@ -10,13 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import java.time.LocalDate;
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -66,4 +61,22 @@ public class AdminMovieController {
         model.addAttribute("movie", movie);
         return "admin/movie/movie-detail";
     }
+
+    @GetMapping("/{movieId}/edit")
+    public String updateMovieForm(
+            @PathVariable Long movieId,
+            Model model
+    ){
+        MovieUpdateFormResponse movie = movieService.getMovieUpdateForm(movieId);
+        model.addAttribute("movie", movie);
+        return "admin/movie/movie-update";
+    }
+
+    /*@PutMapping("/{movieId}")
+    public String updateMovie(
+
+    ){
+
+    }*/
+
 }

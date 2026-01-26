@@ -1,7 +1,8 @@
 spring:
   application:
     name: cinema
-
+  profiles:
+    active: local
   mvc:
     hiddenmethod:
       filter:
