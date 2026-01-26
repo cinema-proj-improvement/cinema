@@ -1,13 +1,13 @@
-package com.elice.cinema.global.main.controller;
+package com.elice.cinema.global.home.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-public class MainController {
+public class HomeController {
     @GetMapping("/")
-    public String main(Model model) {
-        return "main";
+    public String home(Model model) {
+        return "home";
     }
 }
