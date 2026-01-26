@@ -1,0 +1,120 @@
+/* ===== HEADER ===== */
+.header {
+    border-bottom: 1px solid #eaeaea;
+    background: #fff;
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative; /* nav absolute 기준 */
+}
+
+/* 좌/우 영역 */
+.header-side {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 220px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.header-right {
+    justify-content: flex-end;
+}
+
+/* 중앙 고정 nav */
+.nav {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    white-space: nowrap;
+}
+
+.nav a {
+    font-size: 16px;      /* 중앙 메뉴 크기 */
+    font-weight: 700;     /* 굵게 */
+    color: #111;          /* 진한 검정 */
+    letter-spacing: -0.2px;
+}
+
+.nav a:hover {
+    background: #f3f3f3;
+    opacity: 1;          /* 연해지는 효과 방지 */
+}
+
+
+/* ===== 공통 클릭 요소 스타일(헤더 전체 통일) ===== */
+.header a,
+.header .logout-btn {
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #111;
+}
+
+/* hover 통일 */
+.header a:hover,
+.header .logout-btn:hover {
+    background: #f3f3f3;
+}
+
+/* visited 색(보라색) 방지 */
+.header a:visited {
+    color: #111;
+}
+
+/* ===== 로고 ===== */
+.logo {
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    padding: 0 10px; /* 공통 규칙과 통일 */
+}
+
+/* ===== 로그인/회원가입 ===== */
+.auth-links {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.auth-links a {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ===== 아이콘 버튼(검색/마이페이지) ===== */
+.icon-btn {
+    width: 44px;
+    padding: 0; /* 공통 padding 제거 */
+}
+
+.icon {
+    width: 22px;
+    height: 22px;
+}
+
+/* ===== 로그아웃 버튼 ===== */
+.logout-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 0 10px; /* 공통 규칙과 동일 */
+}
