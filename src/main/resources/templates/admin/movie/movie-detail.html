@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>영화 상세</title>
+</head>
+<body>
+
+<h1>영화 상세 (미리보기)</h1>
+
+<p><strong>ID:</strong> <span th:text="${movie.id}">1</span></p>
+<p><strong>제목:</strong> <span th:text="${movie.title}">더미 영화</span></p>
+<p><strong>러닝타임:</strong> <span th:text="${movie.runningTimeMinutes}">120</span> 분</p>
+<p><strong>상태:</strong> <span th:text="${movie.status}">NOW_SHOWING</span></p>
+<p><strong>개봉일:</strong> <span th:text="${movie.releaseDate}">2025-01-01</span></p>
+
+<hr>
+
+<a th:href="@{/admin/movies}">
+    <button type="button">목록으로 돌아가기</button>
+</a>
+
+</body>
+</html>

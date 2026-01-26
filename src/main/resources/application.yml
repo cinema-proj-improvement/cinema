@@ -1,12 +1,12 @@
 spring:
   application:
     name: cinema
-  profiles:
-    active: local
+
   mvc:
     hiddenmethod:
       filter:
         enabled: true  # PUT, DELETE 요청 hidden-method 지원
+
   data:
     web:
       pageable:
@@ -15,3 +15,7 @@ spring:
     rest:
       default-page-size: 10
       max-page-size: 50
+
+logging:
+  level:
+    root: INFO
