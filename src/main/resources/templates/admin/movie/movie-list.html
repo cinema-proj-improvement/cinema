@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 영화 목록</title>
+</head>
+<body>
+
+<h1>영화 목록 (미리보기)</h1>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>제목</th>
+        <th>상태</th>
+        <th>개봉일</th>
+        <th>상세</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="movie : ${movies}">
+        <td th:text="${movie.id}">1</td>
+        <td th:text="${movie.title}">영화 제목</td>
+        <td th:text="${movie.status}">NOW_SHOWING</td>
+        <td th:text="${movie.releaseDate}">2025-01-01</td>
+        <td>
+            <a th:href="@{/admin/movies/{id}(id=${movie.id})}">
+                <button type="button">상세보기</button>
+            </a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<hr>
+
+<div>
+    <!-- 이전 페이지 -->
+    <a th:if="${page.hasPrevious()}"
+       th:href="@{/admin/movies(page=${page.number - 1})}">
+        이전
+    </a>
+
+    <!-- 페이지 번호 -->
+    <span th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+        <a th:if="${i != page.number}"
+           th:href="@{/admin/movies(page=${i})}"
+           th:text="${i + 1}">
+        </a>
+
+        <strong th:if="${i == page.number}"
+                th:text="${i + 1}">
+        </strong>
+    </span>
+
+    <!-- 다음 페이지 -->
+    <a th:if="${page.hasNext()}"
+       th:href="@{/admin/movies(page=${page.number + 1})}">
+        다음
+    </a>
+</div>
+
+
+</body>
+</html>

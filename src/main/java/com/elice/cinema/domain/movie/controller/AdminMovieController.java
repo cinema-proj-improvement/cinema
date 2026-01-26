@@ -1,8 +1,8 @@
 package com.elice.cinema.domain.movie.controller;
 
-import com.elice.cinema.domain.movie.dto.res.MovieResponse;
+import com.elice.cinema.domain.movie.dto.response.MovieResponse;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
-import com.elice.cinema.domain.movie.service.MovieReadService;
+import com.elice.cinema.domain.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,12 +15,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/movies")
 public class AdminMovieController {
 
-    private final MovieReadService movieReadService;
+    private final MovieService movieService;
 
     // 관리자 영화 목록 조회(검색 조건 + 페이징)
     @GetMapping
@@ -40,11 +43,11 @@ public class AdminMovieController {
         Page<MovieResponse> moviesPage;
 
         if (keyword != null && !keyword.isBlank()) {
-            moviesPage = movieReadService.searchMovies(keyword, pageable);
+            moviesPage = movieService.searchMovies(keyword, pageable);
         } else if (status != null) {
-            moviesPage = movieReadService.getMovies(status, pageable);
+            moviesPage = movieService.getMovies(status, pageable);
         } else {
-            moviesPage = movieReadService.getMovies(pageable);
+            moviesPage = movieService.getMovies(pageable);
         }
 
         model.addAttribute("movies", moviesPage.getContent());
@@ -59,10 +62,8 @@ public class AdminMovieController {
             @PathVariable Long movieId,
             Model model
     ) {
-        MovieResponse movie = movieReadService.getMovie(movieId);
+        MovieResponse movie = movieService.getMovie(movieId);
         model.addAttribute("movie", movie);
         return "admin/movie/movie-detail";
     }
-
-
 }

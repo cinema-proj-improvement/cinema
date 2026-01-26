@@ -12,9 +12,14 @@ spring:
     username: sa
     password:
 
+  sql:
+    init:
+      mode: always
+
   jpa:
     hibernate:
       ddl-auto: create-drop
+    defer-datasource-initialization: true
     show-sql: true
     properties:
       hibernate:

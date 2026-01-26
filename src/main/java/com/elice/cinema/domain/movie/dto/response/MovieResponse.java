@@ -1,4 +1,4 @@
-package com.elice.cinema.domain.movie.dto.res;
+package com.elice.cinema.domain.movie.dto.response;
 
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
@@ -17,13 +17,4 @@ public class MovieResponse {
     private LocalDate releaseDate;
     private MovieStatus status;
 
-    public static MovieResponse from(Movie movie) {
-        return new MovieResponse(
-                movie.getId(),
-                movie.getTitle(),
-                movie.getRunningTimeMinutes(),
-                movie.getReleaseDate(),
-                movie.getStatus()
-        );
-    }
 }
