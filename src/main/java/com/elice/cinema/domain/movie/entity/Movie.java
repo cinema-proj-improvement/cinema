@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "movies")  // TODO: index 설정 필요. notion page "구현관련" -> "Movie Table Index" 확인
@@ -40,6 +42,16 @@ public class Movie extends BaseEntity {
 
     @Column(name = "thumbnail_image_url", nullable = false, length = 500)
     private String thumbnailImageUrl;  // TODO: 데이터 정합성에 유의! (MovieImage와 중복 데이터) -> 썸네일 변경 로직은 한 위치에서만 + 둘 다 갱신
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "genre", nullable = false, length = 30)
+    private Set<Genre> genres = new HashSet<>();
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "screening_type", nullable = false, length = 30)
+    private Set<ScreeningType> screeningTypes =  new HashSet<>();
 
     @Column(name = "avg_score")
     private Double avgScore;
