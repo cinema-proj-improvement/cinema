@@ -13,7 +13,9 @@ public enum ErrorCode {
     // 403 Forbidden
 
     // 404 Not Found
+
     MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "MV01", "영화를 찾을 수 없습니다."),
+    SCREEN_NOT_FOUND(HttpStatus.NOT_FOUND, "SC001", "상영관을 찾을 수 없습니다."),
     // 409 Conflict
 
     // 500 Internal Server Error

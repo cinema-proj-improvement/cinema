@@ -146,8 +146,6 @@
     padding:24px 10px;
 }
 
-.is-right{ text-align:right; }
-
 .scr-name{ font-weight:900; }
 .scr-muted{ color:#334155; font-weight:900; }
 
@@ -187,22 +185,6 @@
     font-weight:900;
     font-size:13px;
     color:#0f172a;
-}
-
-/* 화살표 */
-.scr-arrow{
-    width:34px;
-    height:34px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:10px;
-    border:1px solid #e5e7eb;
-    background:#fff;
-    text-decoration:none;
-    font-size:20px;
-    font-weight:900;
-    color:#334155;
 }
 
 /* 페이지네이션 */
@@ -255,4 +237,50 @@
         flex-direction:column;
         align-items:flex-start;
     }
+}
+
+/* 행 전체 클릭 가능 */
+.scr-row {
+    cursor: pointer;
+}
+
+.scr-row:hover {
+    background: #f8fafc;
+}
+
+/* 포커스(키보드 접근성) */
+.scr-row:focus-within {
+    outline: 2px solid #cfe1ff;
+    outline-offset: -2px;
+}
+
+/* ✅ 관리 열 가운데 정렬 */
+.scr-manage {
+    text-align: center;
+    width: 90px;
+}
+
+/* 화살표 버튼 스타일(중앙에 보이게) */
+.scr-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 44px;
+    height: 44px;
+
+    border-radius: 14px;
+    border: 1px solid #e7eaf2;
+    background: #fff;
+
+    font-size: 22px;
+    font-weight: 900;
+    color: #111827;
+    text-decoration: none;
+}
+
+.scr-arrow:hover {
+    background: #f3f6ff;
+    border-color: #dbeafe;
+    color: #2563eb;
 }

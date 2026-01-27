@@ -28,8 +28,6 @@
 
     <!-- 필터 -->
     <section class="scr-card scr-filter">
-        <div class="scr-filter__label">운영 상태별 필터</div>
-
         <div class="scr-seg">
             <a class="scr-seg__btn"
                th:href="@{/admin/screens}"
@@ -70,7 +68,9 @@
                     <td class="scr-empty" colspan="5">등록된 상영관이 없습니다.</td>
                 </tr>
 
-                <tr th:each="s : ${screens.content}">
+                <tr th:each="s : ${screens.content}"
+                    class="scr-row"
+                    th:attr="data-href=@{/admin/screens/{id}(id=${s.id}, page=${screens.number}, operating=${operating})}">
                     <td class="scr-name" th:text="${s.name}">1관</td>
 
                     <td>
@@ -86,14 +86,17 @@
                         <span class="scr-chip" th:text="${s.screeningType.displayName}">IMAX</span>
                     </td>
 
-                    <td class="is-right">
+                    <!-- ✅ 가운데 정렬용 클래스로 변경 -->
+                    <td class="scr-manage">
                         <a class="scr-arrow"
                            th:href="@{/admin/screens/{id}(id=${s.id}, page=${screens.number}, operating=${operating})}"
-                           title="상세/관리">
+                           title="상세/관리"
+                           aria-label="상영관 상세로 이동">
                             ›
                         </a>
                     </td>
                 </tr>
+
                 </tbody>
             </table>
         </div>
@@ -116,5 +119,26 @@
         </div>
     </section>
 
+    <script>
+        document.addEventListener('click', (e) => {
+            const arrow = e.target.closest('a.scr-arrow');
+            if (arrow) return; // 화살표 클릭은 원래 링크로 이동
+
+            const row = e.target.closest('tr.scr-row');
+            if (!row) return;
+
+            const href = row.dataset.href;
+            if (href) window.location.href = href;
+        });
+
+        // 키보드 접근성(엔터로 이동)도 같이
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter') return;
+            const row = document.activeElement?.closest?.('tr.scr-row');
+            if (!row) return;
+            const href = row.dataset.href;
+            if (href) window.location.href = href;
+        });
+    </script>
 </th:block>
 </html>
