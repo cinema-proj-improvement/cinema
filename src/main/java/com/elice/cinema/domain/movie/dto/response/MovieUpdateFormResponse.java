@@ -1,9 +1,9 @@
 package com.elice.cinema.domain.movie.dto.response;
 
+import com.elice.cinema.domain.common.ScreeningType;
 import com.elice.cinema.domain.movie.entity.AgeRating;
 import com.elice.cinema.domain.movie.entity.Genre;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
-import com.elice.cinema.domain.movie.entity.ScreeningType;
 import lombok.Builder;
 import lombok.Getter;
 
