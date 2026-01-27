@@ -99,4 +99,3 @@ public class Movie extends BaseEntity {
         this.status = MovieStatus.UPCOMING;
     }
 }
-// FIXME: 이미지 처리 추가한 것에 관해 Entity 구조 수정 필요한지 (thumbnailImageUrl 필드 없애야 한다든가... 아님 저기 초기화하는 방법? 어디서?)
