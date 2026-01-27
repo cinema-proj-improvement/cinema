@@ -1,317 +1,184 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8" />
-    <title>영화 수정 | Cinema Admin</title>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: layout(
+        '영화 수정', 'movies', ~{::pageCss}, ~{::content}
+      )}">
 
-    <!-- 관리자 전용: 공통 reset/header/footer 불필요 -->
-    <link rel="stylesheet" href="/css/admin/admin-common.css">
-    <link rel="stylesheet" href="/css/admin/movie/movie-update.css">
-</head>
+<th:block th:fragment="pageCss">
+    <link rel="stylesheet" th:href="@{/css/admin/movie/movie-update.css}">
+</th:block>
 
-<body class="admin-body">
+<th:block th:fragment="content">
 
-<div class="admin-layout">
+    <div class="page-head">
+        <a class="back-link" th:href="@{/admin/movies/{movieId}(movieId=${movieId})}">‹</a>
+        <h1 class="page-title">영화 수정</h1>
+    </div>
 
-    <!-- ====== SIDEBAR (관리자 전용) ====== -->
-    <aside class="admin-sidebar">
-        <div class="sidebar-title">
-            <a class="sidebar-back" th:href="@{/admin}">영화관 관리</a>
-        </div>
+    <form class="movie-form"
+          th:object="${movie}"
+          th:action="@{/admin/movies/{movieId}(movieId=${movieId})}"
+          method="post"
+          enctype="multipart/form-data">
 
-        <nav class="sidebar-nav">
-            <a class="nav-item" th:href="@{/admin/members}">
-                <span>사용자 관리</span>
-            </a>
-            <a class="nav-item" th:href="@{/admin/reviews}">
-                <span>리뷰 관리</span>
-            </a>
-            <a class="nav-item active" th:href="@{/admin/movies}">
-                <span>영화 관리</span>
-            </a>
-            <a class="nav-item" th:href="@{/admin/theaters}">
-                <span>상영관 관리</span>
-            </a>
-            <a class="nav-item" th:href="@{/admin/screenings}">
-                <span>상영 관리</span>
-            </a>
-            <a class="nav-item" th:href="@{/admin/payments}">
-                <span>결제 관리</span>
-            </a>
-            <a class="nav-item" th:href="@{/admin/refunds}">
-                <span>환불 관리</span>
-            </a>
-            <a class="nav-item" th:href="@{/admin/policies}">
-                <span>정책 관리</span>
-            </a>
-        </nav>
+        <input type="hidden" name="_method" value="put"/>
 
-        <div class="sidebar-user">
-            <div class="avatar">A</div>
-            <div class="user-meta">
-                <div class="name">관리자</div>
-                <div class="email">admin@cinema.com</div>
+        <section class="form-card">
+            <div class="form-grid">
+
+                <!-- 대표 포스터 -->
+                <div class="poster-block">
+                    <div class="field-label">대표 포스터 <span class="req">*</span></div>
+
+                    <div class="poster-preview" id="posterPreview">
+                        <!-- ✅ movie가 null이면 터지니까 안전하게: (movie.thumbnailImageUrl) -->
+                        <img th:src="${movie != null and movie.thumbnailImageUrl != null ? movie.thumbnailImageUrl : '/images/sample-poster.jpg'}"
+                             alt="대표 포스터"
+                             id="posterImg"/>
+                    </div>
+
+                    <label class="btn outline poster-btn" for="thumbnailImage">이미지 변경</label>
+                    <input type="file" id="thumbnailImage" name="thumbnailImage" accept="image/*" hidden>
+                </div>
+
+                <!-- 입력 폼 -->
+                <div class="fields-block">
+
+                    <div class="field">
+                        <label class="field-label" for="title">영화 제목 <span class="req">*</span></label>
+                        <input class="input" id="title" type="text" th:field="*{title}" placeholder="영화 제목을 입력하세요"/>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="field-label" for="runningTimeMinutes">러닝타임 (분) <span class="req">*</span></label>
+                            <input class="input" id="runningTimeMinutes" type="number" min="1"
+                                   th:field="*{runningTimeMinutes}" placeholder="예: 120"/>
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="ageRating">관람등급 <span class="req">*</span></label>
+                            <select class="select" id="ageRating" th:field="*{ageRating}">
+                                <option value="" disabled>선택</option>
+                                <option th:each="ar : ${T(com.elice.cinema.domain.movie.entity.AgeRating).values()}"
+                                        th:value="${ar}"
+                                        th:text="${ar.displayName}">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="field-label" for="releaseDate">개봉일 <span class="req">*</span></label>
+                            <input class="input" id="releaseDate" name="releaseDate" type="date"
+                                   th:value="${movie.releaseDate != null ? #temporals.format(movie.releaseDate, 'yyyy-MM-dd') : ''}"/>
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="endDate">상영 종료일 <span class="req">*</span></label>
+                            <input class="input" id="endDate" name="endDate" type="date"
+                                   th:value="${movie.endDate != null ? #temporals.format(movie.endDate, 'yyyy-MM-dd') : ''}"/>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="field-label">장르 <span class="req">*</span></div>
+                        <div class="chip-group" id="genreGroup">
+                            <label class="chip" th:each="g : ${T(com.elice.cinema.domain.movie.entity.Genre).values()}">
+                                <input type="checkbox" th:field="*{genres}" th:value="${g}" hidden>
+                                <span th:text="${g.displayName}">액션</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="field-label">상영 타입 <span class="req">*</span></div>
+                        <div class="chip-group" id="typeGroup">
+                            <label class="chip" th:each="st : ${T(com.elice.cinema.domain.common.ScreeningType).values()}">
+                                <input type="checkbox" th:field="*{screeningTypes}" th:value="${st}" hidden>
+                                <span th:text="${st.displayName}">2D</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="synopsis">영화 소개 (시놉시스) <span class="req">*</span></label>
+                        <textarea class="textarea" id="synopsis" rows="6" th:field="*{synopsis}"
+                                  placeholder="영화 소개를 입력하세요"></textarea>
+                    </div>
+
+                </div>
             </div>
-        </div>
-    </aside>
 
-    <!-- ====== MAIN ====== -->
-    <main class="admin-main">
+            <div class="extra-image-section">
+                <div class="section-title">추가 이미지 (선택사항)</div>
+                <div class="extra-image-grid">
 
-        <!-- 상단 타이틀 -->
-        <div class="page-head">
-            <a class="back-link" th:href="@{/admin/movies}">‹</a>
-            <h1 class="page-title">영화 수정</h1>
-        </div>
-
-        <form class="movie-form"
-              th:object="${movie}"
-              th:action="@{/admin/movies/{movieId}(movieId=${movieId})}"
-              method="post"
-              enctype="multipart/form-data">
-
-            <!-- PUT/PATCH면 HiddenHttpMethodFilter 사용 -->
-            <input type="hidden" name="_method" value="put"/>
-
-            <section class="form-card">
-                <div class="form-grid">
-
-                    <!-- 좌측: 대표 포스터 -->
-                    <div class="poster-block">
-                        <div class="field-label">
-                            대표 포스터 <span class="req">*</span>
-                        </div>
-
-                        <div class="poster-preview" id="posterPreview">
-                            <img th:src="*{thumbnailImageUrl}"
-                                 src="/images/sample-poster.jpg"
-                                 alt="대표 포스터"
-                                 id="posterImg"/>
-                        </div>
-
-                        <label class="btn outline poster-btn" for="thumbnailImage">
-                            이미지 변경
-                        </label>
-                        <input type="file"
-                               id="thumbnailImage"
-                               name="thumbnailImage"
-                               accept="image/*"
-                               hidden>
+                    <div class="extra-thumb" th:each="imgUrl : ${extraImages}">
+                        <img th:src="${imgUrl}" alt="추가 이미지">
                     </div>
 
-                    <!-- 우측: 입력 폼 -->
-                    <div class="fields-block">
-
-                        <!-- 영화 제목 -->
-                        <div class="field">
-                            <label class="field-label" for="title">
-                                영화 제목 <span class="req">*</span>
-                            </label>
-                            <input class="input"
-                                   id="title"
-                                   type="text"
-                                   th:field="*{title}"
-                                   placeholder="영화 제목을 입력하세요" />
-                        </div>
-
-                        <!-- 러닝타임 / 관람등급 -->
-                        <div class="field-row">
-                            <div class="field">
-                                <label class="field-label" for="runningTimeMinutes">
-                                    러닝타임 (분) <span class="req">*</span>
-                                </label>
-                                <input class="input"
-                                       id="runningTimeMinutes"
-                                       type="number"
-                                       min="1"
-                                       th:field="*{runningTimeMinutes}"
-                                       placeholder="예: 120" />
-                            </div>
-
-                            <div class="field">
-                                <label class="field-label" for="ageRating">
-                                    관람등급 <span class="req">*</span>
-                                </label>
-                                <select class="select" id="ageRating" th:field="*{ageRating}">
-                                    <option value="" disabled>선택</option>
-                                    <option th:each="ar : ${T(com.elice.cinema.domain.movie.entity.AgeRating).values()}"
-                                            th:value="${ar}"
-                                            th:text="${ar.displayName}">
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- 개봉일 / 상영 종료일 -->
-                        <div class="field-row">
-                            <div class="field">
-                                <label class="field-label" for="releaseDate">
-                                    개봉일 <span class="req">*</span>
-                                </label>
-                                <input class="input"
-                                       id="releaseDate"
-                                       name="releaseDate"
-                                       type="date"
-                                       th:value="${movie.releaseDate != null ? #temporals.format(movie.releaseDate, 'yyyy-MM-dd') : ''}" />
-                            </div>
-
-                            <div class="field">
-                                <label class="field-label" for="endDate">
-                                    상영 종료일 <span class="req">*</span>
-                                </label>
-                                <input class="input"
-                                       id="endDate"
-                                       name="endDate"
-                                       type="date"
-                                       th:value="${movie.endDate != null ? #temporals.format(movie.endDate, 'yyyy-MM-dd') : ''}" />
-                            </div>
-                        </div>
-
-                        <!-- 장르(멀티 선택) -->
-                        <div class="field">
-                            <div class="field-label">
-                                장르 <span class="req">*</span>
-                            </div>
-
-                            <div class="chip-group" id="genreGroup">
-                                <label class="chip"
-                                       th:each="g : ${T(com.elice.cinema.domain.movie.entity.Genre).values()}">
-                                    <input type="checkbox"
-                                           th:field="*{genres}"
-                                           th:value="${g}"
-                                           hidden>
-                                    <span th:text="${g.displayName}">액션</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- 상영 타입(멀티 선택) -->
-                        <div class="field">
-                            <div class="field-label">
-                                상영 타입 <span class="req">*</span>
-                            </div>
-
-                            <div class="chip-group" id="typeGroup">
-                                <label class="chip"
-                                       th:each="st : ${T(com.elice.cinema.domain.movie.entity.ScreeningType).values()}">
-                                    <input type="checkbox"
-                                           th:field="*{screeningTypes}"
-                                           th:value="${st}"
-                                           hidden>
-                                    <span th:text="${st.displayName}">2D</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- 영화 소개 -->
-                        <div class="field">
-                            <label class="field-label" for="synopsis">
-                                영화 소개 (시놉시스) <span class="req">*</span>
-                            </label>
-                            <textarea class="textarea"
-                                      id="synopsis"
-                                      rows="6"
-                                      th:field="*{synopsis}"
-                                      placeholder="영화 소개를 입력하세요"></textarea>
-                        </div>
-
-                    </div>
+                    <label class="extra-uploader" for="extraImages">
+                        <div class="upload-icon">↑</div>
+                        <div class="upload-text">이미지 추가</div>
+                    </label>
+                    <input type="file" id="extraImages" name="extraImages" accept="image/*" multiple hidden>
                 </div>
+            </div>
 
-                <!-- 추가 이미지 -->
-                <div class="extra-image-section">
-                    <div class="section-title">추가 이미지 (선택사항)</div>
+            <div class="form-actions">
+                <a class="btn outline" th:href="@{/admin/movies/{movieId}(movieId=${movieId})}">취소</a>
+                <button class="btn primary" type="submit">수정 완료</button>
+            </div>
+        </section>
+    </form>
 
-                    <div class="extra-image-grid">
-
-                        <div class="extra-thumb"
-                             th:each="imgUrl : ${extraImages}">
-                            <img th:src="${imgUrl}" alt="추가 이미지">
-                        </div>
-
-                        <label class="extra-uploader" for="extraImages">
-                            <div class="upload-icon">↑</div>
-                            <div class="upload-text">이미지 추가</div>
-                        </label>
-                        <input type="file"
-                               id="extraImages"
-                               name="extraImages"
-                               accept="image/*"
-                               multiple
-                               hidden>
-                    </div>
-                </div>
-
-                <!-- 하단 버튼 -->
-                <div class="form-actions">
-                    <a class="btn outline"
-                       th:href="@{/admin/movies/{movieId}(movieId=${movieId})}">
-                        취소
-                    </a>
-
-                    <button class="btn primary" type="submit">
-                        수정 완료
-                    </button>
-                </div>
-            </section>
-        </form>
-    </main>
-</div>
-
-<script>
-    function syncChipActive(groupId) {
-        const group = document.getElementById(groupId);
-        if (!group) return;
-        group.querySelectorAll('.chip').forEach(chip => {
-            const checkbox = chip.querySelector('input[type="checkbox"]');
-            if (!checkbox) return;
-            chip.classList.toggle('active', checkbox.checked); // ✅ 초기값 반영
-        });
-    }
-
-    function wireChipGroup(groupId) {
-        const group = document.getElementById(groupId);
-        if (!group) return;
-
-        // ✅ 초기 active 반영
-        syncChipActive(groupId);
-
-        group.addEventListener('click', (e) => {
-            const chip = e.target.closest('.chip');
-            if (!chip) return;
-            const checkbox = chip.querySelector('input[type="checkbox"]');
-            if (!checkbox) return;
-
-            checkbox.checked = !checkbox.checked;
-            chip.classList.toggle('active', checkbox.checked);
-        });
-    }
-
-    wireChipGroup('genreGroup');
-    wireChipGroup('typeGroup');
-
-    const releaseInput = document.getElementById('releaseDate');
-    const endInput = document.getElementById('endDate');
-
-    function syncEndDateMin() {
-        if (!releaseInput.value) return;
-
-        // 종료일은 개봉일 이전 선택 불가
-        endInput.min = releaseInput.value;
-
-        // 이미 선택된 종료일이 개봉일보다 앞이면 자동 보정
-        if (endInput.value && endInput.value < releaseInput.value) {
-            endInput.value = releaseInput.value;
+    <script>
+        function syncChipActive(groupId) {
+            const group = document.getElementById(groupId);
+            if (!group) return;
+            group.querySelectorAll('.chip').forEach(chip => {
+                const checkbox = chip.querySelector('input[type="checkbox"]');
+                if (!checkbox) return;
+                chip.classList.toggle('active', checkbox.checked);
+            });
         }
-    }
 
-    // ✅ 페이지 최초 로딩 시 한 번 적용 (기존 값 보정)
-    syncEndDateMin();
+        function wireChipGroup(groupId) {
+            const group = document.getElementById(groupId);
+            if (!group) return;
 
-    // ✅ 개봉일 변경 시마다 종료일 제한 갱신
-    releaseInput.addEventListener('change', syncEndDateMin);
-</script>
+            syncChipActive(groupId);
 
+            group.addEventListener('click', (e) => {
+                const chip = e.target.closest('.chip');
+                if (!chip) return;
+                const checkbox = chip.querySelector('input[type="checkbox"]');
+                if (!checkbox) return;
 
-</body>
+                checkbox.checked = !checkbox.checked;
+                chip.classList.toggle('active', checkbox.checked);
+            });
+        }
+
+        wireChipGroup('genreGroup');
+        wireChipGroup('typeGroup');
+
+        const releaseInput = document.getElementById('releaseDate');
+        const endInput = document.getElementById('endDate');
+
+        function syncEndDateMin() {
+            if (!releaseInput.value) return;
+            endInput.min = releaseInput.value;
+            if (endInput.value && endInput.value < releaseInput.value) {
+                endInput.value = releaseInput.value;
+            }
+        }
+
+        syncEndDateMin();
+        releaseInput.addEventListener('change', syncEndDateMin);
+    </script>
+
+</th:block>
 </html>

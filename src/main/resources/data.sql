@@ -93,3 +93,45 @@ INSERT INTO movie_screening_types (movie_id, screening_type) VALUES
 (3, 'FOUR_D'),
 
 (4, 'TWO_D');
+
+
+INSERT INTO screens (
+    name,
+    screening_type,
+    total_seats,
+    is_operating,
+    created_at,
+    updated_at
+) VALUES
+      (
+          '1관',
+          'IMAX',
+          250,
+          true,
+          '2026-01-01 00:00:00',
+          '2026-01-01 00:00:00'
+      ),
+      (
+          '2관',
+          'FOUR_D',
+          180,
+          true,
+          '2026-01-01 00:00:00',
+          '2026-01-01 00:00:00'
+      ),
+      (
+          '3관',
+          'TWO_D',
+          200,
+          true,
+          '2026-01-01 00:00:00',
+          '2026-01-01 00:00:00'
+      ),
+      (
+          '4관',
+          'TWO_D',
+          120,
+          false,
+          '2026-01-01 00:00:00',
+          '2026-01-01 00:00:00'
+      );
