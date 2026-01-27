@@ -118,6 +118,13 @@
     color: #4f46e5;
 }
 
+.pill:has(input:checked) {
+    background: #eef2ff;
+    border-color: #6366f1;
+    color: #4f46e5;
+}
+
+
 /* =========================
    Date Range (정리 핵심)
 ========================= */

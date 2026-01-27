@@ -1,4 +1,4 @@
-package com.elice.cinema.domain.movie.entity;
+package com.elice.cinema.domain.common;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

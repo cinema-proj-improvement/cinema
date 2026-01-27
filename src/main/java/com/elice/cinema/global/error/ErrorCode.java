@@ -12,6 +12,7 @@ public enum ErrorCode {
     // 403 Forbidden
 
     // 404 Not Found
+    MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "M001", "영화를 찾을 수 없습니다."),
 
     // 409 Conflict
 

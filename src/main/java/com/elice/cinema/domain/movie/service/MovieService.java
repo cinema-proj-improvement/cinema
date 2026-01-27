@@ -2,9 +2,12 @@ package com.elice.cinema.domain.movie.service;
 
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
 import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
+import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
+import com.elice.cinema.global.error.ErrorCode;
+import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,8 +30,21 @@ public class MovieService {
 
     // 관리자 상세 조회
     public AdminMovieListResponse getAdminMovieDetail(Long movieId) {
-        Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new IllegalArgumentException("영화를 찾을 수 없습니다."));
+        Movie movie = findMovieById(movieId);
         return movieMapper.toAdminListResponse(movie);
     }
+
+    // 업데이트 폼 조회
+    public MovieUpdateFormResponse getMovieUpdateForm(Long movieId) {
+        Movie movie = findMovieById(movieId);
+        return movieMapper.toMovieUpdateFormResponse(movie);
+    }
+
+    /*                  공통 로직                   */
+
+    private Movie findMovieById(Long movieId) {
+        return movieRepository.findById(movieId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_NOT_FOUND));
+    }
+
 }

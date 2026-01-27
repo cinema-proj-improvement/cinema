@@ -37,7 +37,7 @@
                 <option
                         th:each="s : ${T(com.elice.cinema.domain.movie.dto.request.AdminMovieSortType).values()}"
                         th:value="${s}"
-                        th:text="${s.description}">
+                        th:text="${s.displayName}">
                 </option>
             </select>
 
@@ -53,7 +53,7 @@
                        th:each="s : ${T(com.elice.cinema.domain.movie.entity.MovieStatus).values()}"
                        th:classappend="${search.statuses != null and search.statuses.contains(s)} ? 'selected' : ''">
                     <input type="checkbox" th:field="*{statuses}" th:value="${s}">
-                    <span th:text="${s.description}"></span>
+                    <span th:text="${s.displayName}"></span>
                 </label>
             </div>
         </div>
@@ -79,7 +79,7 @@
                        th:each="a : ${T(com.elice.cinema.domain.movie.entity.AgeRating).values()}"
                        th:classappend="${search.ageRatings != null and search.ageRatings.contains(a)} ? 'selected' : ''">
                     <input type="checkbox" th:field="*{ageRatings}" th:value="${a}">
-                    <span th:text="${a.description}"></span>
+                    <span th:text="${a.displayName}"></span>
                 </label>
             </div>
         </div>
@@ -117,8 +117,8 @@
             <td th:text="${movie.id}"></td>
             <td th:text="${movie.title}"></td>
             <td th:text="${#strings.listJoin(movie.genres.![displayName], ', ')}"></td>
-            <td th:text="${movie.status.description}"></td>
-            <td th:text="${movie.ageRating.description}"></td>
+            <td th:text="${movie.status.displayName}"></td>
+            <td th:text="${movie.ageRating.displayName}"></td>
             <td th:text="${movie.releaseDate}"></td>
             <td th:text="${movie.endDate}"></td>
             <td th:text="${movie.avgScore != null ? movie.avgScore : '-'}"></td>

@@ -68,23 +68,70 @@ INSERT INTO movies (
           '2026-01-04 00:00:00',
           '2026-01-04 00:00:00'
       );
--- ===============================
--- Movie - Genre Mapping
--- ===============================
 
 INSERT INTO movie_genres (movie_id, genre) VALUES
-                                               (1, 'SCI_FI'),
-                                               (1, 'DRAMA'),
-                                               (1, 'ADVENTURE'),
+(1, 'SCI_FI'),
+(1, 'ADVENTURE'),
 
-                                               (2, 'SCI_FI'),
-                                               (2, 'ACTION'),
-                                               (2, 'ADVENTURE'),
+(2, 'SCI_FI'),
+(2, 'ADVENTURE'),
 
-                                               (3, 'ACTION'),
-                                               (3, 'CRIME'),
-                                               (3, 'THRILLER'),
+(3, 'ACTION'),
+(3, 'CRIME'),
 
-                                               (4, 'ROMANCE'),
-                                               (4, 'DRAMA'),
-                                               (4, 'MUSIC');
+(4, 'ROMANCE'),
+(4, 'MUSIC');
+
+INSERT INTO movie_screening_types (movie_id, screening_type) VALUES
+(1, 'TWO_D'),
+(1, 'IMAX'),
+
+(2, 'TWO_D'),
+(2, 'FOUR_D'),
+
+(3, 'TWO_D'),
+(3, 'FOUR_D'),
+
+(4, 'TWO_D');
+
+
+INSERT INTO screens (
+    name,
+    screening_type,
+    total_seats,
+    is_operating,
+    created_at,
+    updated_at
+) VALUES
+      (
+          '1관',
+          'IMAX',
+          250,
+          true,
+          '2026-01-01 00:00:00',
+          '2026-01-01 00:00:00'
+      ),
+      (
+          '2관',
+          'FOUR_D',
+          180,
+          true,
+          '2026-01-01 00:00:00',
+          '2026-01-01 00:00:00'
+      ),
+      (
+          '3관',
+          'TWO_D',
+          200,
+          true,
+          '2026-01-01 00:00:00',
+          '2026-01-01 00:00:00'
+      ),
+      (
+          '4관',
+          'TWO_D',
+          120,
+          false,
+          '2026-01-01 00:00:00',
+          '2026-01-01 00:00:00'
+      );

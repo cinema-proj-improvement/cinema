@@ -18,7 +18,7 @@
             <a th:href="@{/admin/movies}" class="back-btn">←</a>
             <h1 th:text="${movie.title}"></h1>
             <span class="status-badge"
-                  th:text="${movie.status.description}">
+                  th:text="${movie.status.displayName}">
             </span>
         </div>
 
@@ -59,7 +59,7 @@
                         </div>
                         <div>
                             <label>관람등급</label>
-                            <p th:text="${movie.ageRating.description}"></p>
+                            <p th:text="${movie.ageRating.displayName}"></p>
                         </div>
                     </div>
 
