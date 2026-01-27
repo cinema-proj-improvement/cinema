@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: layout(
+        '영화 관리', 'movies', ~{::pageCss}, ~{::content}
+      )}">
+
+<!-- ===== 페이지별 CSS ===== -->
+<th:block th:fragment="pageCss">
+    <link rel="stylesheet" th:href="@{/css/admin/movie-list.css}">
+</th:block>
+
+<!-- ===== 페이지 컨텐츠 ===== -->
+<th:block th:fragment="content">
+
+    <!-- ===== Header ===== -->
+    <div class="page-header">
+        <h1>영화 관리</h1>
+        <a class="btn primary" th:href="@{/admin/movies/new}">+ 영화 등록</a>
+    </div>
+
+    <!-- ================= 검색 / 필터 ================= -->
+    <form id="filterForm"
+          method="get"
+          th:action="@{/admin/movies}"
+          th:object="${search}">
+
+        <!-- ===== 검색 / 정렬 / 초기화 ===== -->
+        <div class="search-row">
+            <input
+                    type="text"
+                    name="keyword"
+                    placeholder="영화 제목 검색"
+                    th:value="${search.keyword}"
+            >
+
+            <select name="sortType">
+                <option
+                        th:each="s : ${T(com.elice.cinema.domain.movie.dto.request.AdminMovieSortType).values()}"
+                        th:value="${s}"
+                        th:text="${s.displayName}">
+                </option>
+            </select>
+
+            <button class="btn outline" type="submit">적용</button>
+            <button class="btn ghost" type="button" id="resetBtn">초기화</button>
+        </div>
+
+        <!-- ===== 상영상태 ===== -->
+        <div class="filter-group">
+            <label>상영상태</label>
+            <div class="filter-options">
+                <label class="pill"
+                       th:each="s : ${T(com.elice.cinema.domain.movie.entity.MovieStatus).values()}"
+                       th:classappend="${search.statuses != null and search.statuses.contains(s)} ? 'selected' : ''">
+                    <input type="checkbox" th:field="*{statuses}" th:value="${s}">
+                    <span th:text="${s.displayName}"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- ===== 장르 ===== -->
+        <div class="filter-group">
+            <label>장르</label>
+            <div class="filter-options">
+                <label class="pill"
+                       th:each="g : ${T(com.elice.cinema.domain.movie.entity.Genre).values()}"
+                       th:classappend="${search.genres != null and search.genres.contains(g)} ? 'selected' : ''">
+                    <input type="checkbox" th:field="*{genres}" th:value="${g}">
+                    <span th:text="${g.displayName}"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- ===== 관람등급 ===== -->
+        <div class="filter-group">
+            <label>관람등급</label>
+            <div class="filter-options">
+                <label class="pill"
+                       th:each="a : ${T(com.elice.cinema.domain.movie.entity.AgeRating).values()}"
+                       th:classappend="${search.ageRatings != null and search.ageRatings.contains(a)} ? 'selected' : ''">
+                    <input type="checkbox" th:field="*{ageRatings}" th:value="${a}">
+                    <span th:text="${a.displayName}"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- ===== 개봉일 기간 ===== -->
+        <div class="filter-group">
+            <label>기간</label>
+            <div>
+                <input type="date" th:field="*{releaseStartDate}">
+                <span>~</span>
+                <input type="date" th:field="*{releaseEndDate}">
+            </div>
+        </div>
+    </form>
+
+    <!-- ================= 영화 목록 ================= -->
+    <table class="admin-table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>제목</th>
+            <th>장르</th>
+            <th>상태</th>
+            <th>관람등급</th>
+            <th>개봉일</th>
+            <th>종료일</th>
+            <th>평점</th>
+            <th>예매율</th>
+            <th>상세</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="movie : ${moviesPage.content}">
+            <td th:text="${movie.id}"></td>
+            <td th:text="${movie.title}"></td>
+            <td th:text="${#strings.listJoin(movie.genres.![displayName], ', ')}"></td>
+            <td th:text="${movie.status.displayName}"></td>
+            <td th:text="${movie.ageRating.displayName}"></td>
+            <td th:text="${movie.releaseDate}"></td>
+            <td th:text="${movie.endDate}"></td>
+            <td th:text="${movie.avgScore != null ? movie.avgScore : '-'}"></td>
+            <td th:text="${movie.advanceReservationRate != null ? movie.advanceReservationRate : '-'}"></td>
+            <td>
+                <a th:href="@{/admin/movies/{id}(id=${movie.id})}">상세</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- ================= 페이지네이션 ================= -->
+    <div class="pagination">
+        <a th:if="${moviesPage.hasPrevious()}"
+           th:href="@{/admin/movies(page=${moviesPage.number - 1})}">
+            이전
+        </a>
+
+        <a th:each="i : ${#numbers.sequence(0, moviesPage.totalPages - 1)}"
+           th:text="${i + 1}"
+           th:href="@{/admin/movies(page=${i})}"
+           th:classappend="${moviesPage.number == i} ? 'active' : ''">
+        </a>
+
+        <a th:if="${moviesPage.hasNext()}"
+           th:href="@{/admin/movies(page=${moviesPage.number + 1})}">
+            다음
+        </a>
+    </div>
+
+    <script th:src="@{/js/admin/movie-list.js}"></script>
+
+</th:block>
+</html>

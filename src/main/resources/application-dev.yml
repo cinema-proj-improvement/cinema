@@ -7,8 +7,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop # 운영환경은 validate
-    show_sql: true
+      ddl-auto: create-drop # 운영은 validate 권장
+    show-sql: true
 
 file:
   storage:
@@ -19,5 +19,4 @@ file:
 
 logging:
   level:
-    root: INFO
-    com.example.elicesecondproject: DEBUG
+    com.example.cinema: DEBUG

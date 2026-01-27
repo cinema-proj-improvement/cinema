@@ -1,0 +1,258 @@
+/* =========================================================
+   Screen List (상영관 관리) - 완전 새 버전
+   - 이 페이지 전용 클래스(scr-*)만 사용
+   - admin-layout + admin-common.css 위에서 안정적으로 동작
+========================================================= */
+
+.scr-head{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:18px;
+}
+
+.scr-back{
+    width:34px;
+    height:34px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:10px;
+    text-decoration:none;
+    font-size:22px;
+    font-weight:900;
+    color:#111827;
+    border:1px solid #e5e7eb;
+    background:#fff;
+}
+
+.scr-title-wrap{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.scr-title{
+    margin:0;
+    font-size:32px;
+    font-weight:900;
+    letter-spacing:-0.03em;
+    color:#0f172a;
+}
+
+.scr-sub{
+    margin:0;
+    font-size:14px;
+    color:#64748b;
+}
+
+.scr-btn{
+    margin-left:auto;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:12px 14px;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:900;
+    border:1px solid #e5e7eb;
+    background:#fff;
+    color:#0f172a;
+}
+
+.scr-btn--primary{
+    border-color:transparent;
+    background:#2563eb;
+    color:#fff;
+}
+
+/* 카드 */
+.scr-card{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    padding:16px;
+    margin-top:14px;
+}
+
+/* 필터 */
+.scr-filter{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+}
+
+.scr-filter__label{
+    font-weight:900;
+    color:#0f172a;
+}
+
+.scr-seg{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.scr-seg__btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    height:38px;
+    padding:0 14px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+    color:#0f172a;
+    text-decoration:none;
+    font-weight:900;
+}
+
+.scr-seg__btn.is-active{
+    background:#2563eb;
+    border-color:#2563eb;
+    color:#fff;
+}
+
+/* 테이블 */
+.scr-table-wrap{ overflow:auto; }
+
+.scr-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:760px;
+}
+
+.scr-table thead th{
+    text-align:left;
+    padding:12px 10px;
+    border-bottom:1px solid #e5e7eb;
+    font-size:13px;
+    color:#475569;
+    font-weight:900;
+}
+
+.scr-table tbody td{
+    padding:14px 10px;
+    border-bottom:1px solid #eef2f7;
+    font-size:15px;
+    color:#0f172a;
+    vertical-align:middle;
+}
+
+.scr-empty{
+    text-align:center;
+    color:#64748b;
+    padding:24px 10px;
+}
+
+.is-right{ text-align:right; }
+
+.scr-name{ font-weight:900; }
+.scr-muted{ color:#334155; font-weight:900; }
+
+/* 상태 배지 */
+.scr-badge{
+    display:inline-flex;
+    align-items:center;
+    height:28px;
+    padding:0 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:13px;
+    border:1px solid transparent;
+}
+
+.scr-badge--on{
+    background:#eff6ff;
+    border-color:#bfdbfe;
+    color:#1d4ed8;
+}
+
+.scr-badge--off{
+    background:#f8fafc;
+    border-color:#e2e8f0;
+    color:#64748b;
+}
+
+/* 상영 타입 칩 */
+.scr-chip{
+    display:inline-flex;
+    align-items:center;
+    height:30px;
+    padding:0 12px;
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+    font-weight:900;
+    font-size:13px;
+    color:#0f172a;
+}
+
+/* 화살표 */
+.scr-arrow{
+    width:34px;
+    height:34px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+    text-decoration:none;
+    font-size:20px;
+    font-weight:900;
+    color:#334155;
+}
+
+/* 페이지네이션 */
+.scr-pager{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    margin-top:16px;
+}
+
+.scr-pager__btn{
+    height:38px;
+    padding:0 14px;
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+    color:#0f172a;
+    text-decoration:none;
+    font-weight:900;
+}
+
+.scr-pager__btn.is-disabled{
+    opacity:0.45;
+    pointer-events:none;
+}
+
+.scr-pager__current{
+    min-width:38px;
+    height:38px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:12px;
+    background:#2563eb;
+    color:#fff;
+    font-weight:900;
+    border:1px solid #2563eb;
+}
+
+/* 반응형 */
+@media (max-width: 900px){
+    .scr-head{
+        flex-wrap:wrap;
+    }
+    .scr-btn{
+        margin-left:0;
+    }
+    .scr-filter{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+}

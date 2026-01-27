@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",                 // 메인 페이지
-                                "/auth/**",       // 로그인 페이지
+                                "/login",       // 로그인 페이지
                                 "/h2-console/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -48,19 +48,19 @@ public class SecurityConfig {
 
                 // 세션 기반 로그인(FormLogin)
                 .formLogin(form -> form
-                        .loginPage("/auth/login")          // GET 로그인 페이지
-                        .loginProcessingUrl("/auth/login")   // POST 로그인 처리
+                        .loginPage("/login")          // GET 로그인 페이지
+                        .loginProcessingUrl("/login")   // POST 로그인 처리
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .defaultSuccessUrl("/", true)
-                        .failureUrl("/auth/login?error=true")
+                        .failureUrl("/login?error=true")
                         .permitAll()
                 )
 
                 // 로그아웃 설정
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/auth/login")
+                        .logoutSuccessUrl("/")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                 );
