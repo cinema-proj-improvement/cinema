@@ -37,7 +37,9 @@
 
                 <!-- Poster -->
                 <div class="poster-area">
-                    <img th:src="${movie.thumbnailImageUrl}"
+                    <img th:src="${movie.thumbnailImageUrl != null
+                            ? movie.thumbnailImageUrl
+                            : '/images/default-movie.png'}"
                          alt="포스터">
                 </div>
 
@@ -74,16 +76,18 @@
                         </div>
                     </div>
 
-                    <!-- Screening Type (추후 연동) -->
-                    <div class="detail-section">
-                        <p class="section-label">상영 타입</p>
+                    <!-- Screening Type (연동) -->
+                    <div class="pill-section">
+                        <label>상영 타입</label>
                         <div class="pill-list">
-                            <span class="pill pill-blue">2D</span>
-                            <span class="pill pill-blue">IMAX</span>
+                            <span class="pill pill-blue"
+                                  th:each="t : ${movie.screeningTypes}"
+                                  th:text="${t.displayName}">
+                            </span>
                         </div>
                     </div>
 
-                    <!-- Stats (추후 연동) -->
+                    <!-- Stats (하드코딩) -->
                     <div class="stats-grid">
                         <div>
                             <p class="stat-label">평점</p>
@@ -104,13 +108,17 @@
                 <p th:text="${movie.synopsis}"></p>
             </section>
 
-            <!-- Images -->
+            <!-- Extra Images (비활성 / UI만 유지) -->
             <section class="image-section">
-                <h2>영화 이미지</h2>
+                <h2>추가 이미지</h2>
 
-                <div class="image-placeholder">
-                    <p>아직 등록된 이미지가 없습니다.</p>
-                    <span class="hint">※ 이미지 관리 기능은 추후 추가 예정입니다.</span>
+                <div class="image-grid">
+                    <!--
+                    추후 운영 연동 시 활성화
+                    <img th:each="img : ${movie.extraImageUrls}"
+                         th:src="${img}"
+                         alt="추가 이미지">
+                    -->
                 </div>
             </section>
 

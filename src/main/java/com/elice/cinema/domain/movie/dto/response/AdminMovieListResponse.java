@@ -1,5 +1,6 @@
 package com.elice.cinema.domain.movie.dto.response;
 
+import com.elice.cinema.domain.common.ScreeningType;
 import com.elice.cinema.domain.movie.entity.AgeRating;
 import com.elice.cinema.domain.movie.entity.Genre;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
@@ -24,5 +25,6 @@ public class AdminMovieListResponse {
     private AgeRating ageRating;
     private Double avgScore;
     private Double advanceReservationRate;
+    private Set<ScreeningType> screeningTypes;
     private String thumbnailImageUrl;
 }

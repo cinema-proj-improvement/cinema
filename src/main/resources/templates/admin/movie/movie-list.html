@@ -99,7 +99,8 @@
     <table class="admin-table">
         <thead>
         <tr>
-            <th>ID</th>
+            <th>번호</th>
+            <th>포스터</th>
             <th>제목</th>
             <th>장르</th>
             <th>상태</th>
@@ -113,8 +114,17 @@
         </thead>
 
         <tbody>
-        <tr th:each="movie : ${moviesPage.content}">
+        <tr th:each="movie, stat : ${moviesPage.content}">
             <td th:text="${movie.id}"></td>
+            <!-- 포스터 -->
+            <td>
+                <img th:src="${movie.thumbnailImageUrl != null
+                        ? movie.thumbnailImageUrl
+                        : '/images/default-movie.png'}"
+                     class="poster-img"
+                     alt="포스터">
+            </td>
+            <!-- 제목 -->
             <td th:text="${movie.title}"></td>
             <td th:text="${#strings.listJoin(movie.genres.![displayName], ', ')}"></td>
             <td th:text="${movie.status.displayName}"></td>
