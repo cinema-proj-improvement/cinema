@@ -1,9 +1,9 @@
 package com.elice.cinema.domain.movie.service;
 
-import com.elice.cinema.domain.movie.dto.response.MovieResponse;
+import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
+import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
 import com.elice.cinema.domain.movie.entity.Movie;
-import com.elice.cinema.domain.movie.entity.MovieStatus;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
 import com.elice.cinema.global.error.ErrorCode;
@@ -22,28 +22,16 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final MovieMapper movieMapper;
 
-    // 관리자 영화 목록 조회 (페이지네이션 + 정렬)
-    public Page<MovieResponse> getMovies(Pageable pageable) {
-        return movieRepository.findAll(pageable)
-                .map(movieMapper::toResponse);
+    // 관리자 영화 목록 조회 (검색조건 + 페이지네이션 + 정렬)
+    public Page<AdminMovieListResponse> getAdminMovieListPage(AdminMovieSearchRequest request, Pageable pageable) {
+        return movieRepository.findAdminMovieList(request, pageable)
+                .map(movieMapper::toAdminListResponse);
     }
 
-    // 상태별 영화 목록 조회 (페이지네이션 + 정렬)
-    public Page<MovieResponse> getMovies(MovieStatus status, Pageable pageable) {
-        return movieRepository.findByStatus(status, pageable)
-                .map(movieMapper::toResponse);
-    }
-
-    // 영화 검색 조회 (페이지네이션 + 정렬)
-    public Page<MovieResponse> searchMovies(String keyword, Pageable pageable) {
-        return movieRepository.findByTitleContainingIgnoreCase(keyword, pageable)
-                .map(movieMapper::toResponse);
-    }
-
-    // 상세 조회
-    public MovieResponse getMovie(Long movieId) {
+    // 관리자 상세 조회
+    public AdminMovieListResponse getAdminMovieDetail(Long movieId) {
         Movie movie = findMovieById(movieId);
-        return movieMapper.toResponse(movie);
+        return movieMapper.toAdminListResponse(movie);
     }
 
     // 업데이트 폼 조회
@@ -58,6 +46,5 @@ public class MovieService {
         return movieRepository.findById(movieId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_NOT_FOUND));
     }
-
 
 }
