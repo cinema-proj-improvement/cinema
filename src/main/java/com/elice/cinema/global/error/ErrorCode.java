@@ -7,12 +7,13 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     // 400 Bad Request
     MOVIE_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "MV01", "상영 종료일은 개봉일 이후여야 합니다."),
+    MOVIE_THUMBNAIL_REQUIRED(HttpStatus.BAD_REQUEST, "M003", "영화엔 포스터 이미지가 필수입니다."),
     // 401 Unauthorized
 
     // 403 Forbidden
 
     // 404 Not Found
-
+    MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "M001", "영화를 찾을 수 없습니다."),
     // 409 Conflict
 
     // 500 Internal Server Error

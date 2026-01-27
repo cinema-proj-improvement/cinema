@@ -1,16 +1,18 @@
 package com.elice.cinema.domain.movie.entity;
 
-import com.elice.cinema.global.entity.BaseEntity;
+import com.elice.cinema.domain.common.ScreeningType;
+import com.elice.cinema.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "movies")  // TODO: index 설정 필요. notion page "구현관련" -> "Movie Table Index" 확인
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Getter @Builder
+@Getter
 public class Movie extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +23,7 @@ public class Movie extends BaseEntity {
     private String title;
 
     @Column(name = "running_time_minutes", nullable = false)
-    private int runningTimeMinutes;
+    private Integer runningTimeMinutes;
 
     @Column(name = "release_date", nullable = false)
     private LocalDate releaseDate;
@@ -37,39 +39,64 @@ public class Movie extends BaseEntity {
     @Column(name = "synopsis", nullable = false)
     private String synopsis;
 
-    @Column(name = "thumbnail_image_url", nullable = false, length = 500)
-    private String thumbnailImageUrl;  // TODO: 데이터 정합성에 유의! (MovieImage와 중복 데이터) -> 썸네일 변경 로직은 한 위치에서만 + 둘 다 갱신
+    @ElementCollection(fetch = FetchType.LAZY)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "genre", nullable = false, length = 30)
+    private Set<Genre> genres = new HashSet<>();
 
-    @Column(name = "avg_score")
+    @ElementCollection(fetch = FetchType.LAZY)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "screening_type", nullable = false, length = 30)
+    private Set<ScreeningType> screeningTypes =  new HashSet<>();
+
+    @Column(name = "avg_score", nullable = false)
     private Double avgScore;
 
-    @Column(name = "advance_reservation_rate")
+    @Column(name = "advance_reservation_rate", nullable = false)
     private Double advanceReservationRate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private MovieStatus status;
 
-    // Movie 객체를 생성 시 사용하는 정적 팩토리 메서드 (params는 MovieCreateReq에서 들어올 값들입니다. 서비스 메서드에서 이 메서드를 호출하여 생성합니다)
-    public static Movie of(
-            String title,
-            int runningTimeMinutes,
-            LocalDate releaseDate,
-            LocalDate endDate,
-            AgeRating ageRating,
-            String synopsis,
-            String thumbnailImageUrl) {
-        return Movie.builder()  // TODO: private 생성자로 따로 빼서 builder 대신 해당 생성자 호출하는 게 나을지?
-                .title(title)
-                .runningTimeMinutes(runningTimeMinutes)
-                .releaseDate(releaseDate)
-                .endDate(endDate)
-                .ageRating(ageRating)
-                .synopsis(synopsis)
-                .thumbnailImageUrl(thumbnailImageUrl)
-                .avgScore(0.0)
-                .advanceReservationRate(0.0)
-                .status(MovieStatus.UPCOMING)
-                .build();
+    public static Movie createUpcomming(String title,
+                           int runningTimeMinutes,
+                           LocalDate releaseDate,
+                           LocalDate endDate,
+                           AgeRating ageRating,
+                           String synopsis,
+                           Set<Genre> genres,
+                           Set<ScreeningType> screeningTypes) {  // 썸네일 이미지 주소는 객체 생성 시 포함되지 않습니다.
+        return new Movie(title,
+                runningTimeMinutes,
+                releaseDate,
+                endDate,
+                ageRating,
+                synopsis,
+                genres,
+                screeningTypes
+        );
+    }
+
+    private Movie(String title,
+                  int runningTimeMinutes,
+                  LocalDate releaseDate,
+                  LocalDate endDate,
+                  AgeRating ageRating,
+                  String synopsis,
+                  Set<Genre> genres,
+                  Set<ScreeningType> screeningTypes) {
+        this.title = title;
+        this.runningTimeMinutes = runningTimeMinutes;
+        this.releaseDate = releaseDate;
+        this.endDate = endDate;
+        this.ageRating = ageRating;
+        this.synopsis = synopsis;
+        this.genres = new HashSet<>(genres);
+        this.screeningTypes = new HashSet<>(screeningTypes);
+        this.avgScore = 0.0;
+        this.advanceReservationRate = 0.0;
+        this.status = MovieStatus.UPCOMING;
     }
 }
+// FIXME: 이미지 처리 추가한 것에 관해 Entity 구조 수정 필요한지 (thumbnailImageUrl 필드 없애야 한다든가... 아님 저기 초기화하는 방법? 어디서?)

@@ -1,11 +1,32 @@
 package com.elice.cinema.global.config;
 
+import com.elice.cinema.global.config.properties.FileProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
+@RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
+    private final FileProperties props;
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        if (!"local".equalsIgnoreCase(props.getStorage().getType())) {
+            return;
+        }
+
+        String basePath = props.getUpload().getBasePath();
+        String urlPrefix = props.getUpload().getUrlPrefix();
+
+        String location = "file:" + (basePath.endsWith("/") ? basePath : basePath + "/");
+
+        registry.addResourceHandler(urlPrefix + "/**")
+                .addResourceLocations(location);
+    }
+
     @Override
     public void addArgumentResolvers(java.util.List<org.springframework.web.method.support.HandlerMethodArgumentResolver> resolvers) {
         for (var resolver : resolvers) {

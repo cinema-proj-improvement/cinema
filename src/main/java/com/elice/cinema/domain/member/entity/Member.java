@@ -1,6 +1,6 @@
 package com.elice.cinema.domain.member.entity;
 
-import com.elice.cinema.global.entity.BaseEntity;
+import com.elice.cinema.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

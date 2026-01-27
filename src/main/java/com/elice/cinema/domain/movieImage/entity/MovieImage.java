@@ -1,5 +1,6 @@
-package com.elice.cinema.domain.movie.entity;
+package com.elice.cinema.domain.movieImage.entity;
 
+import com.elice.cinema.domain.movie.entity.Movie;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -39,8 +40,26 @@ public class MovieImage {  // TODO: Movie에 양방향 연관관계 맺어주지
     private String imageUrl;
 
     @Column(name = "display_order", nullable = false)
-    private Integer displayOrder;
+    private Integer displayOrder;  // 0: 썸네일, 1...n: 추가 이미지
 
-    @Column(name = "is_thumbnail",  nullable = false)
-    private boolean isThumbnail;
+    private MovieImage(Movie movie, String imageUrl, int displayOrder) {
+        this.movie = movie;
+        this.imageUrl = imageUrl;
+        this.displayOrder = displayOrder;
+    }
+
+    public static MovieImage thumbnail(Movie movie, String imageUrl) {
+        return new MovieImage(movie, imageUrl, 0);
+    }
+
+    public static MovieImage extra(Movie movie, String imageUrl, int displayOrder) {
+        if (displayOrder <= 0) {
+            throw new IllegalArgumentException("추가 이미지 displayOrder는 1 이상이어야 합니다.");  // FIXME: 여긴 이렇게 예외 던져서 서버 내려가게 하는 게 맞나?
+        }
+        return new MovieImage(movie, imageUrl, displayOrder);
+    }
+
+    public boolean isThumbnail() {
+        return this.displayOrder != null && this.displayOrder == 0;
+    }
 }

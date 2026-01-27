@@ -11,8 +11,11 @@ spring:
     show_sql: true
 
 file:
+  storage:
+    type: local
   upload:
     base-path: /home/gitlab-runner/uploads
+    url-prefix: /uploads
 
 logging:
   level:
