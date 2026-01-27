@@ -13,6 +13,7 @@ public enum ErrorCode {
 
     // 404 Not Found
     MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "M001", "영화를 찾을 수 없습니다."),
+    SCREEN_NOT_FOUND(HttpStatus.NOT_FOUND, "SC001", "상영관을 찾을 수 없습니다."),
 
     // 409 Conflict
 

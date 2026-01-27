@@ -231,3 +231,66 @@ input[type="date"] {
         grid-template-columns: 1fr;
     }
 }
+
+/* =========================
+   3.5) Buttons (공통)
+========================= */
+.btn,
+a.btn,
+button.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    height: 36px;
+    padding: 0 14px;
+
+    border-radius: 12px;
+    border: 1px solid transparent;
+
+    background: #fff;
+    color: #111827;
+
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+
+    cursor: pointer;
+    text-decoration: none;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.btn:hover { filter: brightness(0.98); }
+.btn:active { transform: translateY(1px); }
+
+/* primary */
+.btn.primary {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+/* outline */
+.btn.outline {
+    background: #fff;
+    border-color: #e5e7eb;
+    color: #111827;
+}
+
+/* danger */
+.btn.outline.danger,
+.btn.danger {
+    border-color: #fecaca;
+    color: #b91c1c;
+    background: #fff;
+}
+
+/* disabled */
+.btn:disabled,
+.btn.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+}

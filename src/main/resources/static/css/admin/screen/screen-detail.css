@@ -1,0 +1,363 @@
+/* =========================
+   Screen Detail - screen-detail.css
+   (현재 screen-detail.html 클래스에 정확히 맞춤)
+========================= */
+
+/* ✅ "원래 크기" 복구: 페이지 내용 중앙 정렬 + 적당한 폭 */
+.page-head,
+.chip-row,
+.summary-grid,
+.seat-card,
+.seat-map-card {
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 상단 여백 리듬 */
+.page-head { margin-top: 4px; margin-bottom: 18px; }
+.chip-row  { margin-bottom: 18px; }
+.summary-grid { margin-bottom: 18px; }
+
+/* =========================
+   1) 상단 헤더
+========================= */
+.page-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+}
+
+.back-link{
+    width:40px;
+    height:40px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:12px;
+    border:1px solid #eef0f4;
+    background:#fff;
+    color:#111827;
+    text-decoration:none;
+    font-size:22px;
+    font-weight:900;
+}
+
+.head-title-wrap{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex:1;
+    min-width:0;
+}
+
+.page-title{
+    margin:0;
+    font-size:34px;
+    font-weight:900;
+    letter-spacing:-0.6px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.badge{
+    font-size:13px;
+    padding:8px 12px;
+    border-radius:999px;
+    border:1px solid #e7eaf2;
+    background:#f3f4f6;
+    color:#374151;
+    font-weight:800;
+    white-space:nowrap;
+}
+
+.badge-on{
+    background:#e8f1ff;
+    border-color:#cfe1ff;
+    color:#2563eb;
+}
+
+.badge-off{
+    background:#fff1f2;
+    border-color:#fecdd3;
+    color:#be123c;
+}
+
+.head-action{
+    height:48px;
+    padding:0 18px;
+    border-radius:16px;
+    font-size:15px;
+    font-weight:900;
+    white-space:nowrap;
+}
+
+/* =========================
+   2) 상영 타입 칩
+========================= */
+.chip-row{
+    display:flex;
+    gap:10px;
+}
+
+.chip{
+    display:inline-flex;
+    align-items:center;
+    padding:10px 14px;
+    border-radius:999px;
+    border:1px solid #e7eaf2;
+    background:#f8fafc;
+    font-weight:900;
+    color:#334155;
+}
+
+/* =========================
+   3) 요약 카드(2개)
+========================= */
+.summary-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:16px;
+}
+
+.summary-card{
+    background:#fff;
+    border:1px solid #eef0f4;
+    border-radius:18px;
+    padding:20px 20px;
+    box-shadow: 0 8px 24px rgba(16,24,40,0.04);
+}
+
+.summary-card-blue{
+    background:#eef6ff;
+    border-color:#dbeafe;
+}
+
+.summary-label{
+    font-size:14px;
+    color:#6b7280;
+    font-weight:800;
+    margin-bottom:12px;
+}
+
+.summary-value{
+    font-size:34px;
+    font-weight:900;
+    letter-spacing:-0.4px;
+    color:#111827;
+}
+
+.summary-card-blue .summary-value{
+    color:#2563eb;
+}
+
+/* =========================
+   4) 좌석 관리 카드(툴바 + 안내)
+========================= */
+.seat-card{
+    background:#fff;
+    border:1px solid #eef0f4;
+    border-radius:18px;
+    padding:16px;
+    box-shadow: 0 8px 24px rgba(16,24,40,0.04);
+    margin-bottom:18px;
+}
+
+.seat-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+}
+
+.toolbar-left{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.toolbar-right{
+    display:flex;
+    align-items:center;
+}
+
+.seat-count{
+    font-size:14px;
+    color:#6b7280;
+    font-weight:700;
+}
+
+.count-strong{
+    color:#2563eb;
+    font-weight:900;
+}
+
+/* 안내 박스 */
+.seat-notice{
+    border-radius:14px;
+    border:1px solid #fde68a;
+    background:#fffbeb;
+    padding:14px 14px;
+}
+
+.notice-title{
+    font-weight:900;
+    color:#b45309;
+    margin-bottom:8px;
+}
+
+.notice-list{
+    margin:0;
+    padding-left:18px;
+    color:#92400e;
+    line-height:1.7;
+    font-size:14px;
+}
+
+/* =========================
+   5) 좌석 맵 카드
+========================= */
+.seat-map-card{
+    background:#fff;
+    border:1px solid #eef0f4;
+    border-radius:18px;
+    padding:18px;
+    box-shadow: 0 8px 24px rgba(16,24,40,0.04);
+}
+
+.screen-bar{
+    height:8px;
+    border-radius:999px;
+    background:#111827;
+    opacity:0.7;
+    margin: 2px auto 10px;
+    width: 60%;
+}
+
+.screen-text{
+    text-align:center;
+    font-weight:900;
+    color:#6b7280;
+    letter-spacing:1px;
+    margin-bottom:16px;
+}
+
+/* 좌석 그리드 */
+.seat-grid{
+    display: grid;
+    gap: 18px;
+
+    /* 좌표로 배치될 때 부족한 행/열은 "암시적 트랙"으로 자동 생성됨 */
+    grid-auto-columns: 64px;
+    grid-auto-rows: 64px;
+
+    /* 좌석 덩어리 자체 폭만큼만 차지하고 가운데로 */
+    width: max-content;
+    margin: 0 auto;
+
+    /* 넘치면 스크롤 */
+    max-width: 100%;
+    overflow: auto;
+
+    padding: 18px 8px 8px;
+}
+
+/* 좌석 버튼 */
+.seat{
+    width:64px;
+    height:64px;
+    border:none;
+    border-radius:16px;
+    background:#2f7df6;
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 10px 18px rgba(47,125,246,0.18);
+    cursor:pointer;
+    transition: transform 0.08s ease, filter 0.08s ease;
+}
+
+.seat:hover{
+    transform: translateY(-1px);
+    filter: brightness(0.98);
+}
+
+.seat-row{
+    font-size:12px;
+    font-weight:900;
+    opacity:0.95;
+    line-height:1;
+}
+
+.seat-col{
+    font-size:16px;
+    font-weight:900;
+    line-height:1.1;
+}
+
+.seat-disabled{
+    background:#cbd5e1;
+    box-shadow:none;
+    cursor:not-allowed;
+}
+
+.seat-selected{
+    outline: 3px solid rgba(255,255,255,0.85);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.35);
+}
+
+/* 범례 */
+.legend{
+    display:flex;
+    gap:14px;
+    justify-content:center;
+    margin-top:16px;
+    color:#6b7280;
+    font-size:13px;
+}
+
+.legend-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:700;
+}
+
+.legend-dot{
+    width:10px;
+    height:10px;
+    border-radius:999px;
+    background:#2f7df6;
+}
+
+.legend-dot-disabled{
+    background:#cbd5e1;
+}
+
+/* =========================
+   6) 반응형
+========================= */
+@media (max-width: 900px){
+    .page-title{ font-size:28px; }
+    .summary-grid{ grid-template-columns: 1fr; }
+    .head-action{ height:42px; padding:0 14px; }
+}
+
+
+.seat-map-card{
+    display:flex;
+    flex-direction:column;
+    align-items:center;   /* 🔥 핵심: 카드 내부 콘텐츠 중앙축 */
+}
+
+.seat-grid{
+    width: fit-content;   /* 🔥 좌석 덩어리 자체를 콘텐츠 너비로 */
+    margin: 0 auto;       /* 🔥 덩어리 중앙 배치 */
+    overflow:auto;
+    max-width: 100%;      /* 모바일에서 넘침 방지 */
+}

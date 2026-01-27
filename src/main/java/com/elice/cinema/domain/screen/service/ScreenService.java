@@ -1,8 +1,13 @@
 package com.elice.cinema.domain.screen.service;
 
+import com.elice.cinema.domain.screen.dto.response.ScreenDetailResponse;
 import com.elice.cinema.domain.screen.dto.response.ScreenListResponse;
+import com.elice.cinema.domain.screen.entity.Screen;
 import com.elice.cinema.domain.screen.mapper.ScreenMapper;
 import com.elice.cinema.domain.screen.repository.ScreenRepository;
+import com.elice.cinema.domain.screen.repository.SeatRepository;
+import com.elice.cinema.global.error.ErrorCode;
+import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class ScreenService {
     private final ScreenRepository screenRepository;
+    private final SeatRepository seatRepository;
     private final ScreenMapper screenMapper;
 
     public Page<ScreenListResponse> getScreens(Boolean operating, Pageable pageable) {
@@ -25,4 +31,17 @@ public class ScreenService {
         return screenRepository.findByOperating(operating, pageable)
                 .map(screenMapper::toScreenListResponse);
     }
+
+    public ScreenDetailResponse getScreenDetail(Long screenId) {
+        Screen screen = screenRepository.findById(screenId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SCREEN_NOT_FOUND));
+
+        return screenMapper.toScreenDetailResponse(screen);
+    }
+
+    public int getAvailableSeatCount(Long screenId) {
+        // active=true 인 좌석 수 = 사용 가능 좌석 수
+        return (int) seatRepository.countByScreenIdAndActiveTrue(screenId);
+    }
+
 }

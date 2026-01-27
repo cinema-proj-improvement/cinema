@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: layout(
+        '상영관 상세', 'screens', ~{::pageCss}, ~{::content}
+      )}">
+
+<th:block th:fragment="pageCss">
+  <link rel="stylesheet" th:href="@{/css/admin/screen/screen-detail.css}">
+</th:block>
+
+<th:block th:fragment="content">
+
+  <!-- 상단 헤더 -->
+  <div class="page-head">
+    <a class="back-link" th:href="@{/admin/screens}">‹</a>
+
+    <div class="head-title-wrap">
+      <h1 class="page-title" th:text="${screen.name}">1관</h1>
+
+      <span class="badge"
+            th:classappend="${screen.operating} ? ' badge-on' : ' badge-off'"
+            th:text="${screen.operating} ? '운영중' : '미운영'">
+                운영중
+            </span>
+    </div>
+
+    <a class="btn primary head-action"
+       th:href="@{/admin/screens/{screenId}/edit(screenId=${screenId})}">
+      ✎ 상영관 수정
+    </a>
+  </div>
+
+  <!-- 상영 타입 칩 -->
+  <div class="chip-row">
+        <span class="chip"
+              th:text="${screen.screeningType != null ? screen.screeningType.displayName : '상영 타입'}">
+            2D
+        </span>
+    <!-- 필요하면 추후: List<ScreeningType>로 바뀔 때 칩 반복 렌더링 -->
+  </div>
+
+  <!-- 요약 카드 -->
+  <section class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-label">전체 좌석</div>
+      <div class="summary-value" th:text="${screen.totalSeats} + '석'">120석</div>
+    </div>
+
+    <div class="summary-card summary-card-blue">
+      <div class="summary-label">사용 가능</div>
+      <!-- 서버에서 계산해서 내려주면 best: availableSeats -->
+      <div class="summary-value" th:text="${availableSeats} + '석'">120석</div>
+    </div>
+  </section>
+
+  <!-- 좌석 관리 툴바 -->
+  <section class="seat-card">
+    <div class="seat-toolbar">
+      <div class="toolbar-left">
+        <button class="btn outline" type="button">＋ 좌석 추가</button>
+        <button class="btn outline" type="button">✎ 좌석 수정</button>
+        <button class="btn outline danger" type="button">🗑 좌석 삭제</button>
+      </div>
+
+      <div class="toolbar-right">
+        <div class="seat-count">
+          좌석 수
+          <strong class="count-strong" th:text="${availableSeats}">120</strong>
+          /
+          <span th:text="${screen.totalSeats}">120</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="seat-notice">
+      <div class="notice-title">좌석 관리 제약 안내</div>
+      <ul class="notice-list">
+        <li>좌석 추가/삭제/배치 변경은 <strong>상영관 미운영 상태</strong>에서만 가능합니다.</li>
+        <li>좌석 사용 가능 여부는 <strong>운영 중</strong>에도 변경할 수 있습니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 좌석 배치 -->
+  <section class="seat-map-card">
+    <div class="screen-bar"></div>
+    <div class="screen-text">SCREEN</div>
+
+    <div class="seat-grid">
+      <button type="button"
+              class="seat"
+              th:each="seat : ${screen.seats}"
+              th:classappend="${seat.active} ? '' : ' seat-disabled'"
+              th:style="'grid-row:' + ${seat.rowNo} + '; grid-column:' + ${seat.colNo}"
+              th:title="${seat.seatCode}">
+        <span class="seat-row" th:text="${seat.seatCode.substring(0,1)}">A</span>
+        <span class="seat-col" th:text="${seat.seatCode.substring(1)}">1</span>
+      </button>
+    </div>
+
+    <!-- (선택) 범례 -->
+    <div class="legend">
+      <div class="legend-item">
+        <span class="legend-dot"></span>
+        사용 가능
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot legend-dot-disabled"></span>
+        사용 불가
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // (선택) 좌석 선택 UI 샘플: 필요 없으면 삭제해도 됨
+    document.addEventListener('click', (e) => {
+      const seat = e.target.closest('.seat');
+      if (!seat) return;
+
+      if (seat.classList.contains('seat-disabled')) return;
+
+      seat.classList.toggle('seat-selected');
+    });
+  </script>
+
+</th:block>
+</html>
