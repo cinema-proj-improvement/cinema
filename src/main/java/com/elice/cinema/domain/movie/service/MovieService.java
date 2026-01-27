@@ -1,49 +1,63 @@
 package com.elice.cinema.domain.movie.service;
 
-import com.elice.cinema.domain.movie.dto.response.MovieResponse;
+import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
+import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
+import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
 import com.elice.cinema.domain.movie.entity.Movie;
-import com.elice.cinema.domain.movie.entity.MovieStatus;
+import com.elice.cinema.domain.movie.event.MovieImagesStorageEvent;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class MovieService {
-
     private final MovieRepository movieRepository;
     private final MovieMapper movieMapper;
+    private final ApplicationEventPublisher publisher;
 
-    // 관리자 영화 목록 조회 (페이지네이션 + 정렬)
-    public Page<MovieResponse> getMovies(Pageable pageable) {
-        return movieRepository.findAll(pageable)
-                .map(movieMapper::toResponse);
+    // 관리자 - 영화 생성 요청을 받아 영화를 생성하고 DB에 저장하는 메서드
+    @Transactional
+    public Long createMovie(MovieCreateRequest req) {
+        validateDates(req.getReleaseDate(), req.getEndDate());
+
+        Movie movie = movieMapper.toEntity(req);
+        movieRepository.save(movie);
+
+        // TODO: transactional phase after-commit으로 설정해야 영화 등록 실패해서 rollback 되고 이미지 파일만 등록되는 것 방지 가능?
+        // TODO: 근데 위에처럼 처리하면 영화 생성될 때 thumbnailImageUrl 필드 못 넣어주지 않나? 이벤트 핸들러에서 처리..?
+        publisher.publishEvent(MovieImagesStorageEvent.of(
+                movie.getId(),
+                req.getThumbnailImage(),
+                req.getExtraImages()
+        ));
+
+        return movie.getId();
     }
 
-    // 상태별 영화 목록 조회 (페이지네이션 + 정렬)
-    public Page<MovieResponse> getMovies(MovieStatus status, Pageable pageable) {
-        return movieRepository.findByStatus(status, pageable)
-                .map(movieMapper::toResponse);
+    // 관리자 영화 목록 조회 (검색조건 + 페이지네이션 + 정렬)
+    public Page<AdminMovieListResponse> getAdminMovieListPage(AdminMovieSearchRequest request, Pageable pageable) {
+        return movieRepository.findAdminMovieList(request, pageable)
+                .map(movieMapper::toAdminListResponse);
     }
 
-    // 영화 검색 조회 (페이지네이션 + 정렬)
-    public Page<MovieResponse> searchMovies(String keyword, Pageable pageable) {
-        return movieRepository.findByTitleContainingIgnoreCase(keyword, pageable)
-                .map(movieMapper::toResponse);
-    }
-
-    // 상세 조회
-    public MovieResponse getMovie(Long movieId) {
+    // 관리자 상세 조회
+    public AdminMovieListResponse getAdminMovieDetail(Long movieId) {
         Movie movie = findMovieById(movieId);
-        return movieMapper.toResponse(movie);
+        return movieMapper.toAdminListResponse(movie);
     }
 
     // 업데이트 폼 조회
@@ -52,12 +66,17 @@ public class MovieService {
         return movieMapper.toMovieUpdateFormResponse(movie);
     }
 
-    /*                  공통 로직                   */
+
+
+    // === Helper Methods ===
+    private void validateDates(LocalDate releaseDate, LocalDate endDate) {  // FIXME: 이 로직을 DTO level에서 custom annotation으로?
+        if(!endDate.isAfter(releaseDate)) {  // 개봉일과 종료일이 동일한 케이스도 에러로 취급
+            throw new BusinessException(ErrorCode.MOVIE_INVALID_DATE_RANGE);
+        }
+    }
 
     private Movie findMovieById(Long movieId) {
         return movieRepository.findById(movieId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_NOT_FOUND));
     }
-
-
 }

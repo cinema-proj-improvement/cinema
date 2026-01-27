@@ -1,63 +1,76 @@
 package com.elice.cinema.domain.movie.controller;
 
+import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
+import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
+import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
-import com.elice.cinema.domain.movie.dto.response.MovieResponse;
-import com.elice.cinema.domain.movie.entity.MovieStatus;
 import com.elice.cinema.domain.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequiredArgsConstructor
 @RequestMapping("/admin/movies")
+@RequiredArgsConstructor
 public class AdminMovieController {
-
     private final MovieService movieService;
+
+    @GetMapping("/new")
+    public String showCreateMovieForm(Model model) {
+        model.addAttribute("form", new MovieCreateRequest());
+        return "admin/movie/movie-create";
+        // TODO: 관리자 영화 생성 화면 html 파일(movie-create.html) 작성 필요
+    }
+
+    // TODO: 폼 유효성 검사 실패 시 다시 폼으로 돌려보내는 기능 추가 필요? (BindingResult 사용?) (GPT 물어보기)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String createMovie(@Validated @ModelAttribute("form") MovieCreateRequest req,
+                              BindingResult bindingResult,
+                              Model model) {
+        if(bindingResult.hasErrors()) {
+            return "admin/movie/movie-create";
+        }
+
+        Long movieId = movieService.createMovie(req);
+        return "redirect:/admin/movies/" + movieId;  // TODO: 상세 조회 메서드 주소와 매핑 필요
+    }
 
     // 관리자 영화 목록 조회(검색 조건 + 페이징)
     @GetMapping
-    public String getMovies(
-            @RequestParam(required = false) MovieStatus status,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+    public String getAdminMovieListPage(
+            AdminMovieSearchRequest request,
+            Pageable pageable,
             Model model
+
     ) {
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(Sort.Direction.DESC, "createdAt")
-        );
+        Page<AdminMovieListResponse> moviesPage = movieService.getAdminMovieListPage(request, pageable);
 
-        Page<MovieResponse> moviesPage;
-
-        if (keyword != null && !keyword.isBlank()) {
-            moviesPage = movieService.searchMovies(keyword, pageable);
-        } else if (status != null) {
-            moviesPage = movieService.getMovies(status, pageable);
-        } else {
-            moviesPage = movieService.getMovies(pageable);
-        }
-
-        model.addAttribute("movies", moviesPage.getContent());
-        model.addAttribute("page", moviesPage);
+        model.addAttribute("moviesPage", moviesPage);
+        model.addAttribute("search", request);
 
         return "admin/movie/movie-list";
     }
 
     // 관리자 영화 상세 조회
     @GetMapping("/{movieId}")
-    public String getMovieDetail(
+    public String getAdminMovieDetail(
             @PathVariable Long movieId,
             Model model
     ) {
-        MovieResponse movie = movieService.getMovie(movieId);
+        AdminMovieListResponse movie = movieService.getAdminMovieDetail(movieId);
         model.addAttribute("movie", movie);
         return "admin/movie/movie-detail";
     }
@@ -78,5 +91,4 @@ public class AdminMovieController {
     ){
 
     }*/
-
 }

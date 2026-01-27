@@ -1,0 +1,242 @@
+/* =========================
+   Reset & Base
+========================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+}
+
+/* body는 admin-layout가 관리 */
+body {
+    color: #333;
+}
+
+/* =========================
+   Header (BOXED BUT FULL-LOOK)
+========================= */
+.detail-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    background-color: #fff;
+    border-bottom: 1px solid #e9ecef;
+
+    /* 네모박스처럼 보이게 */
+    padding: 16px 0;
+}
+
+/* 헤더 내부 기준선 */
+.detail-header {
+    display: flex;
+    justify-content: center;
+}
+
+.detail-header > .header-left,
+.detail-header > .edit-btn {
+    max-width: 1000px;
+}
+
+/* 왼쪽 영역 */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-right: auto;
+    padding-left: 20px;
+}
+
+/* 오른쪽 버튼 */
+.edit-btn {
+    margin-left: auto;
+    padding-right: 20px;
+
+    text-decoration: none;
+    background-color: #0d6efd;
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.edit-btn:hover {
+    background-color: #0b5ed7;
+}
+
+/* 헤더 텍스트 */
+.back-btn {
+    text-decoration: none;
+    font-size: 20px;
+    color: #495057;
+    padding: 4px;
+}
+
+.detail-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #212529;
+}
+
+.status-badge {
+    font-size: 12px;
+    background: #e7f1ff;
+    color: #0d6efd;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* =========================
+   Container & Card
+========================= */
+.detail-container {
+    max-width: 1200px;
+    margin: 32px auto;
+    padding: 0 20px;
+}
+
+.detail-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+}
+
+/* =========================
+   Detail Grid
+========================= */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid #f1f3f5;
+    align-items: flex-start;
+}
+
+.poster-area img {
+    width: 100%;
+    border-radius: 8px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* =========================
+   Info Section
+========================= */
+.info-area {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.info-grid label,
+.section-label,
+.stat-label {
+    display: block;
+    font-size: 13px;
+    color: #868e96;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.info-grid p {
+    font-size: 16px;
+    font-weight: 600;
+    color: #212529;
+}
+
+/* =========================
+   Pills
+========================= */
+.pill-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pill {
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: #f1f3f5;
+    color: #495057;
+    font-weight: 500;
+}
+
+.pill-blue {
+    background: #e7f1ff;
+    color: #0d6efd;
+}
+
+/* =========================
+   Stats
+========================= */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #212529;
+}
+
+/* =========================
+   Synopsis & Images
+========================= */
+.synopsis,
+.image-section {
+    margin-top: 40px;
+}
+
+.synopsis h2,
+.image-section h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #212529;
+}
+
+.synopsis p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #495057;
+}
+
+/* =========================
+   Image Placeholder
+========================= */
+.image-placeholder {
+    padding: 40px;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    text-align: center;
+    color: #adb5bd;
+    background-color: #fcfcfc;
+}
+
+.image-placeholder .hint {
+    display: block;
+    font-size: 12px;
+    margin-top: 8px;
+    color: #ced4da;
+}
