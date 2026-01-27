@@ -68,15 +68,15 @@
     <div class="card">
         <h1>영화 등록</h1>
 
-        <!-- 전역 에러 요약 -->
-        <div class="top-error" th:if="${#fields.hasAnyErrors()}">
-            입력값을 다시 확인해주세요. (빨간 항목)
-        </div>
-
         <form th:action="@{/admin/movies}"
               th:object="${form}"
               method="post"
               enctype="multipart/form-data">
+
+            <!-- 전역 에러 요약 -->
+            <div class="top-error" th:if="${#fields.hasAnyErrors()}">
+                입력값을 다시 확인해주세요. (빨간 항목)
+            </div>
 
             <div class="grid">
                 <!-- LEFT: 대표 포스터 -->
