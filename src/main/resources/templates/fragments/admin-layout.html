@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout(pageTitle, activeMenu, pageCss, content)">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title th:text="${pageTitle} ?: 'Cinema Admin'">Cinema Admin</title>
+
+  <!-- 공통 CSS -->
+  <link rel="stylesheet" href="/css/common/reset.css">
+  <link rel="stylesheet" href="/css/admin/admin-common.css">
+
+  <!-- 페이지별 CSS -->
+  <th:block th:replace="${pageCss} ?: ~{}"></th:block>
+</head>
+
+<body class="admin-body">
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-title">
+      <a class="sidebar-back" th:href="@{/admin}">영화관 관리</a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item"
+         th:href="@{/admin/members}"
+         th:classappend="${activeMenu}=='members' ? ' active' : ''">
+        <span>사용자 관리</span>
+      </a>
+
+      <a class="nav-item"
+         th:href="@{/admin/reviews}"
+         th:classappend="${activeMenu}=='reviews' ? ' active' : ''">
+        <span>리뷰 관리</span>
+      </a>
+
+      <a class="nav-item"
+         th:href="@{/admin/movies}"
+         th:classappend="${activeMenu}=='movies' ? ' active' : ''">
+        <span>영화 관리</span>
+      </a>
+
+      <!-- ✅ theaters 금지, screens로 통일 -->
+      <a class="nav-item"
+         th:href="@{/admin/screens}"
+         th:classappend="${activeMenu}=='screens' ? ' active' : ''">
+        <span>상영관 관리</span>
+      </a>
+
+      <a class="nav-item"
+         th:href="@{/admin/screenings}"
+         th:classappend="${activeMenu}=='screenings' ? ' active' : ''">
+        <span>상영 관리</span>
+      </a>
+
+      <a class="nav-item"
+         th:href="@{/admin/payments}"
+         th:classappend="${activeMenu}=='payments' ? ' active' : ''">
+        <span>결제 관리</span>
+      </a>
+
+      <a class="nav-item"
+         th:href="@{/admin/refunds}"
+         th:classappend="${activeMenu}=='refunds' ? ' active' : ''">
+        <span>환불 관리</span>
+      </a>
+
+      <a class="nav-item"
+         th:href="@{/admin/policies}"
+         th:classappend="${activeMenu}=='policies' ? ' active' : ''">
+        <span>정책 관리</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="avatar">A</div>
+      <div class="user-meta">
+        <div class="name">관리자</div>
+        <div class="email">admin@cinema.com</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+    <div class="admin-container">
+      <th:block th:replace="${content}"></th:block>
+    </div>
+  </main>
+
+</div>
+</body>
+</html>

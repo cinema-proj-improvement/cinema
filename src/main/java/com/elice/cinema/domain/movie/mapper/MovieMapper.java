@@ -1,7 +1,7 @@
 package com.elice.cinema.domain.movie.mapper;
 
 import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
-import com.elice.cinema.domain.movie.dto.response.MovieResponse;
+import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
 import com.elice.cinema.domain.movie.entity.Movie;
 import org.mapstruct.Mapper;
 
@@ -22,5 +22,5 @@ public abstract class MovieMapper {
 
     // TODO: (Entity -> DTO) 로직은 Mapstruct를 사용합니다. 해당 로직은 abstract 메서드로 정의해야 합니다.
 
-    public abstract MovieResponse toResponse(Movie movie);
+    public abstract AdminMovieListResponse toAdminListResponse(Movie movie);
 }
