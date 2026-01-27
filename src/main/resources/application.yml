@@ -7,7 +7,6 @@ spring:
     hiddenmethod:
       filter:
         enabled: true  # PUT, DELETE 요청 hidden-method 지원
-
   data:
     web:
       pageable:
@@ -16,6 +15,15 @@ spring:
     rest:
       default-page-size: 10
       max-page-size: 50
+
+file:
+  storage:
+    type: local  # local or s3
+    s3-bucket: ${AWS_S3_BUCKET:}
+    s3-base-url: ${AWS_S3_BASE_URL:}  # 선택 (없으면 S3 기본 URL 리턴)
+  upload:
+    base-path: ${FILE_UPLOAD_BASE_PATH:/tmp/cinema/uploads}  # 로컬 개발자 환경(Windows/Mac 혼합) 고려: 환경변수로 덮어쓰기
+    url-prefix: /uploads
 
 logging:
   level:

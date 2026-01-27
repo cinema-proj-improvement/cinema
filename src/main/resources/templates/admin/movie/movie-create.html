@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>영화 등록</title>
+
+    <!-- Flatpickr (CDN) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <style>
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:#f6f7fb; margin:0; }
+        .container { max-width: 980px; margin: 40px auto; padding: 0 16px; }
+        .card { background:#fff; border:1px solid #e7e9f0; border-radius: 14px; padding: 22px; box-shadow: 0 6px 24px rgba(17,24,39,.06); }
+        h1 { font-size: 22px; margin: 0 0 18px; }
+
+        .grid { display:grid; grid-template-columns: 320px 1fr; gap: 22px; }
+        .field { margin-bottom: 14px; }
+        label { display:block; font-size: 13px; color:#374151; margin-bottom: 6px; }
+        .req::after { content:" *"; color:#ef4444; }
+
+        input[type="text"], input[type="number"], textarea, select {
+            width:100%; box-sizing:border-box; padding:10px 12px;
+            border:1px solid #d7dbe7; border-radius: 10px;
+            font-size:14px; outline:none;
+        }
+        textarea { min-height: 140px; resize: vertical; }
+        input[type="file"] { width:100%; }
+
+        .row2 { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .chip-group { display:flex; flex-wrap:wrap; gap: 8px; }
+        .chip {
+            display:inline-flex; align-items:center; gap:8px;
+            padding:8px 10px; border:1px solid #d7dbe7; border-radius: 999px;
+            cursor:pointer; user-select:none; font-size: 13px; background:#fff;
+        }
+        .chip input { width:auto; }
+
+        .error { color:#dc2626; font-size:12px; margin-top:6px; }
+        .help { color:#6b7280; font-size:12px; margin-top:6px; }
+
+        .poster-box {
+            border:1px dashed #cfd5e5; border-radius: 14px;
+            height: 360px; display:flex; align-items:center; justify-content:center;
+            background:#fafbff; overflow:hidden;
+        }
+        .poster-box img { width:100%; height:100%; object-fit:cover; display:none; }
+        .poster-placeholder { text-align:center; color:#9aa3b2; font-size: 13px; }
+
+        .actions { display:flex; gap: 12px; justify-content:flex-end; margin-top: 18px; }
+        .btn { border:none; border-radius: 10px; padding: 10px 16px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
+        .btn-secondary { background:#eef1f7; color:#111827; }
+        .btn-primary { background:#2563eb; color:#fff; }
+        .btn-primary:disabled { opacity:.6; cursor:not-allowed; }
+
+        .top-error {
+            border:1px solid #fecaca; background:#fef2f2; color:#991b1b;
+            border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px;
+        }
+        .divider { height:1px; background:#eef0f6; margin: 18px 0; }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="card">
+        <h1>영화 등록</h1>
+
+        <form th:action="@{/admin/movies}"
+              th:object="${form}"
+              method="post"
+              enctype="multipart/form-data">
+
+            <!-- 전역 에러 요약 -->
+            <div class="top-error" th:if="${#fields.hasAnyErrors()}">
+                입력값을 다시 확인해주세요. (빨간 항목)
+            </div>
+
+            <div class="grid">
+                <!-- LEFT: 대표 포스터 -->
+                <div>
+                    <label class="req">대표 포스터</label>
+
+                    <div class="poster-box">
+                        <img id="thumbnailPreview" alt="대표 포스터 미리보기">
+                        <div class="poster-placeholder" id="thumbnailPlaceholder">
+                            포스터 이미지<br/>업로드 후 미리보기
+                        </div>
+                    </div>
+
+                    <div class="field" style="margin-top:12px;">
+                        <input type="file"
+                               th:field="*{thumbnailImage}"
+                               accept="image/*"
+                               id="thumbnailImage"/>
+                        <div class="error"
+                             th:if="${#fields.hasErrors('thumbnailImage')}"
+                             th:errors="*{thumbnailImage}">
+                            대표 포스터 에러
+                        </div>
+                        <div class="help">이미지 파일(JPG/PNG/WebP 등)을 업로드하세요.</div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: 입력 폼 -->
+                <div>
+                    <div class="field">
+                        <label class="req">영화 제목</label>
+                        <input type="text" th:field="*{title}" placeholder="영화 제목을 입력하세요"/>
+                        <div class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">
+                            제목 에러
+                        </div>
+                    </div>
+
+                    <div class="row2">
+                        <div class="field">
+                            <label class="req">러닝타임(분)</label>
+                            <input type="number" th:field="*{runningTimeMinutes}" min="1" placeholder="예: 120"/>
+                            <div class="error"
+                                 th:if="${#fields.hasErrors('runningTimeMinutes')}"
+                                 th:errors="*{runningTimeMinutes}">
+                                러닝타임 에러
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="req">관람등급</label>
+                            <select th:field="*{ageRating}">
+                                <option value="" disabled selected>선택하세요</option>
+                                <option th:each="r : ${T(com.elice.cinema.domain.movie.entity.AgeRating).values()}"
+                                        th:value="${r}"
+                                        th:text="${r.name()}">
+                                </option>
+                            </select>
+                            <div class="error"
+                                 th:if="${#fields.hasErrors('ageRating')}"
+                                 th:errors="*{ageRating}">
+                                관람등급 에러
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row2">
+                        <div class="field">
+                            <label class="req">개봉일</label>
+                            <input type="text" th:field="*{releaseDate}" class="js-date" placeholder="YYYY-MM-DD"/>
+                            <div class="error"
+                                 th:if="${#fields.hasErrors('releaseDate')}"
+                                 th:errors="*{releaseDate}">
+                                개봉일 에러
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="req">상영 종료일</label>
+                            <input type="text" th:field="*{endDate}" class="js-date" placeholder="YYYY-MM-DD"/>
+                            <div class="error"
+                                 th:if="${#fields.hasErrors('endDate')}"
+                                 th:errors="*{endDate}">
+                                종료일 에러
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="req">장르 (다중 선택)</label>
+                        <div class="chip-group">
+                            <label class="chip"
+                                   th:each="g : ${T(com.elice.cinema.domain.movie.entity.Genre).values()}">
+                                <input type="checkbox" th:field="*{genres}" th:value="${g}"/>
+                                <span th:text="${g.name()}">GENRE</span>
+                            </label>
+                        </div>
+                        <div class="error"
+                             th:if="${#fields.hasErrors('genres')}"
+                             th:errors="*{genres}">
+                            장르 에러
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="req">상영 타입 (다중 선택)</label>
+                        <div class="chip-group">
+                            <label class="chip"
+                                   th:each="t : ${T(com.elice.cinema.domain.common.ScreeningType).values()}">
+                                <input type="checkbox" th:field="*{screeningTypes}" th:value="${t}"/>
+                                <span th:text="${t.name()}">TYPE</span>
+                            </label>
+                        </div>
+                        <div class="error"
+                             th:if="${#fields.hasErrors('screeningTypes')}"
+                             th:errors="*{screeningTypes}">
+                            상영 타입 에러
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="req">영화 소개(시놉시스)</label>
+                        <textarea th:field="*{synopsis}" placeholder="영화의 줄거리를 입력하세요"></textarea>
+                        <div class="error"
+                             th:if="${#fields.hasErrors('synopsis')}"
+                             th:errors="*{synopsis}">
+                            시놉시스 에러
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- 추가 이미지 -->
+            <div class="field">
+                <label>추가 이미지 (선택, 최대 10개)</label>
+                <input type="file" th:field="*{extraImages}" multiple accept="image/*" id="extraImages"/>
+                <div class="error"
+                     th:if="${#fields.hasErrors('extraImages')}"
+                     th:errors="*{extraImages}">
+                    추가 이미지 에러
+                </div>
+                <div class="help">여러 장 선택 가능 (미리보기 UI가 필요하면 말해줘).</div>
+            </div>
+
+            <div class="actions">
+                <a class="btn btn-secondary" th:href="@{/admin/movies}">취소</a>
+                <button class="btn btn-primary" type="submit" id="submitBtn">등록</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // date picker
+        if (window.flatpickr) {
+            flatpickr(".js-date", {
+                dateFormat: "Y-m-d",
+                allowInput: true
+            });
+        }
+
+        // 대표 포스터 미리보기
+        const input = document.getElementById("thumbnailImage");
+        const img = document.getElementById("thumbnailPreview");
+        const placeholder = document.getElementById("thumbnailPlaceholder");
+
+        input?.addEventListener("change", (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+
+            const url = URL.createObjectURL(file);
+            img.src = url;
+            img.style.display = "block";
+            placeholder.style.display = "none";
+        });
+
+        // 중복 제출 방지
+        const form = document.querySelector("form");
+        const btn = document.getElementById("submitBtn");
+        form?.addEventListener("submit", () => {
+            if (btn) btn.disabled = true;
+        });
+    });
+</script>
+</body>
+</html>

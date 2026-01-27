@@ -68,6 +68,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'  // Lombok + MapStruct 충돌 방지
 
 }
+
 /*
 // Q 클래스 생성 경로
 def querydslDir = "build/generated/querydsl"
@@ -86,6 +87,7 @@ tasks.withType(JavaCompile).configureEach {
     ]
 }
 */
+
 tasks.named('test') {
     useJUnitPlatform()
 }

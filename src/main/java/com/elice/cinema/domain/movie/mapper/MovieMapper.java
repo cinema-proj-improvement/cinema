@@ -7,17 +7,17 @@ import com.elice.cinema.domain.movie.entity.Movie;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public abstract class MovieMapper {
-    // DTO -> Entity 로직은 수동 작성합니다. 메서드명은 toEntity로 고정합니다. (param에 들어갈 타입이 다르기 때문에 의미 구분이 가능합니다.)
-    public Movie toEntity(MovieCreateRequest req) {
-        return Movie.of(
+public interface MovieMapper {
+    default Movie toEntity(MovieCreateRequest req) {
+        return Movie.createUpcomming(
                 req.getTitle(),
                 req.getRunningTimeMinutes(),
                 req.getReleaseDate(),
                 req.getEndDate(),
                 req.getAgeRating(),
                 req.getSynopsis(),
-                req.getThumbnailImageUrl()
+                req.getGenres(),
+                req.getScreeningTypes()
         );
     }
 
