@@ -1,5 +1,6 @@
 package com.elice.cinema.domain.screen.service;
 
+import com.elice.cinema.domain.screen.dto.request.ScreenCreateRequest;
 import com.elice.cinema.domain.screen.dto.response.ScreenDetailResponse;
 import com.elice.cinema.domain.screen.dto.response.ScreenListResponse;
 import com.elice.cinema.domain.screen.entity.Screen;
@@ -21,6 +22,7 @@ public class ScreenService {
     private final ScreenRepository screenRepository;
     private final SeatRepository seatRepository;
     private final ScreenMapper screenMapper;
+    private final ScreenValidator screenValidator;
 
     public Page<ScreenListResponse> getScreens(Boolean operating, Pageable pageable) {
         if (operating == null) {
@@ -43,5 +45,19 @@ public class ScreenService {
         // active=true 인 좌석 수 = 사용 가능 좌석 수
         return (int) seatRepository.countByScreenIdAndActiveTrue(screenId);
     }
+
+    @Transactional
+    public void createScreen(ScreenCreateRequest req) {
+        screenValidator.validateCreate(req);
+
+        Screen screen = screenMapper.toEntity(req);
+
+        req.getSeats().forEach(seat ->
+                screen.addSeat(seat.getSeatCode(), seat.getActive(), seat.getRowNo(), seat.getColNo())
+        );
+
+        screenRepository.save(screen);
+    }
+
 
 }
