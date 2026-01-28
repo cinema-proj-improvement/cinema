@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ScreenRepository extends JpaRepository<Screen, Long> {
     Page<Screen> findByOperating(boolean operating, Pageable pageable);
+    boolean existsByName(String name);
 }
