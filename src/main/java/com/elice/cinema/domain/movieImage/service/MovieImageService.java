@@ -10,6 +10,8 @@ import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -21,6 +23,7 @@ public class MovieImageService {
     private final MovieImageRepository movieImageRepository;
     private final FileService fileService;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void storeImages(Long movieId, MultipartFile thumbnailImage, List<MultipartFile> extraImages) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_NOT_FOUND));

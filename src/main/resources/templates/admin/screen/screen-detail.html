@@ -20,8 +20,8 @@
       <span class="badge"
             th:classappend="${screen.operating} ? ' badge-on' : ' badge-off'"
             th:text="${screen.operating} ? '운영중' : '미운영'">
-                운영중
-            </span>
+        운영중
+      </span>
     </div>
 
     <a class="btn primary head-action"
@@ -32,11 +32,10 @@
 
   <!-- 상영 타입 칩 -->
   <div class="chip-row">
-        <span class="chip"
-              th:text="${screen.screeningType != null ? screen.screeningType.displayName : '상영 타입'}">
-            2D
-        </span>
-    <!-- 필요하면 추후: List<ScreeningType>로 바뀔 때 칩 반복 렌더링 -->
+    <span class="chip"
+          th:text="${screen.screeningType != null ? screen.screeningType.displayName : '상영 타입'}">
+      2D
+    </span>
   </div>
 
   <!-- 요약 카드 -->
@@ -48,7 +47,6 @@
 
     <div class="summary-card summary-card-blue">
       <div class="summary-label">사용 가능</div>
-      <!-- 서버에서 계산해서 내려주면 best: availableSeats -->
       <div class="summary-value" th:text="${availableSeats} + '석'">120석</div>
     </div>
   </section>
@@ -81,46 +79,126 @@
     </div>
   </section>
 
-  <!-- 좌석 배치 -->
+  <!-- 좌석 배치 (screen-create 방식으로 JS 렌더링) -->
   <section class="seat-map-card">
+
     <div class="screen-bar"></div>
     <div class="screen-text">SCREEN</div>
 
-    <div class="seat-grid">
-      <button type="button"
-              class="seat"
-              th:each="seat : ${screen.seats}"
-              th:classappend="${seat.active} ? '' : ' seat-disabled'"
-              th:style="'grid-row:' + ${seat.rowNo} + '; grid-column:' + ${seat.colNo}"
-              th:title="${seat.seatCode}">
-        <span class="seat-row" th:text="${seat.seatCode.substring(0,1)}">A</span>
-        <span class="seat-col" th:text="${seat.seatCode.substring(1)}">1</span>
-      </button>
-    </div>
+    <!-- ✅ create처럼 비워두고 JS가 row-label + seat 버튼을 생성 -->
+    <div class="seat-wrap" id="seatWrapDetail"></div>
 
-    <!-- (선택) 범례 -->
-    <div class="legend">
+    <!-- ✅ 서버 seats를 JS로 전달 (rowNo/colNo/seatCode/active) -->
+    <script th:inline="javascript">
+      window.__SEATS__ = /*[[${screen.seats}]]*/ [];
+    </script>
+
+    <!-- 범례(create와 동일) -->
+    <div class="seat-legend">
       <div class="legend-item">
-        <span class="legend-dot"></span>
-        사용 가능
+        <span class="legend-box on"></span>
+        <span>사용 가능</span>
       </div>
       <div class="legend-item">
-        <span class="legend-dot legend-dot-disabled"></span>
-        사용 불가
+        <span class="legend-box off"></span>
+        <span>사용 불가</span>
       </div>
     </div>
   </section>
 
   <script>
-    // (선택) 좌석 선택 UI 샘플: 필요 없으면 삭제해도 됨
-    document.addEventListener('click', (e) => {
-      const seat = e.target.closest('.seat');
-      if (!seat) return;
+    (function () {
+      const wrap = document.getElementById('seatWrapDetail');
+      if (!wrap) return;
 
-      if (seat.classList.contains('seat-disabled')) return;
+      const seats = (window.__SEATS__ || []).slice();
 
-      seat.classList.toggle('seat-selected');
-    });
+      // ✅ seats에서 rows/cols 계산 (model seatRows/seatCols 제거)
+      const rows = seats.length ? Math.max(...seats.map(s => Number(s.rowNo || 0))) : 1;
+      const cols = seats.length ? Math.max(...seats.map(s => Number(s.colNo || 0))) : 1;
+
+      // grid 크기 적용 (seat-wrap CSS가 var(--rows/--cols) 사용)
+      wrap.style.setProperty('--rows', String(rows));
+      wrap.style.setProperty('--cols', String(cols));
+
+      function toRowLetter(rowNo) {
+        // 1->A, 2->B ...
+        return String.fromCharCode('A'.charCodeAt(0) + (rowNo - 1));
+      }
+
+      function clear(el) {
+        while (el.firstChild) el.removeChild(el.firstChild);
+      }
+
+      // key: "r-c"
+      const seatMap = new Map();
+      seats.forEach(s => {
+        const r = Number(s.rowNo);
+        const c = Number(s.colNo);
+        seatMap.set(`${r}-${c}`, {
+          rowNo: r,
+          colNo: c,
+          seatCode: s.seatCode,
+          active: !!s.active
+        });
+      });
+
+      function render() {
+        clear(wrap);
+
+        for (let r = 1; r <= rows; r++) {
+          // row label
+          const label = document.createElement('div');
+          label.className = 'row-label';
+          label.style.gridRow = String(r);
+          label.style.gridColumn = '1';
+          label.textContent = toRowLetter(r);
+          wrap.appendChild(label);
+
+          for (let c = 1; c <= cols; c++) {
+            const key = `${r}-${c}`;
+            const seat = seatMap.get(key);
+
+            // ✅ 빈칸 좌석도 그리드 칸 유지하려면 "off" 더미로 표시
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'seat ' + (seat && seat.active ? 'on' : 'off');
+            btn.dataset.key = key;
+
+            btn.style.gridRow = String(r);
+            btn.style.gridColumn = String(c + 1); // 1은 행 라벨
+
+            if (seat && seat.active) {
+              btn.textContent = seat.seatCode;
+              btn.title = seat.seatCode;
+            } else if (seat) {
+              btn.textContent = 'X';
+              btn.title = seat.seatCode + ' (사용 불가)';
+            } else {
+              // 데이터에 없는 칸(구멍)
+              btn.textContent = '';
+              btn.title = '좌석 없음';
+              btn.disabled = true;
+              btn.classList.add('off');
+            }
+
+            wrap.appendChild(btn);
+          }
+        }
+      }
+
+      render();
+
+      // ✅ create 느낌: off는 클릭 무시, on만 선택 토글
+      wrap.addEventListener('click', (e) => {
+        const btn = e.target.closest('.seat');
+        if (!btn) return;
+        if (!wrap.contains(btn)) return;
+        if (btn.classList.contains('off')) return;
+
+        btn.classList.toggle('seat-selected');
+      });
+    })();
   </script>
 
 </th:block>

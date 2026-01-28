@@ -56,8 +56,8 @@ public class Screen extends BaseEntity {
     public static Screen of(String name,
                             ScreeningType screeningType,
                             Integer totalSeats,
-                            boolean isOperating) {
-        return new Screen(name, screeningType, totalSeats, isOperating);
+                            boolean operating) {
+        return new Screen(name, screeningType, totalSeats, operating);
     }
 
     public Seat addSeat(String seatCode, boolean active, Integer rowNo, Integer colNo) {
