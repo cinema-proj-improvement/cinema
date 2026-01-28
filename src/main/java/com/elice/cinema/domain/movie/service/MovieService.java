@@ -1,19 +1,21 @@
 package com.elice.cinema.domain.movie.service;
 
-import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
+import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
 import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
+import com.elice.cinema.domain.movie.dto.response.MovieDetailResponse;
+import com.elice.cinema.domain.movie.dto.response.MovieListResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.event.MovieImagesStorageEvent;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
+import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
+import com.elice.cinema.global.common.file.FileService;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,8 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final MovieMapper movieMapper;
     private final ApplicationEventPublisher publisher;
+    private final FileService fileService;
+    private final MovieImageRepository movieImageRepository;
 
     // 관리자 - 영화 생성 요청을 받아 영화를 생성하고 DB에 저장하는 메서드
     @Transactional
@@ -67,10 +71,9 @@ public class MovieService {
     }
 
 
-
     // === Helper Methods ===
     private void validateDates(LocalDate releaseDate, LocalDate endDate) {  // FIXME: 이 로직을 DTO level에서 custom annotation으로?
-        if(!endDate.isAfter(releaseDate)) {  // 개봉일과 종료일이 동일한 케이스도 에러로 취급
+        if (!endDate.isAfter(releaseDate)) {  // 개봉일과 종료일이 동일한 케이스도 에러로 취급
             throw new BusinessException(ErrorCode.MOVIE_INVALID_DATE_RANGE);
         }
     }
@@ -78,5 +81,27 @@ public class MovieService {
     private Movie findMovieById(Long movieId) {
         return movieRepository.findById(movieId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_NOT_FOUND));
+    }
+
+    // 사용자 영화 목록 조회
+    public Page<MovieListResponse> getUserMovieList(
+            String keyword,
+            String sort,
+            Pageable pageable
+    ) {
+        Page<Movie> movies = movieRepository.findUserMovies(keyword, sort, pageable);
+
+        return movies.map(movieMapper::toMovieListResponse);
+    }
+
+    // 사용자 영화 상세 조회
+    public MovieDetailResponse getUserMovieDetail(Long movieId) {
+
+        Movie movie = movieRepository.findUserMovieById(movieId) // [ADD - USER]
+                .orElseThrow(() ->
+                        new BusinessException(ErrorCode.MOVIE_NOT_FOUND)
+                );
+
+        return movieMapper.toMovieDetailResponse(movie);
     }
 }

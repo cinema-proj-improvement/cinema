@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static com.elice.cinema.domain.movie.entity.QMovie.movie;
 
@@ -23,6 +24,7 @@ import static com.elice.cinema.domain.movie.entity.QMovie.movie;
 public class MovieRepositoryImpl implements MovieRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
+    // 관리자
     @Override
     public Page<Movie> findAdminMovieList(
             AdminMovieSearchRequest search,
@@ -50,6 +52,65 @@ public class MovieRepositoryImpl implements MovieRepositoryCustom {
         );
     }
 
+    // 사용자 목록
+    @Override
+    public Page<Movie> findUserMovies(String keyword, String sort, Pageable pageable) {
+
+        BooleanExpression condition = userVisibleCondition()
+                .and(titleContains(keyword));
+
+        List<Movie> content = queryFactory
+                .selectFrom(movie)
+                .where(condition)
+                .orderBy(getUserSortOrder(sort))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(movie.count())
+                .from(movie)
+                .where(condition)
+                .fetchOne();
+
+        return new PageImpl<>(
+                content,
+                pageable,
+                total == null ? 0 : total
+        );
+    }
+
+    // 사용자 상세 조회
+    @Override
+    public Optional<Movie> findUserMovieById(Long movieId) {
+
+        return Optional.ofNullable(
+                queryFactory
+                        .selectFrom(movie)
+                        .where(
+                                movie.id.eq(movieId),
+                                userVisibleCondition()
+                        )
+                        .fetchOne()
+        );
+    }
+
+    // 사용자 종료 영화 제외
+    private BooleanExpression userVisibleCondition() {
+        return movie.status.in(MovieStatus.UPCOMING, MovieStatus.NOW_SHOWING);
+    }
+
+    // 사용자 정렬 분기 (예매율순 / 기본: 개봉일순)
+    private OrderSpecifier<?> getUserSortOrder(String sort) {
+        if ("reservationRate".equals(sort)) {
+            return movie.advanceReservationRate.desc();
+        }
+        // 기본값: 개봉일 최신순
+        return movie.releaseDate.desc();
+    }
+
+
+    // 관리자 검색 조건 묶음(상태,등급,장르,키워드,기간)
     private BooleanExpression[] adminSearchConditions(AdminMovieSearchRequest search) {
         return new BooleanExpression[]{
                 statusIn(search.getStatuses()),

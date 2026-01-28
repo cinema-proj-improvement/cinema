@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${movie.title}">영화 상세</title>
+
+    <!-- 공통 -->
+    <link rel="stylesheet" href="/css/common/reset.css">
+    <link rel="stylesheet" href="/css/common/header.css">
+    <link rel="stylesheet" href="/css/common/footer.css">
+
+    <!-- 영화 상세 전용 -->
+    <link rel="stylesheet" href="/css/user/movie-detail.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<div th:replace="fragments/header :: header"></div>
+
+<main class="movie-detail-page">
+
+    <!-- 상단 정보 -->
+    <section class="movie-summary">
+        <div class="poster">
+            <!-- 이미지 미구현 -->
+            <div class="poster-placeholder"></div>
+        </div>
+
+        <div class="info">
+            <h2 th:text="${movie.title}">영화 제목</h2>
+
+            <ul class="info-list">
+                <li><strong>개봉일</strong> <span th:text="${movie.releaseDate}"></span></li>
+                <li><strong>러닝타임</strong> <span th:text="${movie.runningTimeMinutes + '분'}"></span></li>
+                <li>
+                    <strong>관람등급</strong>
+                    <span th:text="${movie.ageRating.displayName}"></span>
+                </li>
+                <li>
+                    <strong>장르</strong>
+                    <span th:text="${#strings.listJoin(movie.genres.![displayName], ', ')}"></span>
+                </li>
+                <li><strong>평점</strong> <span th:text="${movie.avgScore}"></span></li>
+                <li><strong>예매율</strong> <span th:text="${movie.advanceReservationRate + '%'}"></span></li>
+            </ul>
+
+            <a href="#" class="reserve-btn">예매하기</a>
+        </div>
+    </section>
+
+    <!-- 시놉시스 -->
+    <section class="movie-section">
+        <h3>줄거리</h3>
+        <p th:text="${movie.synopsis}">
+            영화 시놉시스
+        </p>
+    </section>
+
+    <!-- 스틸컷 (미구현) -->
+    <section class="movie-section">
+        <h3>스틸컷</h3>
+        <div class="stillcut-list">
+            <div class="stillcut-placeholder"></div>
+            <div class="stillcut-placeholder"></div>
+            <div class="stillcut-placeholder"></div>
+        </div>
+    </section>
+
+    <!-- 관람평 (미구현) -->
+    <section class="movie-section">
+        <h3>관람평</h3>
+        <div class="review-placeholder">
+            관람평 기능은 추후 구현 예정입니다.
+        </div>
+    </section>
+
+</main>
+
+<!-- FOOTER -->
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

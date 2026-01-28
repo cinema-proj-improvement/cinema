@@ -2,6 +2,8 @@ package com.elice.cinema.domain.movie.mapper;
 
 import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
 import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
+import com.elice.cinema.domain.movie.dto.response.MovieDetailResponse;
+import com.elice.cinema.domain.movie.dto.response.MovieListResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
 import com.elice.cinema.domain.movie.entity.Movie;
 import org.mapstruct.Mapper;
@@ -25,4 +27,8 @@ public interface MovieMapper {
 
     public abstract AdminMovieListResponse toAdminListResponse(Movie movie);
     public abstract MovieUpdateFormResponse toMovieUpdateFormResponse(Movie movie);
+
+    public abstract MovieListResponse toMovieListResponse(Movie movie);
+
+    public abstract MovieDetailResponse toMovieDetailResponse(Movie movie);
 }

@@ -5,7 +5,13 @@ import com.elice.cinema.domain.movie.entity.Movie;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Optional;
+
 public interface MovieRepositoryCustom {
 
     Page<Movie> findAdminMovieList(AdminMovieSearchRequest search, Pageable pageable);
+
+    Page<Movie> findUserMovies(String keyword, String sort, Pageable pageable);
+
+    Optional<Movie> findUserMovieById(Long movieId);
 }

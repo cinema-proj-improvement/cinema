@@ -1,0 +1,87 @@
+.movie-detail-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* 상단 요약 */
+.movie-summary {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.poster-placeholder {
+    width: 280px;
+    height: 400px;
+    background: #e5e7eb;
+    border-radius: 8px;
+}
+
+.info h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+}
+
+.info-list li {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #374151;
+}
+
+.info-list strong {
+    display: inline-block;
+    width: 80px;
+    color: #111827;
+}
+
+.reserve-btn {
+    display: inline-block;
+    width: 240px;
+    height: 44px;
+    background: #10b981;
+    color: #fff;
+    text-align: center;
+    line-height: 44px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* 공통 섹션 */
+.movie-section {
+    margin-bottom: 48px;
+}
+
+.movie-section h3 {
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+/* 스틸컷 */
+.stillcut-list {
+    display: flex;
+    gap: 16px;
+}
+
+.stillcut-placeholder {
+    width: 220px;
+    height: 130px;
+    background: #e5e7eb;
+    border-radius: 6px;
+}
+
+/* 관람평 */
+.review-placeholder {
+    border: 1px solid #e5e7eb;
+    padding: 16px;
+    border-radius: 6px;
+    color: #9ca3af;
+    font-size: 14px;
+}
