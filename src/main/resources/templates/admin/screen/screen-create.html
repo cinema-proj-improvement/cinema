@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: layout(
+        '상영관 등록', 'screens', ~{::pageCss}, ~{::content}
+      )}">
+
+<th:block th:fragment="pageCss">
+    <link rel="stylesheet" th:href="@{/css/admin/screen/screen-create.css}">
+</th:block>
+
+<th:block th:fragment="content">
+
+    <!-- 상단 헤더 -->
+    <div class="page-head">
+        <a class="back-link" th:href="@{/admin/screens}">‹</a>
+        <h1 class="page-title">상영관 등록</h1>
+    </div>
+
+    <form class="screen-form"
+          th:action="@{/admin/screens/new}"
+          method="post"
+          th:object="${form}">
+
+        <!-- 기본 정보 카드 -->
+        <section class="card">
+            <h2 class="card-title">기본 정보</h2>
+
+            <!-- 상영관명 -->
+            <div class="field">
+                <label class="label" for="name">
+                    상영관명 <span class="req">*</span>
+                </label>
+                <input class="input"
+                       id="name"
+                       type="text"
+                       placeholder="예: 1관"
+                       th:field="*{name}">
+                <p class="help">상영관명은 고유해야 합니다.</p>
+
+                <p class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">error</p>
+            </div>
+
+            <!-- 운영 상태 -->
+            <div class="field">
+                <label class="label" for="operating">
+                    운영 상태 <span class="req">*</span>
+                </label>
+
+                <!-- boolean 바인딩을 위해 select 사용 -->
+                <select class="select" id="operating" th:field="*{operating}">
+                    <option th:value="true">운영중</option>
+                    <option th:value="false">미운영</option>
+                </select>
+
+                <p class="error" th:if="${#fields.hasErrors('operating')}" th:errors="*{operating}">error</p>
+            </div>
+
+            <!-- 지원 상영 타입 (현재 DTO는 단일 ScreeningType이라 '1개만 선택' UI로 구현) -->
+            <div class="field">
+                <div class="label-row">
+                    <label class="label">
+                        지원 상영 타입 <span class="req">*</span>
+                    </label>
+                    <span class="hint">1개만 선택</span>
+                </div>
+
+                <div class="type-grid" role="radiogroup" aria-label="지원 상영 타입">
+                    <label class="type-item" th:each="t : ${screeningTypes}">
+                        <input class="type-radio"
+                               type="radio"
+                               th:field="*{screeningType}"
+                               th:value="${t}">
+                        <span class="type-box" th:text="${t.displayName}">2D</span>
+                    </label>
+                </div>
+
+                <p class="error" th:if="${#fields.hasErrors('screeningType')}" th:errors="*{screeningType}">error</p>
+            </div>
+        </section>
+
+        <!-- 좌석 배치 카드 -->
+        <section class="card">
+            <h2 class="card-title">좌석 배치 <span class="req">*</span></h2>
+
+            <div class="seat-config-card">
+                <h3 class="seat-config-title">좌석 배치 설정</h3>
+
+                <div class="seat-config-row">
+                    <div class="mini-field">
+                        <label class="mini-label" for="rowCount">행 수</label>
+                        <input class="input mini" id="rowCount" type="number" min="1" max="26" value="5">
+                    </div>
+
+                    <div class="mini-field">
+                        <label class="mini-label" for="colCount">열 수</label>
+                        <input class="input mini" id="colCount" type="number" min="1" max="50" value="10">
+                    </div>
+
+                    <button class="btn primary seat-gen-btn" type="button" id="btnGenerateSeats">
+                        좌석 생성
+                    </button>
+                </div>
+
+                <div class="seat-total">
+                    총 좌석: <strong id="seatTotalText">0</strong>석
+                </div>
+            </div>
+
+            <!-- 서버 바인딩용: totalSeats + seats[] hidden inputs -->
+            <input type="hidden" th:field="*{totalSeats}" id="totalSeats">
+            <div id="seatsHiddenContainer"></div>
+
+            <!-- 안내 바 -->
+            <div class="seat-info">
+                💡 좌석을 클릭하여 사용 가능/불가 상태를 변경할 수 있습니다
+            </div>
+
+            <!-- 좌석 미리보기 -->
+            <div class="seat-preview" aria-label="좌석 미리보기">
+                <div class="screen-bar"></div>
+                <div class="screen-text">SCREEN</div>
+
+                <!-- ✅ 좌석 + 행 라벨이 같이 들어갈 컨테이너 -->
+                <div class="seat-wrap" id="seatWrap"></div>
+
+                <div class="seat-legend">
+                    <div class="legend-item">
+                        <span class="legend-box on"></span>
+                        <span>사용 가능</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-box off"></span>
+                        <span>사용 불가</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="error" th:if="${#fields.hasErrors('seats')}" th:errors="*{seats}">error</p>
+        </section>
+
+        <div class="form-actions">
+            <a class="btn outline" th:href="@{/admin/screens}">취소</a>
+            <button class="btn primary" type="submit">상영관 생성</button>
+        </div>
+
+        <script>
+            (function () {
+                const rowInput = document.getElementById('rowCount');
+                const colInput = document.getElementById('colCount');
+                const btnGenerate = document.getElementById('btnGenerateSeats');
+
+                const totalSeatsInput = document.getElementById('totalSeats');
+                const totalText = document.getElementById('seatTotalText');
+
+                const hiddenContainer = document.getElementById('seatsHiddenContainer');
+                const seatWrap = document.getElementById('seatWrap');
+
+                // 내부 상태: 좌석 전체(비활성 포함) 보관
+                // key: "r-c" => {rowNo, colNo, seatCode, active}
+                const seatMap = new Map();
+                let currentRows = 0;
+                let currentCols = 0;
+
+                function toRowLetter(rowNo) {
+                    return String.fromCharCode('A'.charCodeAt(0) + (rowNo - 1));
+                }
+
+                function clear(el) {
+                    while (el.firstChild) el.removeChild(el.firstChild);
+                }
+
+                // ✅ 활성 좌석만 hidden inputs로 다시 구성 (index를 0..n-1로 재정렬)
+                function rebuildHiddenInputs() {
+                    clear(hiddenContainer);
+
+                    const activeSeats = Array.from(seatMap.values())
+                        .filter(s => s.active)
+                        .sort((a,b) => (a.rowNo - b.rowNo) || (a.colNo - b.colNo));
+
+                    totalSeatsInput.value = String(activeSeats.length);
+                    totalText.textContent = String(activeSeats.length);
+
+                    activeSeats.forEach((s, idx) => {
+                        hiddenContainer.appendChild(hiddenInput(`seats[${idx}].seatCode`, s.seatCode));
+                        hiddenContainer.appendChild(hiddenInput(`seats[${idx}].active`, 'true'));
+                        hiddenContainer.appendChild(hiddenInput(`seats[${idx}].rowNo`, String(s.rowNo)));
+                        hiddenContainer.appendChild(hiddenInput(`seats[${idx}].colNo`, String(s.colNo)));
+                    });
+                }
+
+                function hiddenInput(name, value) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = value;
+                    return input;
+                }
+
+                // ✅ 좌석 UI 다시 그림
+                function renderSeats() {
+                    clear(seatWrap);
+
+                    // grid 설정: 첫 컬럼은 행 라벨, 나머지는 좌석
+                    seatWrap.style.setProperty('--rows', currentRows);
+                    seatWrap.style.setProperty('--cols', currentCols);
+
+                    for (let r = 1; r <= currentRows; r++) {
+                        // 행 라벨
+                        const label = document.createElement('div');
+                        label.className = 'row-label';
+                        label.style.gridRow = String(r);
+                        label.style.gridColumn = '1';
+                        label.textContent = toRowLetter(r);
+                        seatWrap.appendChild(label);
+
+                        for (let c = 1; c <= currentCols; c++) {
+                            const key = `${r}-${c}`;
+                            const seat = seatMap.get(key);
+
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = seat.active ? 'seat on' : 'seat off';
+                            btn.dataset.key = key;
+
+                            // grid: 라벨 컬럼이 1이니까 좌석은 +1
+                            btn.style.gridRow = String(r);
+                            btn.style.gridColumn = String(c + 1);
+
+                            if (seat.active) {
+                                btn.textContent = seat.seatCode;
+                                btn.title = seat.seatCode;
+                            } else {
+                                btn.textContent = 'X';
+                                btn.title = seat.seatCode + ' (사용 불가)';
+                            }
+
+                            seatWrap.appendChild(btn);
+                        }
+                    }
+                }
+
+                // 좌석 클릭 토글
+                seatWrap.addEventListener('click', (e) => {
+                    const target = e.target;
+                    if (!(target instanceof HTMLElement)) return;
+                    if (!target.classList.contains('seat')) return;
+
+                    const key = target.dataset.key;
+                    const seat = seatMap.get(key);
+                    if (!seat) return;
+
+                    seat.active = !seat.active;           // 토글
+                    seatMap.set(key, seat);
+
+                    renderSeats();                        // UI 갱신
+                    rebuildHiddenInputs();                // hidden + total 갱신
+                });
+
+                function generateSeats() {
+                    const rows = parseInt(rowInput.value, 10);
+                    const cols = parseInt(colInput.value, 10);
+
+                    if (!rows || rows < 1 || rows > 26) {
+                        alert('행 수는 1~26 범위로 입력해주세요.');
+                        return;
+                    }
+                    if (!cols || cols < 1 || cols > 20) {
+                        alert('열 수는 1~20 범위로 입력해주세요.');
+                        return;
+                    }
+
+                    currentRows = rows;
+                    currentCols = cols;
+
+                    seatMap.clear();
+
+                    for (let r = 1; r <= rows; r++) {
+                        for (let c = 1; c <= cols; c++) {
+                            const seatCode = `${toRowLetter(r)}${c}`;
+                            seatMap.set(`${r}-${c}`, {
+                                rowNo: r,
+                                colNo: c,
+                                seatCode,
+                                active: true
+                            });
+                        }
+                    }
+
+                    renderSeats();
+                    rebuildHiddenInputs();
+                }
+
+                btnGenerate.addEventListener('click', generateSeats);
+
+                // 처음에는 0석, 필요하면 아래 주석 해제해서 기본 생성
+                // generateSeats();
+            })();
+        </script>
+
+</th:block>
+</html>

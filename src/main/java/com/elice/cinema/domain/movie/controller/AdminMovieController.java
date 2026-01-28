@@ -68,7 +68,7 @@ public class AdminMovieController {
     }
 
     @GetMapping("/{movieId}/edit")
-    public String updateMovieForm(
+    public String showUpdateMovieForm(
             @PathVariable Long movieId,
             Model model
     ){
