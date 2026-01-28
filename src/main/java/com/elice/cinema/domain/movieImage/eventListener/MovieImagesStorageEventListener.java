@@ -14,6 +14,6 @@ public class MovieImagesStorageEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(MovieImagesStorageEvent event) {
-            movieImageService.storeImages(event.movieId(), event.thumbnailImage(), event.extraImages());
+        movieImageService.storeImages(event.movieId(), event.thumbnailImage(), event.extraImages());
     }
 }
