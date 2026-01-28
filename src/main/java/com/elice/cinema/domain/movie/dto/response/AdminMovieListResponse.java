@@ -26,5 +26,5 @@ public class AdminMovieListResponse {
     private Double avgScore;
     private Double advanceReservationRate;
     private Set<ScreeningType> screeningTypes;
-    private String thumbnailImageUrl;
+    private String thumbnail;
 }

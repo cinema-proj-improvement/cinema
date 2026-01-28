@@ -3,6 +3,7 @@ package com.elice.cinema.domain.movie.controller;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
 import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
 import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
+import com.elice.cinema.domain.movie.dto.response.MovieDetailResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
 import com.elice.cinema.domain.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +63,7 @@ public class AdminMovieController {
             @PathVariable Long movieId,
             Model model
     ) {
-        AdminMovieListResponse movie = movieService.getAdminMovieDetail(movieId);
+        MovieDetailResponse movie = movieService.getAdminMovieDetail(movieId);
         model.addAttribute("movie", movie);
         return "admin/movie/movie-detail";
     }

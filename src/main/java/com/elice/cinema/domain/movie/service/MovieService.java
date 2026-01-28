@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -52,14 +53,31 @@ public class MovieService {
 
     // 관리자 영화 목록 조회 (검색조건 + 페이지네이션 + 정렬)
     public Page<AdminMovieListResponse> getAdminMovieListPage(AdminMovieSearchRequest request, Pageable pageable) {
-        return movieRepository.findAdminMovieList(request, pageable)
-                .map(movieMapper::toAdminListResponse);
+        Page<Movie> moviePage =
+                movieRepository.findAdminMovieList(request, pageable);
+
+        return moviePage.map(movie -> {
+            String thumbnail = movieImageRepository
+                    .findThumbnailUrlByMovieId(movie.getId())
+                    .orElse(null);
+
+            return movieMapper.toAdminListResponse(movie, thumbnail);
+        });
     }
 
     // 관리자 상세 조회
-    public AdminMovieListResponse getAdminMovieDetail(Long movieId) {
+    public MovieDetailResponse getAdminMovieDetail(Long movieId) {
+
         Movie movie = findMovieById(movieId);
-        return movieMapper.toAdminListResponse(movie);
+
+        String thumbnail = movieImageRepository
+                .findThumbnailUrlByMovieId(movieId)
+                .orElse(null);
+
+        List<String> images = movieImageRepository
+                .findExtraImagesByMovieId(movieId);
+
+        return movieMapper.toMovieDetailResponse(movie, thumbnail, images);
     }
 
     // 업데이트 폼 조회
@@ -87,19 +105,25 @@ public class MovieService {
             String sort,
             Pageable pageable
     ) {
-        Page<Movie> movies = movieRepository.findUserMovies(keyword, sort, pageable);
-
-        return movies.map(movieMapper::toMovieListResponse);
+        return movieRepository.findUserMovies(keyword, sort, pageable)
+                .map(movieMapper::toMovieListResponse);
     }
 
     // 사용자 영화 상세 조회
     public MovieDetailResponse getUserMovieDetail(Long movieId) {
 
-        Movie movie = movieRepository.findUserMovieById(movieId) // [ADD - USER]
+        Movie movie = movieRepository.findUserMovieById(movieId)
                 .orElseThrow(() ->
                         new BusinessException(ErrorCode.MOVIE_NOT_FOUND)
                 );
 
-        return movieMapper.toMovieDetailResponse(movie);
+        String thumbnail = movieImageRepository
+                .findThumbnailUrlByMovieId(movieId)
+                .orElse(null);
+
+        List<String> images = movieImageRepository
+                .findExtraImagesByMovieId(movieId);
+
+        return movieMapper.toMovieDetailResponse(movie, thumbnail, images);
     }
 }

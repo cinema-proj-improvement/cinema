@@ -326,3 +326,25 @@ tbody tr:hover td:last-child a {
     top: 0;
     z-index: 50;
 }
+
+/* =========================
+   Admin Movie List - Thumbnail Box (NEW)
+========================= */
+/* 리스트용 포스터 박스 */
+.poster-box--small {
+    width: 60px;
+    height: 84px;      /* ⭐ 여기서 크기 결정 */
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fafbff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.poster-box--small img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

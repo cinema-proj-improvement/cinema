@@ -23,6 +23,4 @@ public class MovieListResponse {
     private MovieStatus status;
     private String thumbnail;
 
-    private boolean reservable;
-    private int dDay;
 }

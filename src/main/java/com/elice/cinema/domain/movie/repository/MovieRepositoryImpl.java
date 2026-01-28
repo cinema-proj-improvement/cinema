@@ -1,5 +1,6 @@
 package com.elice.cinema.domain.movie.repository;
 
+import com.elice.cinema.domain.movie.dto.MovieWithThumbnail;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSortType;
 import com.elice.cinema.domain.movie.entity.AgeRating;
@@ -7,18 +8,21 @@ import com.elice.cinema.domain.movie.entity.Genre;
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static com.elice.cinema.domain.movie.entity.QMovie.movie;
+import static com.elice.cinema.domain.movieImage.entity.QMovieImage.movieImage;
 
 @RequiredArgsConstructor
 public class MovieRepositoryImpl implements MovieRepositoryCustom {
@@ -54,13 +58,23 @@ public class MovieRepositoryImpl implements MovieRepositoryCustom {
 
     // 사용자 목록
     @Override
-    public Page<Movie> findUserMovies(String keyword, String sort, Pageable pageable) {
+    public Page<MovieWithThumbnail> findUserMovies(String keyword, String sort, Pageable pageable) {
 
         BooleanExpression condition = userVisibleCondition()
-                .and(titleContains(keyword));
+                        .and(titleContains(keyword));
 
-        List<Movie> content = queryFactory
-                .selectFrom(movie)
+        List<MovieWithThumbnail> content = queryFactory
+                .select(Projections.constructor(
+                        MovieWithThumbnail.class,
+                        movie,
+                        movieImage.imageUrl
+                ))
+                .from(movie)
+                .leftJoin(movieImage)
+                .on(
+                        movieImage.movie.eq(movie)
+                                .and(movieImage.displayOrder.eq(0))
+                )
                 .where(condition)
                 .orderBy(getUserSortOrder(sort))
                 .offset(pageable.getOffset())
@@ -68,7 +82,7 @@ public class MovieRepositoryImpl implements MovieRepositoryCustom {
                 .fetch();
 
         Long total = queryFactory
-                .select(movie.count())
+                .select(movie.id.count())
                 .from(movie)
                 .where(condition)
                 .fetchOne();
@@ -147,10 +161,9 @@ public class MovieRepositoryImpl implements MovieRepositoryCustom {
     }
 
     private BooleanExpression titleContains(String keyword) {
-        if (keyword == null || keyword.isBlank()) {
-            return null;
-        }
-        return movie.title.containsIgnoreCase(keyword);
+        return StringUtils.hasText(keyword)
+                ? movie.title.containsIgnoreCase(keyword)
+                : null;
     }
 
     // 검색 기간 영화개봉-종료 하루라도 겹치면 포함

@@ -21,9 +21,11 @@
 
     <!-- 상단 정보 -->
     <section class="movie-summary">
-        <div class="poster">
-            <!-- 이미지 미구현 -->
-            <div class="poster-placeholder"></div>
+        <div class="poster thumbnail-box poster-detail">
+            <img th:src="${movie.thumbnail != null
+            ? movie.thumbnail
+            : '/images/default-movie.png'}"
+                 alt="영화 포스터">
         </div>
 
         <div class="info">
@@ -59,11 +61,15 @@
     <!-- 스틸컷 (미구현) -->
     <section class="movie-section">
         <h3>스틸컷</h3>
-        <div class="stillcut-list">
-            <div class="stillcut-placeholder"></div>
-            <div class="stillcut-placeholder"></div>
-            <div class="stillcut-placeholder"></div>
+        <div class="image-grid">
+            <div class="thumbnail-box stillcut"
+                 th:each="img : ${movie.images}">
+                <img th:src="${img}"
+                     alt="스틸컷"
+                     class="previewable-image">
+            </div>
         </div>
+
     </section>
 
     <!-- 관람평 (미구현) -->
@@ -74,10 +80,16 @@
         </div>
     </section>
 
-</main>
 
+</main>
+<script th:src="@{/js/user/movie-detail.js}"></script>
 <!-- FOOTER -->
 <div th:replace="fragments/footer :: footer"></div>
-
+<!-- Image Preview Modal -->
+<div class="image-preview-overlay" id="imagePreviewOverlay">
+    <div class="image-preview-container">
+        <img id="imagePreviewTarget" alt="미리보기 이미지">
+    </div>
+</div>
 </body>
 </html>

@@ -59,9 +59,10 @@
             <!-- 🔥 포스터 클릭 시 상세 이동 -->
             <a class="poster-link"
                th:href="@{/movies/{movieId}(movieId=${movie.id})}">
-                <div class="poster-placeholder">
-                    <!-- 썸네일 미구현 -->
-                </div>
+                <img class="poster"
+                     th:if="${movie.thumbnail != null and movie.thumbnail != ''}"
+                     th:src="@{${movie.thumbnail}}"
+                     alt="영화 포스터"/>
             </a>
 
             <div class="info">
