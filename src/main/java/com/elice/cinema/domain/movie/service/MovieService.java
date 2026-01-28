@@ -1,7 +1,7 @@
 package com.elice.cinema.domain.movie.service;
 
-import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
+import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
 import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
 import com.elice.cinema.domain.movie.entity.Movie;
@@ -12,8 +12,6 @@ import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
