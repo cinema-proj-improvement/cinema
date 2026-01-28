@@ -1,12 +1,16 @@
 package com.elice.cinema.domain.screen.entity;
 
 import com.elice.cinema.domain.common.ScreeningType;
+import com.elice.cinema.domain.movie.entity.Movie;
+import com.elice.cinema.domain.screening.entity.Screening;
+import com.elice.cinema.domain.screening.entity.ScreeningStatus;
 import com.elice.cinema.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +47,9 @@ public class Screen extends BaseEntity {
     @OneToMany(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Seat> seats = new ArrayList<>();
 
+    @OneToMany(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Screening> screenings = new ArrayList<>();
+
     private Screen(String name,
                    ScreeningType screeningType,
                    Integer totalSeats,
@@ -60,11 +67,20 @@ public class Screen extends BaseEntity {
         return new Screen(name, screeningType, totalSeats, operating);
     }
 
-    public Seat addSeat(String seatCode, boolean active, Integer rowNo, Integer colNo) {
+    public void addSeat(String seatCode, boolean active, Integer rowNo, Integer colNo) {
         Seat seat = Seat.of(seatCode, active, rowNo, colNo); // screen 없이 생성
         seats.add(seat);
         seat.setScreen(this);
-        return seat;
+    }
+
+    public void addScreening(Movie movie,
+                             ScreeningType screeningType,
+                             LocalDateTime startAt,
+                             LocalDateTime endAt,
+                             ScreeningStatus screeningStatus) {
+        Screening screening = Screening.of(movie, screeningType, startAt, endAt, screeningStatus); // screen 없이 생성
+        screenings.add(screening);
+        screening.assignScreen(this);
     }
 
     public void updateAll(String name,
