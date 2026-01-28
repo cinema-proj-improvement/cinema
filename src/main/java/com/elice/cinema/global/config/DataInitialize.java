@@ -3,6 +3,8 @@ package com.elice.cinema.global.config;
 import com.elice.cinema.domain.member.entity.Member;
 import com.elice.cinema.domain.member.entity.Role;
 import com.elice.cinema.domain.member.repository.MemberRepository;
+import com.elice.cinema.domain.policy.entity.EnvironmentPolicy;
+import com.elice.cinema.domain.policy.repository.EnvironmentPolicyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class DataInitialize implements CommandLineRunner {
     private final MemberRepository memberRepository;
+    private final EnvironmentPolicyRepository environmentPolicyRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -51,6 +54,24 @@ public class DataInitialize implements CommandLineRunner {
             memberRepository.save(user);
 
             log.info("일반 사용자 계정 생성 완료: user@test.com / 1234");
+        }
+
+        /* ================= 환경변수 정책 ================= */
+
+        if (!environmentPolicyRepository.existsById(1L)) {
+
+            EnvironmentPolicy policy = new EnvironmentPolicy(
+                    15, // cleaningMinutes
+                    15, // reservationDeadlineMinutes
+                    20, // refundDeadlineMinutes
+                    8,  // maxReservationCount
+                    7,  // scheduledToOpenDays
+                    20, // openToClosedMinutes
+                    10  // cinemaOpenHour
+            );
+
+            environmentPolicyRepository.save(policy);
+            log.info("환경변수 정책 초기 데이터 생성 완료 (id=1)");
         }
     }
 }
