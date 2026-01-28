@@ -6,7 +6,7 @@
 
 <!-- ===== 페이지 전용 CSS ===== -->
 <th:block th:fragment="pageCss">
-    <link rel="stylesheet" th:href="@{/css/admin/movie-detail.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/movie/movie-detail.css}">
 </th:block>
 
 <!-- ===== 페이지 컨텐츠 ===== -->
@@ -36,9 +36,9 @@
             <div class="detail-grid">
 
                 <!-- Poster -->
-                <div class="poster-area">
-                    <img th:src="${movie.thumbnailImageUrl != null
-                            ? movie.thumbnailImageUrl
+                <div class="poster-box poster-box--detail">
+                    <img th:src="${movie.thumbnail != null
+                            ? movie.thumbnail
                             : '/images/default-movie.png'}"
                          alt="포스터">
                 </div>
@@ -113,18 +113,20 @@
                 <h2>추가 이미지</h2>
 
                 <div class="image-grid">
-                    <!--
-                    추후 운영 연동 시 활성화
-                    <img th:each="img : ${movie.extraImageUrls}"
+                    <img th:each="img : ${movie.images}"
                          th:src="${img}"
                          alt="추가 이미지">
-                    -->
                 </div>
             </section>
+
+            <div class="image-modal" id="imageModal">
+                <img id="modalImage" alt="이미지 확대 보기">
+            </div>
 
         </section>
 
     </main>
+    <script th:src="@{/js/admin/movie-detail.js}"></script>
 
 </th:block>
 </html>

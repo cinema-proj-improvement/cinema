@@ -1,0 +1,193 @@
+/* 전체 배경 */
+body {
+    background: #ffffff;
+    color: #111827;
+    font-family: Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 페이지 레이아웃 */
+.movie-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+}
+
+/* 타이틀 */
+.movie-title h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.movie-title p {
+    color: #6b7280;
+    margin-bottom: 32px;
+}
+
+/* 검색 / 정렬 */
+.movie-util {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.movie-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.movie-search-form {
+    display: flex;
+    align-items: center;
+}
+
+/* 🔽 여기부터 색만 수정 */
+.movie-search-form input {
+    width: 200px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #d1d5db;     /* 연회색 테두리 */
+    border-radius: 4px 0 0 4px;
+    background: #f9fafb;           /* 밝은 회색 배경 */
+    color: #111827;                /* 진회색 텍스트 */
+}
+
+.movie-search-form button {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #d1d5db;
+    border-left: none;
+    background: #f3f4f6;           /* 버튼은 살짝 더 진한 회색 */
+    color: #6b7280;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+}
+
+.movie-sort {
+    height: 36px;
+    background: #f9fafb;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 0 8px;
+}
+
+/* 포커스/호버 자연스럽게 */
+.movie-search-form input:focus,
+.movie-sort:focus {
+    outline: none;
+    border-color: #9ca3af;
+    background: #ffffff;
+}
+
+.movie-search-form button:hover {
+    background: #e5e7eb;
+}
+
+
+
+/* 카드 리스트 */
+.movie-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 28px;
+}
+
+/* 카드 */
+.movie-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+/* 포스터 */
+.poster img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    background: #f3f4f6;
+}
+
+/* 포스터 링크 기본 스타일 제거 */
+.poster-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* 포스터 hover 시 클릭 가능하다는 느낌 */
+.poster-link:hover img {
+    opacity: 0.92;
+}
+/* 리스트 썸네일 카드 */
+.poster-placeholder {
+    width: 100%;
+    height: 260px;
+    background: #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+/* 클릭 가능한 느낌 */
+.poster-link {
+    display: block;
+    text-decoration: none;
+}
+
+
+/* 정보 영역 */
+.info {
+    padding: 14px;
+}
+
+.info h3 {
+    font-size: 15px;
+    margin-bottom: 6px;
+}
+
+.release-date {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 10px;
+}
+
+.meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+/* 예매 버튼 */
+.reserve-btn {
+    display: block;
+    margin-top: 12px;
+    text-align: center;
+    padding: 10px 0;
+    background: #14b8a6;
+    color: #ffffff;
+    font-weight: 700;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.poster-link {
+    display: block;
+    width: 100%;
+
+    aspect-ratio: 2 / 3;   /* 🎯 영화 포스터 표준 비율 */
+    background-color: #f3f4f6;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+

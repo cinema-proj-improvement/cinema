@@ -8,23 +8,29 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Getter
 @AllArgsConstructor
-public class AdminMovieListResponse {
+public class MovieDetailResponse {
 
     private Long id;
     private String title;
-    private String synopsis;
-    private int runningTimeMinutes;
-    private Set<Genre> genres;
+    private Integer runningTimeMinutes;
+
     private LocalDate releaseDate;
     private LocalDate endDate;
-    private MovieStatus status;
     private AgeRating ageRating;
+    private String synopsis;
+    private Set<Genre> genres;
+    private Set<ScreeningType> screeningTypes;
     private Double avgScore;
     private Double advanceReservationRate;
-    private Set<ScreeningType> screeningTypes;
+    private MovieStatus status;
+
     private String thumbnail;
+    private List<String> images;
+    private Long audienceCount;
+
 }
