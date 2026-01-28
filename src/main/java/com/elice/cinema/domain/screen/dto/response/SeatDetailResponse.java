@@ -5,10 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ScreenSeatResponse {
+public class SeatDetailResponse {
     private Long id;
     private String seatCode;
     private Boolean active;
-    private Integer rowNo;
-    private Integer colNo;
 }

@@ -1,6 +1,7 @@
 package com.elice.cinema.domain.screen.mapper;
 
 import com.elice.cinema.domain.screen.dto.request.ScreenCreateRequest;
+import com.elice.cinema.domain.screen.dto.request.ScreenUpdateRequest;
 import com.elice.cinema.domain.screen.dto.response.ScreenDetailResponse;
 import com.elice.cinema.domain.screen.dto.response.ScreenListResponse;
 import com.elice.cinema.domain.screen.entity.Screen;
@@ -17,6 +18,7 @@ public interface ScreenMapper {
         );
     }
 
+    public abstract ScreenUpdateRequest toScreenUpdateRequest(Screen screen);
     public abstract ScreenListResponse toScreenListResponse(Screen screen);
     public abstract ScreenDetailResponse toScreenDetailResponse(Screen screen);
 }

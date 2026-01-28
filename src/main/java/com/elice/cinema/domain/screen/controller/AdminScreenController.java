@@ -3,6 +3,7 @@ package com.elice.cinema.domain.screen.controller;
 
 import com.elice.cinema.domain.common.ScreeningType;
 import com.elice.cinema.domain.screen.dto.request.ScreenCreateRequest;
+import com.elice.cinema.domain.screen.dto.request.ScreenUpdateRequest;
 import com.elice.cinema.domain.screen.dto.response.ScreenDetailResponse;
 import com.elice.cinema.domain.screen.dto.response.ScreenListResponse;
 import com.elice.cinema.domain.screen.service.ScreenService;
@@ -35,7 +36,8 @@ public class AdminScreenController {
     }
 
     @GetMapping("/{screenId}")
-    public String getScreenDetail(@PathVariable Long screenId, Model model) {
+    public String getScreenDetail(@PathVariable Long screenId,
+                                  Model model) {
         ScreenDetailResponse screen = screenService.getScreenDetail(screenId);
         int availableSeats = screenService.getAvailableSeatCount(screenId);
 
@@ -58,13 +60,11 @@ public class AdminScreenController {
             BindingResult bindingResult,
             Model model
     ) {
-        // DTO 유효성 실패
         if (bindingResult.hasErrors()) {
             model.addAttribute("screeningTypes", ScreeningType.values());
             return "admin/screen/screen-create";
         }
 
-        // 비즈니스 검증 (서비스 레벨)
         try {
             screenService.createScreen(form);
         } catch (BusinessException e) {
@@ -73,7 +73,38 @@ public class AdminScreenController {
             return "admin/screen/screen-create";
         }
 
-        // 성공 → 목록으로
         return "redirect:/admin/screens";
     }
+
+   @GetMapping("/{screenId}/edit")
+    public String showUpdateScreenForm(@PathVariable Long screenId,
+                                       Model model) {
+       ScreenUpdateRequest form = screenService.getScreenUpdateForm(screenId);
+       model.addAttribute("screenId", screenId);
+       model.addAttribute("form", form);
+       model.addAttribute("screeningTypes", ScreeningType.values());
+       return "admin/screen/screen-update";
+   }
+
+    @PutMapping("/{screenId}/edit")
+    public String updateScreen(@PathVariable Long screenId,
+                               @Valid @ModelAttribute("form") ScreenUpdateRequest form,
+                               BindingResult bindingResult,
+                               Model model){
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("screeningTypes", ScreeningType.values());
+            return "admin/screen/screen-update";
+        }
+
+        try {
+            screenService.updateScreen(screenId, form);
+        } catch (BusinessException e) {
+            bindingResult.reject("screen.update.fail", e.getMessage());
+            model.addAttribute("screeningTypes", ScreeningType.values());
+            return "admin/screen/screen-update";
+        }
+
+        return "redirect:/admin/screens/{screenId}";
+    }
+
 }

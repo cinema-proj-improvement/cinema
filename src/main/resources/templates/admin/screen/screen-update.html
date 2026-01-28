@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: layout(
+        '상영관 수정', 'screens', ~{::pageCss}, ~{::content}
+      )}">
+
+<th:block th:fragment="pageCss">
+    <link rel="stylesheet" th:href="@{/css/admin/screen/screen-update.css}">
+</th:block>
+
+<th:block th:fragment="content">
+
+    <!-- 상단 헤더 -->
+    <div class="page-head">
+        <a class="back-link" th:href="@{/admin/screens}">‹</a>
+        <h1 class="page-title">상영관 수정</h1>
+    </div>
+
+    <!-- 안내 배너 (선택) -->
+    <div class="notice-banner">
+        <div class="notice-icon">!</div>
+        <div class="notice-body">
+            <div class="notice-title">상영관 삭제 정책</div>
+            <div class="notice-desc">
+                상영관은 직접 삭제할 수 없습니다. 대신 운영 상태를 "미운영"으로 변경하여 관리하세요.
+            </div>
+        </div>
+    </div>
+
+    <!-- 수정 폼 -->
+    <form class="screen-form"
+          th:action="@{/admin/screens/{id}/edit(id=${screenId})}"
+          method="post"
+          th:object="${form}">
+
+        <!-- PUT 유지하려면 -->
+        <input type="hidden" name="_method" value="put"/>
+
+        <div class="form-error"
+             th:if="${#fields.hasGlobalErrors()}">
+            <p th:each="err : ${#fields.globalErrors()}"
+               th:text="${err}"></p>
+        </div>
+
+        <section class="card">
+            <h2 class="card-title">기본 정보</h2>
+
+            <!-- 상영관명 -->
+            <div class="field">
+                <label class="field-label" for="name">
+                    상영관명 <span class="req">*</span>
+                </label>
+
+                <input class="input"
+                       id="name"
+                       type="text"
+                       th:field="*{name}"
+                       placeholder="예) 7관"/>
+
+                <p class="hint">상영관명은 고유해야 합니다.</p>
+
+                <p class="field-error"
+                   th:if="${#fields.hasErrors('name')}"
+                   th:errors="*{name}">상영관명 오류</p>
+            </div>
+
+            <!-- 운영 상태 -->
+            <div class="field">
+                <label class="field-label" for="operating">
+                    운영 상태 <span class="req">*</span>
+                </label>
+
+                <select class="select"
+                        id="operating"
+                        th:field="*{operating}">
+                    <option th:value="true">운영중</option>
+                    <option th:value="false">미운영</option>
+                </select>
+
+                <p class="field-error"
+                   th:if="${#fields.hasErrors('operating')}"
+                   th:errors="*{operating}">운영 상태 오류</p>
+            </div>
+
+            <!-- 지원 상영 타입 -->
+            <div class="field">
+                <label class="field-label">
+                    지원 상영 타입 <span class="req">*</span>
+                </label>
+
+                <div class="checkbox-grid">
+                    <label class="check-item"
+                           th:each="type : ${screeningTypes}">
+                        <input type="radio"
+                               th:field="*{screeningType}"
+                               th:value="${type}">
+                        <span th:text="${type.displayName}">2D</span>
+                    </label>
+                </div>
+
+                <p class="field-error"
+                   th:if="${#fields.hasErrors('screeningType')}"
+                   th:errors="*{screeningType}">상영 타입 오류</p>
+            </div>
+        </section>
+
+        <!-- 하단 버튼 -->
+        <div class="form-actions">
+            <a class="btn outline"
+               th:href="@{/admin/screens}">
+                취소
+            </a>
+
+            <button class="btn primary" type="submit">
+                수정
+            </button>
+        </div>
+    </form>
+
+</th:block>
+</html>
