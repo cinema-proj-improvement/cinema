@@ -1,18 +1,18 @@
 package com.elice.cinema.domain.screen.dto.response;
 
 import com.elice.cinema.domain.common.ScreeningType;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 @Getter
-@Builder
+@Setter
 public class ScreenDetailResponse {
     private String name;
     private ScreeningType screeningType;
     private Integer totalSeats;
-    private boolean operating;
+    private Boolean operating;
 
     private List<ScreenSeatResponse> seats;
 }

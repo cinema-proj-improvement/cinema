@@ -55,5 +55,9 @@ public class Seat extends BaseEntity {
     protected void setScreen(Screen screen) {
         this.screen = screen;
     }
+
+    public void setActive(Boolean active){
+        this.active = active;
+    }
 }
 

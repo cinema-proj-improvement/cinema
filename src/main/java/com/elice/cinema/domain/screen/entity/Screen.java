@@ -66,5 +66,14 @@ public class Screen extends BaseEntity {
         seat.setScreen(this);
         return seat;
     }
+
+    public void updateAll(String name,
+                          ScreeningType screeningType,
+                          Boolean operating) {
+
+        this.name = name;
+        this.screeningType = screeningType;
+        this.operating = operating;
+    }
 }
 

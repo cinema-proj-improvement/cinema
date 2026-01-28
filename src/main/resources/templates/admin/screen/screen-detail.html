@@ -10,6 +10,10 @@
 
 <th:block th:fragment="content">
 
+  <!-- ✅ CSRF (fetch에서 읽어서 헤더로 전송) -->
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
   <!-- 상단 헤더 -->
   <div class="page-head">
     <a class="back-link" th:href="@{/admin/screens}">‹</a>
@@ -47,53 +51,34 @@
 
     <div class="summary-card summary-card-blue">
       <div class="summary-label">사용 가능</div>
-      <div class="summary-value" th:text="${availableSeats} + '석'">120석</div>
+      <div class="summary-value" id="availableSeatsValue"
+           th:text="${availableSeats} + '석'">120석</div>
     </div>
   </section>
 
   <!-- 좌석 관리 툴바 -->
   <section class="seat-card">
-    <div class="seat-toolbar">
-      <div class="toolbar-left">
-        <button class="btn outline" type="button">＋ 좌석 추가</button>
-        <button class="btn outline" type="button">✎ 좌석 수정</button>
-        <button class="btn outline danger" type="button">🗑 좌석 삭제</button>
-      </div>
-
-      <div class="toolbar-right">
-        <div class="seat-count">
-          좌석 수
-          <strong class="count-strong" th:text="${availableSeats}">120</strong>
-          /
-          <span th:text="${screen.totalSeats}">120</span>
-        </div>
-      </div>
-    </div>
-
     <div class="seat-notice">
       <div class="notice-title">좌석 관리 제약 안내</div>
       <ul class="notice-list">
-        <li>좌석 추가/삭제/배치 변경은 <strong>상영관 미운영 상태</strong>에서만 가능합니다.</li>
-        <li>좌석 사용 가능 여부는 <strong>운영 중</strong>에도 변경할 수 있습니다.</li>
+        <li>좌석 상세 정보는 해당 좌석을 클릭하여 확인할 수 있습니다.</li>
+        <li>좌석 비활성화는 해당 상영관의 상영이 없을 경우에만 가능합니다.</li>
       </ul>
     </div>
   </section>
 
-  <!-- 좌석 배치 (screen-create 방식으로 JS 렌더링) -->
+  <!-- 좌석 배치 -->
   <section class="seat-map-card">
-
     <div class="screen-bar"></div>
     <div class="screen-text">SCREEN</div>
 
-    <!-- ✅ create처럼 비워두고 JS가 row-label + seat 버튼을 생성 -->
     <div class="seat-wrap" id="seatWrapDetail"></div>
 
-    <!-- ✅ 서버 seats를 JS로 전달 (rowNo/colNo/seatCode/active) -->
+    <!-- ✅ 서버 seats를 JS로 전달 -->
     <script th:inline="javascript">
       window.__SEATS__ = /*[[${screen.seats}]]*/ [];
     </script>
 
-    <!-- 범례(create와 동일) -->
     <div class="seat-legend">
       <div class="legend-item">
         <span class="legend-box on"></span>
@@ -106,38 +91,88 @@
     </div>
   </section>
 
+  <!-- ✅ 좌석 상세 모달 -->
+  <div id="seatDetailModal" class="modal-backdrop" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h3>좌석 상세</h3>
+        <button type="button" class="modal-close" id="seatModalClose">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <span class="label">좌석 ID</span>
+          <span id="seatDetailId">-</span>
+        </div>
+        <div class="row">
+          <span class="label">좌석 코드</span>
+          <span id="seatDetailCode">-</span>
+        </div>
+
+        <div class="row">
+          <span class="label">사용 여부</span>
+          <select id="seatDetailActiveSelect" class="select">
+            <option value="true">사용 가능</option>
+            <option value="false">사용 불가</option>
+          </select>
+        </div>
+
+        <div id="seatModalError" class="modal-error" hidden></div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn outline" id="seatModalApply">적용</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function () {
       const wrap = document.getElementById('seatWrapDetail');
       if (!wrap) return;
 
+      // ✅ 사용 가능 좌석 숫자 엘리먼트
+      const availableEl = document.getElementById('availableSeatsValue');
+
+      /* ===== CSRF utils ===== */
+      function getCsrf() {
+        const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+        return { token, header };
+      }
+
+      function getAvailableCount() {
+        if (!availableEl) return null;
+        return parseInt((availableEl.textContent || '0').replace(/[^\d]/g, ''), 10) || 0;
+      }
+
+      function setAvailableCount(n) {
+        if (!availableEl) return;
+        availableEl.textContent = `${n}석`;
+      }
+
+      /* ===== seats 렌더링 ===== */
       const seats = (window.__SEATS__ || []).slice();
 
-      // ✅ seats에서 rows/cols 계산 (model seatRows/seatCols 제거)
       const rows = seats.length ? Math.max(...seats.map(s => Number(s.rowNo || 0))) : 1;
       const cols = seats.length ? Math.max(...seats.map(s => Number(s.colNo || 0))) : 1;
 
-      // grid 크기 적용 (seat-wrap CSS가 var(--rows/--cols) 사용)
       wrap.style.setProperty('--rows', String(rows));
       wrap.style.setProperty('--cols', String(cols));
 
       function toRowLetter(rowNo) {
-        // 1->A, 2->B ...
         return String.fromCharCode('A'.charCodeAt(0) + (rowNo - 1));
       }
-
       function clear(el) {
         while (el.firstChild) el.removeChild(el.firstChild);
       }
 
-      // key: "r-c"
       const seatMap = new Map();
       seats.forEach(s => {
         const r = Number(s.rowNo);
         const c = Number(s.colNo);
         seatMap.set(`${r}-${c}`, {
-          rowNo: r,
-          colNo: c,
+          id: s.id,
           seatCode: s.seatCode,
           active: !!s.active
         });
@@ -147,7 +182,6 @@
         clear(wrap);
 
         for (let r = 1; r <= rows; r++) {
-          // row label
           const label = document.createElement('div');
           label.className = 'row-label';
           label.style.gridRow = String(r);
@@ -159,25 +193,17 @@
             const key = `${r}-${c}`;
             const seat = seatMap.get(key);
 
-            // ✅ 빈칸 좌석도 그리드 칸 유지하려면 "off" 더미로 표시
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'seat ' + (seat && seat.active ? 'on' : 'off');
-            btn.dataset.key = key;
-
             btn.style.gridRow = String(r);
-            btn.style.gridColumn = String(c + 1); // 1은 행 라벨
+            btn.style.gridColumn = String(c + 1);
 
-            if (seat && seat.active) {
-              btn.textContent = seat.seatCode;
+            if (seat) {
+              btn.dataset.seatId = String(seat.id);
+              btn.textContent = seat.active ? seat.seatCode : 'X';
               btn.title = seat.seatCode;
-            } else if (seat) {
-              btn.textContent = 'X';
-              btn.title = seat.seatCode + ' (사용 불가)';
             } else {
-              // 데이터에 없는 칸(구멍)
-              btn.textContent = '';
-              btn.title = '좌석 없음';
               btn.disabled = true;
               btn.classList.add('off');
             }
@@ -189,14 +215,135 @@
 
       render();
 
-      // ✅ create 느낌: off는 클릭 무시, on만 선택 토글
-      wrap.addEventListener('click', (e) => {
-        const btn = e.target.closest('.seat');
-        if (!btn) return;
-        if (!wrap.contains(btn)) return;
-        if (btn.classList.contains('off')) return;
+      /* ===== 모달 ===== */
+      const modal = document.getElementById('seatDetailModal');
+      const closeBtn = document.getElementById('seatModalClose');
+      const applyBtn = document.getElementById('seatModalApply');
 
-        btn.classList.toggle('seat-selected');
+      const seatDetailId = document.getElementById('seatDetailId');
+      const seatDetailCode = document.getElementById('seatDetailCode');
+      const seatActiveSelect = document.getElementById('seatDetailActiveSelect');
+      const errorBox = document.getElementById('seatModalError');
+
+      if (!modal || !closeBtn || !applyBtn || !seatDetailId || !seatDetailCode || !seatActiveSelect) return;
+
+      let currentSeatId = null;
+      let originalActive = null;
+
+      function openModal() { modal.hidden = false; }
+      function closeModal() { modal.hidden = true; }
+
+      function showError(msg) {
+        if (!errorBox) return;
+        errorBox.hidden = false;
+        errorBox.textContent = msg;
+      }
+      function clearError() {
+        if (!errorBox) return;
+        errorBox.hidden = true;
+        errorBox.textContent = '';
+      }
+
+      closeBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+      // ✅ 좌석 클릭 → 상세 조회
+      wrap.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.seat');
+        if (!btn || btn.disabled) return;
+
+        const seatId = btn.dataset.seatId;
+        if (!seatId) return;
+
+        clearError();
+
+        try {
+          const res = await fetch(`/admin/seats/${seatId}`, {
+            method: 'GET',
+            credentials: 'same-origin'
+          });
+          if (!res.ok) throw new Error(`좌석 상세 조회 실패 (${res.status})`);
+
+          const data = await res.json();
+
+          currentSeatId = String(data.id);
+          originalActive = !!data.active;
+
+          seatDetailId.textContent = data.id ?? '-';
+          seatDetailCode.textContent = data.seatCode ?? '-';
+          seatActiveSelect.value = originalActive ? 'true' : 'false';
+
+          openModal();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      // ✅ 적용 버튼 → PATCH + CSRF + "사용 가능" 숫자 즉시 갱신
+      applyBtn.addEventListener('click', async () => {
+        if (!currentSeatId) return;
+
+        clearError();
+
+        const nextActive = (seatActiveSelect.value === 'true');
+        if (nextActive === originalActive) {
+          closeModal();
+          return;
+        }
+
+        const beforeActive = originalActive; // ✅ 변경 전 상태
+        const afterActive = nextActive;      // ✅ 변경 후(선택값)
+
+        const { token, header } = getCsrf();
+        const headers = { 'Content-Type': 'application/json' };
+        if (token && header) headers[header] = token;
+
+        try {
+          const res = await fetch(`/admin/seats/${currentSeatId}/active`, {
+            method: 'PATCH',
+            credentials: 'same-origin',
+            headers,
+            body: JSON.stringify({ active: nextActive })
+          });
+
+          if (!res.ok) {
+            const text = await res.text().catch(() => '');
+            throw new Error(text || `좌석 상태 변경 실패 (${res.status})`);
+          }
+
+          const updated = await res.json();
+          originalActive = !!updated.active; // 서버 기준
+
+          // ✅ 좌석 버튼 UI 갱신
+          const seatBtn = wrap.querySelector(`.seat[data-seat-id="${currentSeatId}"]`);
+          if (seatBtn) {
+            seatBtn.classList.toggle('on', originalActive);
+            seatBtn.classList.toggle('off', !originalActive);
+            seatBtn.textContent = originalActive ? updated.seatCode : 'X';
+          }
+
+          // ✅ 사용 가능 좌석 수 즉시 갱신 (+1 / -1)
+          const currentCount = getAvailableCount();
+          if (currentCount !== null) {
+            let nextCount = currentCount;
+
+            // 비활성 -> 활성 : +1
+            if (beforeActive === false && afterActive === true) nextCount = currentCount + 1;
+
+            // 활성 -> 비활성 : -1
+            if (beforeActive === true && afterActive === false) nextCount = currentCount - 1;
+
+            // 안전장치 (음수 방지)
+            if (nextCount < 0) nextCount = 0;
+
+            setAvailableCount(nextCount);
+          }
+
+          seatActiveSelect.value = originalActive ? 'true' : 'false';
+          closeModal();
+        } catch (err) {
+          showError(err.message);
+        }
       });
     })();
   </script>
