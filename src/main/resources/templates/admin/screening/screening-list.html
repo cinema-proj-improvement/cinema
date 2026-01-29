@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: layout(
+        '상영 관리',
+        'screenings',
+        ~{::pageCss},
+        ~{::content}
+      )}">
+
+<!-- ================= Page CSS ================= -->
+<th:block th:fragment="pageCss">
+    <link rel="stylesheet" th:href="@{/css/admin/screening/screening-list.css}">
+</th:block>
+
+<!-- ================= Page Content ================= -->
+<th:block th:fragment="content">
+
+    <!-- ================= Header ================= -->
+    <div class="content-header">
+        <h1>상영 관리</h1>
+        <a th:href="@{/admin/screenings/new}" class="btn primary">
+            + 상영 등록
+        </a>
+    </div>
+
+    <!-- ================= 기간 선택 ================= -->
+    <section class="card filter-card">
+        <div class="filter-header">
+            <div class="filter-title">
+                <span class="icon">📅</span>
+                <span>기간 선택</span>
+            </div>
+
+            <form method="get" th:action="@{/admin/screenings}" class="date-range">
+                <input type="date" name="startDate" th:value="${search.startDate}">
+                <span>~</span>
+                <input type="date" name="endDate" th:value="${search.endDate}">
+                <input type="hidden" name="movieId" th:value="${search.movieId}">
+                <input type="hidden" name="screenId" th:value="${search.screenId}">
+                <input type="hidden" name="keyword" th:value="${search.keyword}">
+            </form>
+        </div>
+    </section>
+
+    <!-- ================= 영화 필터 ================= -->
+    <section class="card filter-card">
+        <div class="filter-header">
+            <div class="filter-title">
+                <span class="icon">🎬</span>
+                <span>영화별 필터</span>
+            </div>
+
+            <form method="get" th:action="@{/admin/screenings}" class="search-input">
+                <input type="text"
+                       name="keyword"
+                       placeholder="영화 제목 검색"
+                       th:value="${search.keyword}">
+                <input type="hidden" name="startDate" th:value="${search.startDate}">
+                <input type="hidden" name="endDate" th:value="${search.endDate}">
+                <input type="hidden" name="movieId" th:value="${search.movieId}">
+                <input type="hidden" name="screenId" th:value="${search.screenId}">
+            </form>
+        </div>
+
+        <div class="filter-options">
+            <a class="pill"
+               th:href="@{/admin/screenings(
+                    startDate=${search.startDate},
+                    endDate=${search.endDate},
+                    screenId=${search.screenId},
+                    keyword=${search.keyword}
+               )}"
+               th:classappend="${search.movieId == null} ? 'selected'">
+                전체
+            </a>
+
+            <a class="pill"
+               th:each="movie : ${movies}"
+               th:href="@{/admin/screenings(
+                    movieId=${movie.id},
+                    startDate=${search.startDate},
+                    endDate=${search.endDate},
+                    screenId=${search.screenId},
+                    keyword=${search.keyword}
+               )}"
+               th:classappend="${search.movieId == movie.id} ? 'selected'">
+                <span th:text="${movie.title}"></span>
+            </a>
+        </div>
+    </section>
+
+    <!-- ================= 상영관 필터 ================= -->
+    <section class="card filter-card">
+        <div class="filter-header">
+            <div class="filter-title">
+                <span class="icon">🏢</span>
+                <span>상영관별 필터</span>
+            </div>
+        </div>
+
+        <div class="filter-options">
+            <a class="pill"
+               th:href="@{/admin/screenings(
+                    startDate=${search.startDate},
+                    endDate=${search.endDate},
+                    movieId=${search.movieId},
+                    keyword=${search.keyword}
+               )}"
+               th:classappend="${search.screenId == null} ? 'selected'">
+                전체
+            </a>
+
+            <a class="pill"
+               th:each="screen : ${screens}"
+               th:href="@{/admin/screenings(
+                    screenId=${screen.id},
+                    startDate=${search.startDate},
+                    endDate=${search.endDate},
+                    movieId=${search.movieId},
+                    keyword=${search.keyword}
+               )}"
+               th:classappend="${search.screenId == screen.id} ? 'selected'">
+                <span th:text="${screen.name}"></span>
+            </a>
+        </div>
+    </section>
+
+    <!-- ================= Table ================= -->
+    <section class="card">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>날짜</th>
+                <th>시간</th>
+                <th>영화</th>
+                <th>상영관</th>
+                <th>유형</th>
+                <th>예약 현황</th>
+                <th>상태</th>
+                <th></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="screening : ${screenings.content}">
+                <td th:text="${screening.date}"></td>
+                <td>
+                    <span th:text="${screening.startTime}"></span>
+                    ~
+                    <span th:text="${screening.endTime}"></span>
+                </td>
+                <td th:text="${screening.movieTitle}"></td>
+                <td th:text="${screening.screenName}"></td>
+                <td th:text="${screening.screeningType}"></td>
+                <td>
+                    <span th:text="${screening.reservedSeatCount}"></span>
+                    /
+                    <span th:text="${screening.totalSeatCount}"></span>
+                </td>
+                <td>
+                    <span class="status"
+                          th:classappend="${screening.status}"
+                          th:text="${screening.status}">
+                    </span>
+                </td>
+                <td>
+                    <a th:href="@{/admin/screenings/{id}(id=${screening.id})}"
+                       class="detail-link">→</a>
+                </td>
+            </tr>
+
+            <tr th:if="${screenings.totalElements == 0}">
+                <td colspan="8" class="empty">
+                    조회된 상영 회차가 없습니다.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ================= Pagination ================= -->
+    <div class="pagination" th:if="${screenings.totalPages > 1}">
+        <a th:if="${screenings.hasPrevious()}"
+           th:href="@{/admin/screenings(page=${screenings.number - 1})}">
+            이전
+        </a>
+
+        <a th:each="i : ${#numbers.sequence(0, screenings.totalPages - 1)}"
+           th:href="@{/admin/screenings(page=${i})}"
+           th:text="${i + 1}"
+           th:classappend="${i == screenings.number} ? 'active'">
+        </a>
+
+        <a th:if="${screenings.hasNext()}"
+           th:href="@{/admin/screenings(page=${screenings.number + 1})}">
+            다음
+        </a>
+    </div>
+
+</th:block>
+</html>

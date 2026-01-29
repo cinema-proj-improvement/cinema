@@ -1,0 +1,157 @@
+/* ================= 공통 카드 ================= */
+.card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+/* ================= 필터 카드 ================= */
+.filter-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filter-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.date-range input {
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+}
+
+/* ================= 검색 ================= */
+.search-input input {
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    width: 220px;
+}
+
+/* ================= 필터 옵션 ================= */
+.filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* ================= Pill ================= */
+.pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    font-size: 13px;
+    cursor: pointer;
+    background: #ffffff;
+}
+
+.pill input {
+    display: none;
+}
+
+.pill.selected {
+    background: #eef2ff;
+    border-color: #6366f1;
+    color: #4f46e5;
+}
+
+/* ================= 버튼 ================= */
+.filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+/* ================= 테이블 ================= */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table thead th {
+    background: #f9fafb;
+    padding: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-align: left;
+}
+
+.admin-table tbody td {
+    padding: 16px;
+    border-top: 1px solid #f1f5f9;
+    font-size: 14px;
+    color: #374151;
+}
+
+/* ================= 상태 ================= */
+.status {
+    display: inline-flex;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+/* ================= 기타 ================= */
+.detail-link {
+    color: #9ca3af;
+    text-decoration: none;
+}
+
+.detail-link:hover {
+    color: #374151;
+}
+
+.empty {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+}
+/* 페이지 내부 헤더 */
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 16px;
+}
+
+.content-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.content-header .btn {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 8px;
+}
