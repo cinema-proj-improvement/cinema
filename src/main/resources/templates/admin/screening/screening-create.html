@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: layout(
+        '상영 추가', 'screenings', ~{::pageCss}, ~{::content}
+      )}">
+
+<th:block th:fragment="pageCss">
+    <link rel="stylesheet" th:href="@{/css/admin/screening/screening-create.css}">
+</th:block>
+
+<th:block th:fragment="content">
+
+    <div class="page-head">
+        <a class="back-link" th:href="@{/admin/screenings}">‹ 목록으로 돌아가기</a>
+        <h1 class="page-title">상영 추가</h1>
+    </div>
+
+    <div class="layout">
+        <!-- LEFT: FORM -->
+        <section class="card">
+            <h2 class="card-title">기본 정보</h2>
+
+            <form id="screeningForm" th:action="@{/admin/screenings}" method="post">
+                <!-- 영화 -->
+                <div class="field">
+                    <label class="label">영화 <span class="req">*</span></label>
+                    <select class="select" id="movieId" name="movieId" required>
+                        <option value="">영화를 선택하세요</option>
+                        <option th:each="m : ${movies}"
+                                th:value="${m.id}"
+                                th:text="${m.title} + ' (' + ${m.runningTimeMinutes} + '분)'"
+                                th:attr="data-running=${m.runningTimeMinutes}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- 상영 타입 -->
+                <div class="field">
+                    <label class="label">상영 타입 <span class="req">*</span></label>
+                    <select class="select" id="screeningType" name="screeningType" required disabled>
+                        <option value="">영화를 먼저 선택하세요</option>
+                    </select>
+                    <p class="help">영화 선택 후 가능한 상영 타입이 표시됩니다.</p>
+                </div>
+
+                <!-- 상영관 -->
+                <div class="field">
+                    <label class="label">상영관 <span class="req">*</span></label>
+                    <select class="select" id="screenId" name="screenId" required disabled>
+                        <option value="">영화/타입 선택 후 상영관이 표시됩니다</option>
+                    </select>
+                </div>
+
+                <!-- 날짜 -->
+                <div class="field">
+                    <label class="label">날짜 <span class="req">*</span></label>
+                    <input class="input" type="date" id="date" required>
+                    <p class="help">날짜를 선택하면 우측에 상영관 시간표가 갱신됩니다.</p>
+                </div>
+
+                <!-- 시간 설정 -->
+                <div class="card-sub">
+                    <h3 class="card-sub-title">시간 설정</h3>
+
+                    <div class="field inline">
+                        <div class="grow">
+                            <label class="label">시작 시간 <span class="req">*</span></label>
+                            <input class="input" type="time" id="startTime" required>
+                        </div>
+
+                        <div class="grow">
+                            <label class="label">종료 시간</label>
+                            <input class="input" type="time" id="endTime" disabled>
+                        </div>
+                    </div>
+
+                    <div class="summary">
+                        <div class="row">
+                            <span>영화 러닝타임</span>
+                            <b id="runningLabel">-</b>
+                        </div>
+                        <div class="row">
+                            <span>청소 시간</span>
+                            <b id="cleaningLabel" th:text="${cleaningMinutes} + '분'">15분</b>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 서버로 보낼 startAt(LocalDateTime) -->
+                <input type="hidden" id="startAt" name="startAt">
+
+                <div class="actions">
+                    <a class="btn outline" th:href="@{/admin/screenings}">취소</a>
+                    <button class="btn primary" type="submit">상영 생성</button>
+                </div>
+
+                <!-- 정책값 -->
+                <input type="hidden" id="cleaningMinutes" th:value="${cleaningMinutes}">
+                <input type="hidden" id="adMinutes" value="0">
+            </form>
+        </section>
+
+        <!-- RIGHT: TIMETABLE TABLE -->
+        <section class="card">
+            <h2 class="card-title">상영 시간표</h2>
+
+            <div class="notice" id="timetableHint">
+                영화/상영 타입/상영관/날짜를 선택하면 시간표가 표시됩니다.
+            </div>
+
+            <div class="table-wrap">
+                <table class="table" id="timetableTable">
+                    <thead>
+                    <tr>
+                        <th style="width: 120px;">시작</th>
+                        <th style="width: 120px;">종료</th>
+                        <th>영화</th>
+                    </tr>
+                    </thead>
+                    <tbody id="timetableBody">
+                    <!-- AJAX로 채움 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="help">
+                * 표는 선택한 날짜의 해당 상영관에 잡힌 상영을 시간순으로 보여줍니다.
+            </p>
+        </section>
+    </div>
+
+    <!-- ✅ content 맨 아래 스크립트 -->
+    <script>
+        // ===== DOM =====
+        const $movieId = document.getElementById('movieId');
+        const $screeningType = document.getElementById('screeningType');
+        const $screenId = document.getElementById('screenId');
+        const $date = document.getElementById('date');
+        const $startTime = document.getElementById('startTime');
+        const $endTime = document.getElementById('endTime');
+        const $startAt = document.getElementById('startAt');
+
+        const $runningLabel = document.getElementById('runningLabel');
+        const $timetableHint = document.getElementById('timetableHint');
+        const $timetableBody = document.getElementById('timetableBody');
+
+        const cleaningMinutes = parseInt(document.getElementById('cleaningMinutes')?.value || '0', 10);
+        const adMinutes = parseInt(document.getElementById('adMinutes')?.value || '0', 10);
+
+        // ===== utils =====
+        function setDisabled($el, disabled, placeholderText) {
+            $el.disabled = disabled;
+            if (placeholderText != null) {
+                $el.innerHTML = `<option value="">${placeholderText}</option>`;
+            }
+        }
+
+        function getRunningMinutes() {
+            const opt = $movieId.options[$movieId.selectedIndex];
+            const v = opt?.getAttribute('data-running');
+            return v ? parseInt(v, 10) : null;
+        }
+
+        function toTimeStr(dateObj) {
+            const hh = String(dateObj.getHours()).padStart(2, '0');
+            const mm = String(dateObj.getMinutes()).padStart(2, '0');
+            return `${hh}:${mm}`;
+        }
+
+        // LocalDateTime 문자열("2026-02-10T09:00:00") -> "09:00"
+        function formatHHmm(isoDateTime) {
+            if (!isoDateTime) return '';
+            // "YYYY-MM-DDTHH:mm:ss" 형태 기준
+            return String(isoDateTime).substring(11, 16);
+        }
+
+        // items가 문자열 배열이든 {id,name}든 {value,label}든 처리
+        function fillSelect($select, items, placeholder) {
+            $select.innerHTML = '';
+            const ph = document.createElement('option');
+            ph.value = '';
+            ph.textContent = placeholder;
+            $select.appendChild(ph);
+
+            (items || []).forEach(it => {
+                const opt = document.createElement('option');
+
+                if (typeof it === 'string') { // ["TWO_D","IMAX"] 등
+                    opt.value = it;
+                    opt.textContent = it;
+                } else if (it?.id != null && it?.name != null) { // {id,name}
+                    opt.value = it.id;
+                    opt.textContent = it.name;
+                } else if (it?.value != null && it?.label != null) { // {value,label}
+                    opt.value = it.value;
+                    opt.textContent = it.label;
+                } else {
+                    return;
+                }
+
+                $select.appendChild(opt);
+            });
+        }
+
+        function calcEndTimeAndStartAt() {
+            const running = getRunningMinutes();
+            $runningLabel.textContent = running ? `${running}분` : '-';
+
+            if (!running || !$date.value || !$startTime.value) {
+                $endTime.value = '';
+                $startAt.value = '';
+                return;
+            }
+
+            const [h, m] = $startTime.value.split(':').map(Number);
+            const base = new Date(`${$date.value}T00:00:00`);
+            base.setHours(h, m, 0, 0);
+
+            // 종료 = 시작 + 러닝 + 광고
+            const end = new Date(base.getTime() + (running + adMinutes) * 60000);
+            $endTime.value = toTimeStr(end);
+
+            // 서버로 보낼 LocalDateTime
+            $startAt.value = `${$date.value}T${$startTime.value}:00`;
+        }
+
+        // ===== API =====
+        async function fetchJson(url) {
+            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                throw new Error(`HTTP ${res.status} ${url}\n${text}`);
+            }
+            return await res.json();
+        }
+
+        async function loadScreeningTypes(movieId) {
+            return await fetchJson(`/admin/screenings/options/types?movieId=${movieId}`);
+        }
+
+        async function loadScreens(movieId, screeningType) {
+            const q = new URLSearchParams({ movieId, screeningType }).toString();
+            return await fetchJson(`/admin/screenings/options/screens?${q}`);
+        }
+
+        async function loadTimetable(screenId, date) {
+            const q = new URLSearchParams({ screenId, date }).toString();
+            return await fetchJson(`/admin/screenings/timetable?${q}`);
+        }
+
+        // ✅ DTO: ScreeningTimetableResponse { startAt, endAt, movie{title} }
+        function renderTimetable(rows) {
+            $timetableBody.innerHTML = '';
+
+            if (!rows || rows.length === 0) {
+                $timetableHint.textContent = '해당 조건에 등록된 상영이 없습니다.';
+                return;
+            }
+
+            $timetableHint.textContent = `총 ${rows.length}건의 상영이 있습니다.`;
+
+            rows.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+          <td>${formatHHmm(r.startAt)}</td>
+          <td>${formatHHmm(r.endAt)}</td>
+          <td>${r.movie?.title ?? ''}</td>
+        `;
+                $timetableBody.appendChild(tr);
+            });
+        }
+
+        async function refreshTimetable() {
+            if (!$screenId.value || !$date.value) {
+                $timetableHint.textContent = '상영관과 날짜를 선택하면 시간표가 표시됩니다.';
+                $timetableBody.innerHTML = '';
+                return;
+            }
+
+            try {
+                const rows = await loadTimetable($screenId.value, $date.value);
+                renderTimetable(rows);
+            } catch (e) {
+                console.error(e);
+                $timetableHint.textContent = '시간표를 불러오지 못했습니다. (API/콘솔 확인)';
+                $timetableBody.innerHTML = '';
+            }
+        }
+
+        // ===== Event handlers =====
+        async function onMovieChange() {
+            const movieId = $movieId.value;
+
+            setDisabled($screeningType, true, '영화를 먼저 선택하세요');
+            setDisabled($screenId, true, '영화/타입 선택 후 상영관이 표시됩니다');
+            calcEndTimeAndStartAt();
+            refreshTimetable();
+
+            if (!movieId) return;
+
+            try {
+                const opt = await loadScreeningTypes(movieId);
+                // ✅ 여기 키는 네 응답 DTO에 맞춰 하나로 확정하는게 베스트지만,
+                //   일단 안전하게 여러 후보를 둠
+                const types = opt.movieScreeningTypes ?? opt.screeningTypes ?? opt.types ?? opt.data ?? [];
+                fillSelect($screeningType, types, '상영 타입 선택');
+                $screeningType.disabled = false;
+            } catch (e) {
+                console.error(e);
+                alert('상영 타입 조회 실패 (콘솔/네트워크 확인)');
+            }
+        }
+
+        async function onTypeChange() {
+            const movieId = $movieId.value;
+            const type = $screeningType.value;
+
+            setDisabled($screenId, true, '상영관 불러오는 중...');
+            refreshTimetable();
+
+            if (!movieId || !type) {
+                setDisabled($screenId, true, '영화/타입 선택 후 상영관이 표시됩니다');
+                return;
+            }
+
+            try {
+                const opt = await loadScreens(movieId, type);
+                const screens = opt.screens ?? opt.screenOptions ?? opt.data ?? [];
+                fillSelect($screenId, screens, '상영관 선택');
+                $screenId.disabled = false;
+            } catch (e) {
+                console.error(e);
+                alert('상영관 조회 실패 (콘솔/네트워크 확인)');
+                setDisabled($screenId, true, '상영관을 불러오지 못했습니다');
+            }
+        }
+
+        function onDateOrTimeChange() {
+            calcEndTimeAndStartAt();
+            refreshTimetable();
+        }
+
+        // ===== Bind =====
+        $movieId.addEventListener('change', onMovieChange);
+        $screeningType.addEventListener('change', onTypeChange);
+        $screenId.addEventListener('change', refreshTimetable);
+        $date.addEventListener('change', onDateOrTimeChange);
+        $startTime.addEventListener('input', onDateOrTimeChange);
+
+        document.getElementById('screeningForm').addEventListener('submit', (e) => {
+            if (!$movieId.value || !$screeningType.value || !$screenId.value) {
+                e.preventDefault();
+                alert('영화/상영 타입/상영관을 모두 선택하세요.');
+                return;
+            }
+            if (!$startAt.value) {
+                e.preventDefault();
+                alert('날짜와 시작 시간을 입력하세요.');
+                return;
+            }
+        });
+
+        // ===== Init =====
+        document.addEventListener('DOMContentLoaded', async () => {
+            calcEndTimeAndStartAt();
+
+            if ($movieId.value) {
+                await onMovieChange();
+                if ($screeningType.value) {
+                    await onTypeChange();
+                }
+            }
+            refreshTimetable();
+        });
+    </script>
+
+</th:block>
+</html>
