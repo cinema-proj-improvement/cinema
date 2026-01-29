@@ -3,11 +3,9 @@ package com.elice.cinema.domain.movie.service;
 import com.elice.cinema.domain.movie.dto.internal.AdminMovieJoinRow;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
 import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
-import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
-import com.elice.cinema.domain.movie.dto.response.MovieDetailResponse;
-import com.elice.cinema.domain.movie.dto.response.MovieListResponse;
-import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
+import com.elice.cinema.domain.movie.dto.response.*;
 import com.elice.cinema.domain.movie.entity.Movie;
+import com.elice.cinema.domain.movie.entity.MovieStatus;
 import com.elice.cinema.domain.movie.event.MovieImagesStorageEvent;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.AdminMovieJoinQueryRepository;
@@ -156,5 +154,13 @@ public class MovieService {
                 .findExtraImagesByMovieId(movieId);
 
         return movieMapper.toMovieDetailResponse(movie, thumbnail, images);
+    }
+
+    // “상영 종료가 아닌 영화” 조회
+    public List<MovieSelectResponse> getAvailableMoviesForScreening() {
+        return movieRepository.findAllByStatusNot(MovieStatus.ENDED)
+                .stream()
+                .map(movieMapper::toMovieSelectResponse)
+                .toList();
     }
 }

@@ -4,6 +4,7 @@ import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
 import com.elice.cinema.domain.movie.dto.response.MovieDetailResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieListResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
+import com.elice.cinema.domain.movie.dto.response.*;
 import com.elice.cinema.domain.movie.entity.Movie;
 import org.mapstruct.Mapper;
 
@@ -39,4 +40,5 @@ public interface MovieMapper {
     default MovieListResponse toMovieListResponse(MovieListResponse response) {
         return response;
     }
+    MovieSelectResponse toMovieSelectResponse(Movie movie);
 }

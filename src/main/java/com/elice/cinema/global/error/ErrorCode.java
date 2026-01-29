@@ -12,6 +12,13 @@ public enum ErrorCode {
     SCREEN_SEAT_COUNT_MISMATCH(HttpStatus.BAD_REQUEST, "SC02", "총 좌석 수와 좌석 정보 수가 일치하지 않습니다."),
     SCREEN_DUPLICATE_SEAT_POSITION(HttpStatus.BAD_REQUEST, "SC03", "중복된 좌석 위치(row/col)가 존재합니다."),
     SCREEN_DUPLICATE_SEAT_CODE(HttpStatus.BAD_REQUEST, "SC04", "중복된 좌석 코드가 존재합니다."),
+    SCREENING_START_AT_REQUIRED(HttpStatus.BAD_REQUEST, "SG01", "상영 시작 시간은 필수입니다."),
+    SCREENING_BEFORE_RELEASE_DATE(HttpStatus.BAD_REQUEST, "SG02", "상영 시작일은 영화 개봉일 이후여야 합니다."),
+    SCREENING_AFTER_END_DATE(HttpStatus.BAD_REQUEST, "SG03", "상영 시작일은 영화 상영 종료일 이전이어야 합니다."),
+    SCREENING_TYPE_NOT_SUPPORTED_BY_MOVIE(HttpStatus.BAD_REQUEST, "SG04", "해당 영화가 지원하지 않는 상영 타입입니다."),
+    SCREENING_TYPE_NOT_MATCH_SCREEN(HttpStatus.BAD_REQUEST, "SG05", "상영관의 상영 타입과 선택한 상영 타입이 일치하지 않습니다."),
+    SCREENING_ALREADY_ENDED(HttpStatus.BAD_REQUEST, "SG06", "이미 종료된 상영은 생성할 수 없습니다."),
+    SCREENING_INVALID_STATUS(HttpStatus.BAD_REQUEST, "SG07", "상영 상태를 결정할 수 없습니다."),
 
     // 401 Unauthorized
 
@@ -24,6 +31,7 @@ public enum ErrorCode {
 
     // 409 Conflict
     SCREEN_NAME_DUPLICATED(HttpStatus.CONFLICT, "SC06", "이미 존재하는 상영관 이름입니다."),
+    SCREENING_TIME_CONFLICT(HttpStatus.CONFLICT, "SG08", "해당 시간에 이미 등록된 상영이 있어 상영을 생성할 수 없습니다."),
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE01", "서버 내부 오류가 발생했습니다.");

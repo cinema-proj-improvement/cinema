@@ -77,8 +77,9 @@ public class Screen extends BaseEntity {
                              ScreeningType screeningType,
                              LocalDateTime startAt,
                              LocalDateTime endAt,
+                             LocalDateTime endAtWithCleaning,
                              ScreeningStatus screeningStatus) {
-        Screening screening = Screening.of(movie, screeningType, startAt, endAt, screeningStatus); // screen 없이 생성
+        Screening screening = Screening.of(movie, screeningType, startAt, endAt, endAtWithCleaning, screeningStatus); // screen 없이 생성
         screenings.add(screening);
         screening.assignScreen(this);
     }

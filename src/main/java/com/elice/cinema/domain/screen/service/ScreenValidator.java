@@ -36,6 +36,7 @@ public class ScreenValidator {
 
     /* 상영관 이름 중복 검증 */
     private void validateScreenNameUnique(String name) {
+        // 동시성 문제가 발생할 수 있음 (필요시 LOCK)
         if (screenRepository.existsByName(name)) {
             throw new BusinessException(ErrorCode.SCREEN_NAME_DUPLICATED);
         }
