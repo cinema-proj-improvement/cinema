@@ -21,8 +21,6 @@ public interface MovieMapper {
         );
     }
 
-    // TODO: (Entity -> DTO) 로직은 Mapstruct를 사용합니다. 해당 로직은 abstract 메서드로 정의해야 합니다.
-
-    public abstract AdminMovieListResponse toAdminListResponse(Movie movie);
-    public abstract MovieUpdateFormResponse toMovieUpdateFormResponse(Movie movie);
+    AdminMovieListResponse toAdminListResponse(Movie movie);
+    MovieUpdateFormResponse toMovieUpdateFormResponse(Movie movie);
 }
