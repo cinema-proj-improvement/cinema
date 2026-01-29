@@ -1,5 +1,6 @@
 package com.elice.cinema.domain.movie.service;
 
+import com.elice.cinema.domain.movie.dto.internal.AdminMovieJoinRow;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
 import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
 import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
@@ -9,6 +10,7 @@ import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.event.MovieImagesStorageEvent;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
+import com.elice.cinema.domain.movie.repository.AdminMovieJoinQueryRepository;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
 import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
 import com.elice.cinema.global.common.file.FileService;
@@ -17,12 +19,16 @@ import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +39,7 @@ public class MovieService {
     private final ApplicationEventPublisher publisher;
     private final FileService fileService;
     private final MovieImageRepository movieImageRepository;
+    private final AdminMovieJoinQueryRepository adminMovieJoinQueryRepository;
 
     // 관리자 - 영화 생성 요청을 받아 영화를 생성하고 DB에 저장하는 메서드
     @Transactional
@@ -53,16 +60,40 @@ public class MovieService {
 
     // 관리자 영화 목록 조회 (검색조건 + 페이지네이션 + 정렬)
     public Page<AdminMovieListResponse> getAdminMovieListPage(AdminMovieSearchRequest request, Pageable pageable) {
-        Page<Movie> moviePage =
-                movieRepository.findAdminMovieList(request, pageable);
+        List<Long> movieIds =
+                movieRepository.findAdminMovieIds(request, pageable);
 
-        return moviePage.map(movie -> {
-            String thumbnail = movieImageRepository
-                    .findThumbnailUrlByMovieId(movie.getId())
-                    .orElse(null);
+        if (movieIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+        long totalCount =
+                movieRepository.countAdminMovies(request);
+        List<AdminMovieJoinRow> rows =
+                adminMovieJoinQueryRepository.findAdminMovieJoinRows(movieIds);
 
-            return movieMapper.toAdminListResponse(movie, thumbnail);
-        });
+        Map<Long, AdminMovieListResponse> map = new LinkedHashMap<>();
+
+        for (AdminMovieJoinRow row : rows) {
+            map.computeIfAbsent(row.getMovieId(), id ->
+                    new AdminMovieListResponse(
+                            row.getMovieId(),
+                            row.getThumbnail(),
+                            row.getTitle(),
+                            new ArrayList<>(),
+                            row.getStatus(),
+                            row.getAgeRating(),
+                            row.getReleaseDate(),
+                            row.getEndDate(),
+                            row.getAvgScore(),
+                            row.getAdvanceReservationRate()
+                    )
+            ).getGenres().add(row.getGenre());
+        }
+
+        List<AdminMovieListResponse> contents =
+                new ArrayList<>(map.values());
+
+        return new PageImpl<>(contents, pageable, totalCount);
     }
 
     // 관리자 상세 조회
