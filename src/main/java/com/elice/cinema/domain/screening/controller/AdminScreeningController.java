@@ -109,7 +109,7 @@ public class AdminScreeningController {
         return "redirect:/admin/screenings";
     }
 
-    @GetMapping
+    @GetMapping({"", "/"})
     public String getAdminScreenings(
             AdminScreeningSearchRequest request,
             @PageableDefault(size = 20) Pageable pageable,

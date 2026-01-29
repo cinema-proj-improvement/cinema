@@ -136,7 +136,7 @@
                 <th>영화</th>
                 <th>상영관</th>
                 <th>유형</th>
-                <th>예약 현황</th>
+                <!--<th>예약 현황</th>-->
                 <th>상태</th>
                 <th></th>
             </tr>
@@ -153,11 +153,11 @@
                 <td th:text="${screening.movieTitle}"></td>
                 <td th:text="${screening.screenName}"></td>
                 <td th:text="${screening.screeningType}"></td>
-                <td>
+                <!--<td>
                     <span th:text="${screening.reservedSeatCount}"></span>
                     /
                     <span th:text="${screening.totalSeatCount}"></span>
-                </td>
+                </td>-->
                 <td>
                     <span class="status"
                           th:classappend="${screening.status}"

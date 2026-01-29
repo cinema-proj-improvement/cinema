@@ -117,10 +117,12 @@ public class ScreeningService {
             Screening screening,
             LocalDateTime now
     ) {
-        ScreeningStatus status = calculateStatus(screening, now);
-
         AdminScreeningResponse base =
                 screeningMapper.toAdminResponse(screening);
+
+        // ★ 표시용 상태만 보정
+        ScreeningStatus displayStatus =
+                resolveDisplayStatus(screening, now);
 
         return new AdminScreeningResponse(
                 base.getId(),
@@ -130,16 +132,16 @@ public class ScreeningService {
                 base.getMovieTitle(),
                 base.getScreenName(),
                 base.getScreeningType(),
-                status
+                displayStatus
         );
     }
 
     // 상태 계산 표시용
-    private ScreeningStatus calculateStatus(
+    private ScreeningStatus resolveDisplayStatus(
             Screening screening,
             LocalDateTime now
     ) {
-        // 관리자 취소 최우선
+        // 관리자 취소는 무조건 유지
         if (screening.getScreeningStatus() == ScreeningStatus.CANCELED) {
             return ScreeningStatus.CANCELED;
         }
@@ -149,12 +151,12 @@ public class ScreeningService {
             return ScreeningStatus.SCHEDULED;
         }
 
-        // 상영 중
-        if (now.isBefore(screening.getEndAt())) {
+        // 상영 + 청소 포함 구간
+        if (now.isBefore(screening.getEndAtWithCleaning())) {
             return ScreeningStatus.OPEN;
         }
 
-        // 종료
+        // 청소까지 끝남
         return ScreeningStatus.FINISHED;
     }
 }
