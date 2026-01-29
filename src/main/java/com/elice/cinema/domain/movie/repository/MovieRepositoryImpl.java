@@ -1,8 +1,8 @@
 package com.elice.cinema.domain.movie.repository;
 
-import com.elice.cinema.domain.movie.dto.MovieWithThumbnail;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSortType;
+import com.elice.cinema.domain.movie.dto.response.MovieListResponse;
 import com.elice.cinema.domain.movie.entity.AgeRating;
 import com.elice.cinema.domain.movie.entity.Genre;
 import com.elice.cinema.domain.movie.entity.Movie;
@@ -28,46 +28,46 @@ import static com.elice.cinema.domain.movieImage.entity.QMovieImage.movieImage;
 public class MovieRepositoryImpl implements MovieRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
-    // 관리자
+    // 관리자 ID 페이징 조회
     @Override
-    public Page<Movie> findAdminMovieList(
-            AdminMovieSearchRequest search,
-            Pageable pageable
-    ) {
-
-        List<Movie> content = queryFactory
-                .selectFrom(movie)
+    public List<Long> findAdminMovieIds(
+            AdminMovieSearchRequest search, Pageable pageable) {
+        return queryFactory
+                .select(movie.id)
+                .from(movie)
                 .where(adminSearchConditions(search))
                 .orderBy(resolveAdminSort(search.getSortType()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
-
-        Long total = queryFactory
-                .select(movie.id.count())
-                .from(movie)
-                .where(adminSearchConditions(search))
-                .fetchOne();
-
-        return new PageImpl<>(
-                content,
-                pageable,
-                total == null ? 0 : total
-        );
+    }
+    @Override
+    public long countAdminMovies(AdminMovieSearchRequest search) {
+        return Optional.ofNullable(
+                queryFactory
+                        .select(movie.id.count())
+                        .from(movie)
+                        .where(adminSearchConditions(search))
+                        .fetchOne()
+        ).orElse(0L);
     }
 
     // 사용자 목록
     @Override
-    public Page<MovieWithThumbnail> findUserMovies(String keyword, String sort, Pageable pageable) {
+    public Page<MovieListResponse> findUserMovies(String keyword, String sort, Pageable pageable) {
 
         BooleanExpression condition = userVisibleCondition()
-                        .and(titleContains(keyword));
+                .and(titleContains(keyword));
 
-        List<MovieWithThumbnail> content = queryFactory
+        List<MovieListResponse> content = queryFactory
                 .select(Projections.constructor(
-                        MovieWithThumbnail.class,
-                        movie,
-                        movieImage.imageUrl
+                        MovieListResponse.class,
+                        movie.id,
+                        movieImage.imageUrl,
+                        movie.title,
+                        movie.releaseDate,
+                        movie.advanceReservationRate,
+                        movie.avgScore
                 ))
                 .from(movie)
                 .leftJoin(movieImage)
@@ -195,14 +195,10 @@ public class MovieRepositoryImpl implements MovieRepositoryCustom {
         }
 
         return switch (sortType) {
-            case RELEASE_DATE_DESC ->
-                    movie.releaseDate.desc();
-            case END_DATE_DESC ->
-                    movie.endDate.desc();
-            case AVG_SCORE_DESC ->
-                    movie.avgScore.desc();
-            case RESERVATION_RATE_DESC ->
-                    movie.advanceReservationRate.desc();
+            case RELEASE_DATE_DESC -> movie.releaseDate.desc();
+            case END_DATE_DESC -> movie.endDate.desc();
+            case AVG_SCORE_DESC -> movie.avgScore.desc();
+            case RESERVATION_RATE_DESC -> movie.advanceReservationRate.desc();
         };
     }
 }
