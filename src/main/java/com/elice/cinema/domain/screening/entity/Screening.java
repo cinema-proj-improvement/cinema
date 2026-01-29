@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
         },
         indexes = {
                 @Index(name = "ix_screening_movie", columnList = "movie_id,start_at"),
-                @Index(name = "ix_screening_screen_time", columnList = "screen_id,start_at,end_at")
+                @Index(name = "ix_screening_screen_time", columnList = "screen_id,start_at,end_at_with_cleaning")
         }
 )
 public class Screening extends BaseEntity {
@@ -44,8 +44,11 @@ public class Screening extends BaseEntity {
     @Column(name = "start_at", nullable = false)
     private LocalDateTime startAt;
 
-    @Column(name = "end_at", nullable = false)
+    @Column(name = "end_at", nullable = false)                 // 실제 상영 종료 시간 (표시용)
     private LocalDateTime endAt;
+
+    @Column(name = "end_at_with_cleaning", nullable = false)   // 실제 상영 종료 시간 + 청소 시간 (정책용)
+    private LocalDateTime endAtWithCleaning;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "screening_status", nullable = false, length = 20)
@@ -55,11 +58,13 @@ public class Screening extends BaseEntity {
                       ScreeningType screeningType,
                       LocalDateTime startAt,
                       LocalDateTime endAt,
+                      LocalDateTime endAtWithCleaning,
                       ScreeningStatus screeningStatus) {
         this.movie = movie;
         this.screeningType = screeningType;
         this.startAt = startAt;
         this.endAt = endAt;
+        this.endAtWithCleaning = endAtWithCleaning;
         this.screeningStatus = screeningStatus;
     }
 
@@ -67,12 +72,14 @@ public class Screening extends BaseEntity {
                                ScreeningType screeningType,
                                LocalDateTime startAt,
                                LocalDateTime endAt,
+                               LocalDateTime endAtWithCleaning,
                                ScreeningStatus screeningStatus) {
         return new Screening(
                 movie,
                 screeningType,
                 startAt,
                 endAt,
+                endAtWithCleaning,
                 screeningStatus);
     }
 
