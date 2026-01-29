@@ -9,14 +9,14 @@ import com.elice.cinema.domain.screening.dto.reponse.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
 import com.elice.cinema.domain.screening.service.ScreeningOptionService;
 import com.elice.cinema.domain.screening.service.ScreeningService;
+import com.elice.cinema.global.error.exception.BusinessException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -75,6 +75,31 @@ public class AdminScreeningController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
         return screeningService.getTimetable(screenId, date);
+    }
+
+    @PostMapping("/new")
+    public String createScreening(@Valid @ModelAttribute("form") ScreeningCreateRequest form,
+                                  BindingResult bindingResult,
+                                  Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("movies", movieService.getAvailableMoviesForScreening());
+            model.addAttribute("cleaningMinutes", environmentPolicyService.getCleaningMinutes());
+            model.addAttribute("screens", List.of());
+            return "admin/screening/screening-create";
+        }
+
+        try {
+            screeningService.createScreening(form);
+        } catch (BusinessException e) {
+            bindingResult.reject("screening.create.fail", e.getMessage());
+
+            model.addAttribute("movies", movieService.getAvailableMoviesForScreening());
+            model.addAttribute("cleaningMinutes", environmentPolicyService.getCleaningMinutes());
+            model.addAttribute("screens", List.of());
+            return "admin/screening/screening-create";
+        }
+
+        return "redirect:/admin/screenings";
     }
 
 }

@@ -107,3 +107,13 @@
     font-size: 13px;
     color: #334155;
 }
+
+.alert.error {
+    background: #fff4f4;
+    border: 1px solid #ffb3b3;
+    color: #c40000;
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}

@@ -20,11 +20,24 @@
         <section class="card">
             <h2 class="card-title">기본 정보</h2>
 
-            <form id="screeningForm" th:action="@{/admin/screenings}" method="post">
+            <form id="screeningForm"
+                  th:action="@{/admin/screenings/new}"
+                  method="post"
+                  th:object="${form}">
+
+                <!-- ✅ CSRF -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="alert error"
+                     th:if="${#fields.hasErrors('*')}">
+                    <strong>상영 생성 실패</strong>
+                    <p th:text="${#fields.errors('*')[0]}"></p>
+                </div>
+
                 <!-- 영화 -->
                 <div class="field">
-                    <label class="label">영화 <span class="req">*</span></label>
-                    <select class="select" id="movieId" name="movieId" required>
+                    <label class="label" for="movieId">영화 <span class="req">*</span></label>
+                    <select id="movieId" class="select" th:field="*{movieId}" required>
                         <option value="">영화를 선택하세요</option>
                         <option th:each="m : ${movies}"
                                 th:value="${m.id}"
@@ -36,8 +49,8 @@
 
                 <!-- 상영 타입 -->
                 <div class="field">
-                    <label class="label">상영 타입 <span class="req">*</span></label>
-                    <select class="select" id="screeningType" name="screeningType" required disabled>
+                    <label class="label" for="screeningType">상영 타입 <span class="req">*</span></label>
+                    <select id="screeningType" class="select" th:field="*{screeningType}" required disabled>
                         <option value="">영화를 먼저 선택하세요</option>
                     </select>
                     <p class="help">영화 선택 후 가능한 상영 타입이 표시됩니다.</p>
@@ -45,15 +58,15 @@
 
                 <!-- 상영관 -->
                 <div class="field">
-                    <label class="label">상영관 <span class="req">*</span></label>
-                    <select class="select" id="screenId" name="screenId" required disabled>
+                    <label class="label" for="screenId">상영관 <span class="req">*</span></label>
+                    <select id="screenId" class="select" th:field="*{screenId}" required disabled>
                         <option value="">영화/타입 선택 후 상영관이 표시됩니다</option>
                     </select>
                 </div>
 
                 <!-- 날짜 -->
                 <div class="field">
-                    <label class="label">날짜 <span class="req">*</span></label>
+                    <label class="label" for="date">날짜 <span class="req">*</span></label>
                     <input class="input" type="date" id="date" required>
                     <p class="help">날짜를 선택하면 우측에 상영관 시간표가 갱신됩니다.</p>
                 </div>
@@ -64,12 +77,12 @@
 
                     <div class="field inline">
                         <div class="grow">
-                            <label class="label">시작 시간 <span class="req">*</span></label>
+                            <label class="label" for="startTime">시작 시간 <span class="req">*</span></label>
                             <input class="input" type="time" id="startTime" required>
                         </div>
 
                         <div class="grow">
-                            <label class="label">종료 시간</label>
+                            <label class="label" for="endTime">종료 시간</label>
                             <input class="input" type="time" id="endTime" disabled>
                         </div>
                     </div>
@@ -87,7 +100,7 @@
                 </div>
 
                 <!-- 서버로 보낼 startAt(LocalDateTime) -->
-                <input type="hidden" id="startAt" name="startAt">
+                <input type="hidden" id="startAt" th:field="*{startAt}">
 
                 <div class="actions">
                     <a class="btn outline" th:href="@{/admin/screenings}">취소</a>
@@ -129,7 +142,6 @@
         </section>
     </div>
 
-    <!-- ✅ content 맨 아래 스크립트 -->
     <script>
         // ===== DOM =====
         const $movieId = document.getElementById('movieId');
@@ -170,11 +182,9 @@
         // LocalDateTime 문자열("2026-02-10T09:00:00") -> "09:00"
         function formatHHmm(isoDateTime) {
             if (!isoDateTime) return '';
-            // "YYYY-MM-DDTHH:mm:ss" 형태 기준
             return String(isoDateTime).substring(11, 16);
         }
 
-        // items가 문자열 배열이든 {id,name}든 {value,label}든 처리
         function fillSelect($select, items, placeholder) {
             $select.innerHTML = '';
             const ph = document.createElement('option');
@@ -185,7 +195,7 @@
             (items || []).forEach(it => {
                 const opt = document.createElement('option');
 
-                if (typeof it === 'string') { // ["TWO_D","IMAX"] 등
+                if (typeof it === 'string') { // ["TWO_D","IMAX"]
                     opt.value = it;
                     opt.textContent = it;
                 } else if (it?.id != null && it?.name != null) { // {id,name}
@@ -216,7 +226,7 @@
             const base = new Date(`${$date.value}T00:00:00`);
             base.setHours(h, m, 0, 0);
 
-            // 종료 = 시작 + 러닝 + 광고
+            // 종료(표시용) = 시작 + 러닝 + 광고(옵션)
             const end = new Date(base.getTime() + (running + adMinutes) * 60000);
             $endTime.value = toTimeStr(end);
 
@@ -248,7 +258,7 @@
             return await fetchJson(`/admin/screenings/timetable?${q}`);
         }
 
-        // ✅ DTO: ScreeningTimetableResponse { startAt, endAt, movie{title} }
+        // DTO: ScreeningTimetableResponse { startAt, endAt, movie{title} }
         function renderTimetable(rows) {
             $timetableBody.innerHTML = '';
 
@@ -262,10 +272,10 @@
             rows.forEach(r => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-          <td>${formatHHmm(r.startAt)}</td>
-          <td>${formatHHmm(r.endAt)}</td>
-          <td>${r.movie?.title ?? ''}</td>
-        `;
+                    <td>${formatHHmm(r.startAt)}</td>
+                    <td>${formatHHmm(r.endAt)}</td>
+                    <td>${r.movie?.title ?? ''}</td>
+                `;
                 $timetableBody.appendChild(tr);
             });
         }
@@ -287,7 +297,7 @@
             }
         }
 
-        // ===== Event handlers =====
+        // ===== handlers =====
         async function onMovieChange() {
             const movieId = $movieId.value;
 
@@ -300,8 +310,6 @@
 
             try {
                 const opt = await loadScreeningTypes(movieId);
-                // ✅ 여기 키는 네 응답 DTO에 맞춰 하나로 확정하는게 베스트지만,
-                //   일단 안전하게 여러 후보를 둠
                 const types = opt.movieScreeningTypes ?? opt.screeningTypes ?? opt.types ?? opt.data ?? [];
                 fillSelect($screeningType, types, '상영 타입 선택');
                 $screeningType.disabled = false;
@@ -340,7 +348,7 @@
             refreshTimetable();
         }
 
-        // ===== Bind =====
+        // ===== bind =====
         $movieId.addEventListener('change', onMovieChange);
         $screeningType.addEventListener('change', onTypeChange);
         $screenId.addEventListener('change', refreshTimetable);
@@ -360,7 +368,6 @@
             }
         });
 
-        // ===== Init =====
         document.addEventListener('DOMContentLoaded', async () => {
             calcEndTimeAndStartAt();
 
@@ -371,6 +378,41 @@
                 }
             }
             refreshTimetable();
+        });
+
+        function todayStrKST() {
+            // 브라우저 로컬 기준 yyyy-mm-dd
+            const d = new Date();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const today = todayStrKST();
+            $date.min = today;
+
+            // (원하면) 기본값을 오늘로
+            if (!$date.value) $date.value = today;
+
+            calcEndTimeAndStartAt();
+
+            if ($movieId.value) {
+                await onMovieChange();
+                if ($screeningType.value) {
+                    await onTypeChange();
+                }
+            }
+            refreshTimetable();
+        });
+
+        $date.addEventListener('change', () => {
+            if ($date.value && $date.min && $date.value < $date.min) {
+                alert('오늘 이전 날짜는 선택할 수 없습니다.');
+                $date.value = $date.min;
+            }
+            onDateOrTimeChange();
         });
     </script>
 

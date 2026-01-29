@@ -25,4 +25,15 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long> {
             @Param("fromInclusive") LocalDateTime fromInclusive,
             @Param("toExclusive") LocalDateTime toExclusive
     );
+
+    @Query("""
+        select count(s) > 0
+        from Screening s
+        where s.screen.id = :screenId
+          and s.startAt < :newEndAtWithCleaning
+          and s.endAtWithCleaning > :newStartAt
+    """)
+    boolean existsTimeConflict(Long screenId,
+                               LocalDateTime newStartAt,
+                               LocalDateTime newEndAtWithCleaning);
 }

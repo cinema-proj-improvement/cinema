@@ -18,4 +18,8 @@ public class EnvironmentPolicyService {
     public int getCleaningMinutes() {
         return getPolicy().getCleaningMinutes();
     }
+
+    public int getScheduledToOpenDays() {
+        return getPolicy().getScheduledToOpenDays();
+    }
 }
