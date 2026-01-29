@@ -12,6 +12,7 @@ import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Component
@@ -72,13 +73,19 @@ public class ScreeningValidator {
     ) {
         LocalDateTime now = LocalDateTime.now();
 
-        // 상영 종료 이후면 생성 불가
+        // 1) 상영 종료 이후면 생성 불가 (이건 시간 기준 유지)
         if (now.isAfter(endAt)) {
             throw new BusinessException(ErrorCode.SCREENING_ALREADY_ENDED);
         }
 
-        // 상영 시작 7일 이전
-        if (now.isBefore(startAt.minusDays(environmentPolicyService.getScheduledToOpenDays()))) {
+        // 2) 날짜 기준 D-7 오픈 정책
+        LocalDate today = now.toLocalDate();
+        LocalDate openDate = startAt
+                .toLocalDate()
+                .minusDays(environmentPolicyService.getScheduledToOpenDays());
+
+        // 오늘이 오픈 날짜보다 이전이면 → SCHEDULED
+        if (today.isBefore(openDate)) {
             return ScreeningStatus.SCHEDULED;
         }
 
