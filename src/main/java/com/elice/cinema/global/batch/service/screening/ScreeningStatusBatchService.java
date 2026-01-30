@@ -1,4 +1,4 @@
-package com.elice.cinema.global.batch.service;
+package com.elice.cinema.global.batch.service.screening;
 
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.screening.repository.ScreeningRepository;

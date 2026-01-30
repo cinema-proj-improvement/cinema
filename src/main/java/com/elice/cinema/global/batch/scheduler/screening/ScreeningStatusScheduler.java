@@ -1,6 +1,6 @@
-package com.elice.cinema.global.batch.scheduler;
+package com.elice.cinema.global.batch.scheduler.screening;
 
-import com.elice.cinema.global.batch.service.ScreeningStatusBatchService;
+import com.elice.cinema.global.batch.service.screening.ScreeningStatusBatchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
