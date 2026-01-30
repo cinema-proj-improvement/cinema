@@ -4,10 +4,15 @@ import com.elice.cinema.domain.common.ScreeningType;
 import com.elice.cinema.domain.movie.dto.response.MovieSelectResponse;
 import com.elice.cinema.domain.movie.service.MovieService;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
+import com.elice.cinema.domain.screening.dto.request.AdminScreeningSearchRequest;
 import com.elice.cinema.domain.screening.dto.response.ScreeningDetailResponse;
 import com.elice.cinema.domain.screening.dto.response.ScreeningMovieOptionResponse;
 import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
+import com.elice.cinema.domain.screening.dto.response.AdminScreeningFilterOptionResponse;
+import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
+import com.elice.cinema.domain.screening.dto.response.ScreeningMovieOptionResponse;
+import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.dto.request.ScreeningUpdateRequest;
 import com.elice.cinema.domain.screening.entity.ScreeningStatus;
 import com.elice.cinema.domain.screening.service.ScreeningOptionService;
@@ -15,6 +20,9 @@ import com.elice.cinema.domain.screening.service.ScreeningService;
 import com.elice.cinema.global.error.exception.BusinessException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -144,6 +152,31 @@ public class AdminScreeningController {
         }
 
         return "redirect:/admin/screenings/{screeningId}";
+    }
+
+    @GetMapping({"", "/"})
+    public String getAdminScreenings(
+            AdminScreeningSearchRequest request,
+            @PageableDefault(size = 20) Pageable pageable,
+            Model model
+    ) {
+        Page<AdminScreeningResponse> screenings =
+                screeningService.searchAdmin(request, pageable);
+
+        List<AdminScreeningFilterOptionResponse> movieFilterOptions =
+                screeningService.getMovieFilterOptions();
+
+        List<AdminScreeningFilterOptionResponse> screenFilterOptions =
+                screeningService.getScreenFilterOptions();
+
+        model.addAttribute("screenings", screenings);
+        model.addAttribute("search", request);
+        model.addAttribute("movieFilterOptions", movieFilterOptions);
+        model.addAttribute("screenFilterOptions", screenFilterOptions);
+
+
+
+        return "admin/screening/screening-list";
     }
 
 }

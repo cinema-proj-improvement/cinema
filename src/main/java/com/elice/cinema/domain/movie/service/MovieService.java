@@ -3,6 +3,7 @@ package com.elice.cinema.domain.movie.service;
 import com.elice.cinema.domain.movie.dto.internal.AdminMovieJoinRow;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
 import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
+import com.elice.cinema.domain.movie.dto.request.MovieUpdateRequest;
 import com.elice.cinema.domain.movie.dto.response.*;
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
@@ -10,8 +11,9 @@ import com.elice.cinema.domain.movie.event.MovieImagesStorageEvent;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.AdminMovieJoinQueryRepository;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
+import com.elice.cinema.domain.movieImage.entity.MovieImage;
 import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
-import com.elice.cinema.global.common.file.FileService;
+import com.elice.cinema.domain.movieImage.service.MovieImageService;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,9 +34,10 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final MovieMapper movieMapper;
     private final ApplicationEventPublisher publisher;
-    private final FileService fileService;
     private final MovieImageRepository movieImageRepository;
     private final AdminMovieJoinQueryRepository adminMovieJoinQueryRepository;
+
+    private final MovieImageService movieImageService;
 
     // 관리자 - 영화 생성 요청을 받아 영화를 생성하고 DB에 저장하는 메서드
     @Transactional
@@ -112,8 +112,57 @@ public class MovieService {
     // 업데이트 폼 조회
     public MovieUpdateFormResponse getMovieUpdateForm(Long movieId) {
         Movie movie = findMovieById(movieId);
-        return movieMapper.toMovieUpdateFormResponse(movie);
+
+        MovieUpdateFormResponse movieUpdateFormResponse = movieMapper.toMovieUpdateFormResponse(movie);
+
+        // MovieImage 조회해서 썸네일/extra 계산
+        List<MovieImage> images = movieImageRepository.findByMovieIdOrderByDisplayOrderAsc(movieId);
+
+        String thumbnailUrl = images.stream()
+                .filter(MovieImage::isThumbnail)
+                .findFirst()
+                .map(MovieImage::getImageUrl)
+                .orElse(null);
+
+        List<String> extraImages = images.stream()
+                .filter(mi -> !mi.isThumbnail())
+                .sorted(Comparator.comparing(MovieImage::getDisplayOrder))
+                .map(MovieImage::getImageUrl)
+                .toList();
+
+        movieUpdateFormResponse.setThumbnailImageUrl(thumbnailUrl);
+        movieUpdateFormResponse.setExtraImages(extraImages);
+
+        return movieUpdateFormResponse;
     }
+
+    @Transactional
+    public void updateMovie(Long movieId, MovieUpdateRequest req) {
+        Movie movie = findMovieById(movieId);
+
+        // TODO: Screening 도메인 개발 후 반영하기
+        // 러닝타임 변경 관련 business rule
+//        if(!movie.getRunningTimeMinutes().equals(req.getRunningTimeMinutes())) {
+//            if(screeningRepository.existsByMovieId(movieId)) {
+//                throw new BusinessException(ErrorCode.MOVIE_RUNNING_TIME_CANNOT_CHANGE_WHEN_SCREENING_EXISTS);
+//            }
+//        }
+
+        movie.changeBasicInfo(
+                req.getTitle(),
+                req.getRunningTimeMinutes(),
+                req.getAgeRating(),
+                req.getSynopsis()
+        );
+
+        movie.changeGenres(new HashSet<>(req.getGenres()));
+        movie.changeScreeningTypes(new HashSet<>(req.getScreeningTypes()));
+
+        if(req.hasAnyImageChange()) {
+            movieImageService.updateImages(movieId, req.getThumbnailImage(), req.getExtraImages());
+        }
+    }
+
 
 
     // === Helper Methods ===
