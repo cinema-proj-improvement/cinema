@@ -19,7 +19,8 @@ public enum ErrorCode {
     SCREENING_TYPE_NOT_MATCH_SCREEN(HttpStatus.BAD_REQUEST, "SG05", "상영관의 상영 타입과 선택한 상영 타입이 일치하지 않습니다."),
     SCREENING_ALREADY_ENDED(HttpStatus.BAD_REQUEST, "SG06", "이미 종료된 상영은 생성할 수 없습니다."),
     SCREENING_INVALID_STATUS(HttpStatus.BAD_REQUEST, "SG07", "상영 상태를 결정할 수 없습니다."),
-
+    SCREENING_STATUS_CHANGE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "SG08", "SCHEDULED 상태의 상영만 상태 변경이 가능합니다."),
+    SCREENING_ONLY_CAN_CANCEL(HttpStatus.BAD_REQUEST, "SG09", "상영 상태는 CANCELED로만 변경할 수 있습니다."),
     // 401 Unauthorized
 
     // 403 Forbidden
@@ -28,6 +29,7 @@ public enum ErrorCode {
     MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "MV01", "영화를 찾을 수 없습니다."),
     SCREEN_NOT_FOUND(HttpStatus.NOT_FOUND, "SC05", "상영관을 찾을 수 없습니다."),
     SEAT_NOT_FOUND(HttpStatus.NOT_FOUND, "ST05", "좌석을 찾을 수 없습니다."),
+    SCREENING_NOT_FOUND(HttpStatus.NOT_FOUND, "SG10", "상영을 찾을 수 없습니다."),
 
     // 409 Conflict
     SCREEN_NAME_DUPLICATED(HttpStatus.CONFLICT, "SC06", "이미 존재하는 상영관 이름입니다."),

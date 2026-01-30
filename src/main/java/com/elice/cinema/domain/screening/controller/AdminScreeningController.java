@@ -7,6 +7,7 @@ import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.screening.dto.reponse.ScreeningMovieOptionResponse;
 import com.elice.cinema.domain.screening.dto.reponse.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
+import com.elice.cinema.domain.screening.dto.request.ScreeningUpdateRequest;
 import com.elice.cinema.domain.screening.service.ScreeningOptionService;
 import com.elice.cinema.domain.screening.service.ScreeningService;
 import com.elice.cinema.global.error.exception.BusinessException;
@@ -100,6 +101,22 @@ public class AdminScreeningController {
         }
 
         return "redirect:/admin/screenings";
+    }
+
+    //TODO: 상세 조회 만들고 나면 다시 만들기
+    @PatchMapping("/{screeningId}")
+    public String updateScreeningStatus(@PathVariable Long screeningId,
+                                        @Valid @ModelAttribute("form") ScreeningUpdateRequest form,
+                                        BindingResult bindingResult,
+                                        Model model) {
+        if (bindingResult.hasErrors()) {
+            // 상세 페이지에서 수정 폼을 같이 쓰는 구조면 필요한 데이터 다시 담아서 리턴
+            // model.addAttribute("screening", ...);
+            return "admin/screening/screening-detail"; // 너희 실제 뷰로
+        }
+
+        screeningService.updateScreening(screeningId, form);
+        return "redirect:/admin/screenings/{screeningId}";
     }
 
 }

@@ -7,6 +7,7 @@ import com.elice.cinema.domain.screen.entity.Screen;
 import com.elice.cinema.domain.screen.repository.ScreenRepository;
 import com.elice.cinema.domain.screening.dto.reponse.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
+import com.elice.cinema.domain.screening.dto.request.ScreeningUpdateRequest;
 import com.elice.cinema.domain.screening.entity.Screening;
 import com.elice.cinema.domain.screening.entity.ScreeningStatus;
 import com.elice.cinema.domain.screening.mapper.ScreeningMapper;
@@ -64,6 +65,17 @@ public class ScreeningService {
                 endAt,
                 endAtWithCleaning,
                 screeningStatus);
+    }
+
+    @Transactional
+    public void updateScreening(Long screeningId, ScreeningUpdateRequest req) {
+
+        Screening screening = screeningRepository.findById(screeningId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SCREENING_NOT_FOUND));
+
+        screeningValidator.validateUpdate(screening.getScreeningStatus(), req);
+
+        screening.updateScreeningStatus(req.getScreeningStatus());
     }
 
     private Movie findMovieById(Long movieId) {
