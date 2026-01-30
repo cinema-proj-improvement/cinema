@@ -12,8 +12,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface MovieMapper {
-
-
     default Movie toEntity(MovieCreateRequest req) {
         return Movie.createUpcomming(
                 req.getTitle(),

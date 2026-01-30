@@ -6,6 +6,48 @@
 
 <th:block th:fragment="pageCss">
     <link rel="stylesheet" th:href="@{/css/admin/movie/movie-update.css}">
+    <style>
+        .page-head{display:flex;align-items:center;gap:10px;margin:10px 0 14px}
+        .back-link{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid #e7e9f0;border-radius:10px;text-decoration:none;color:#111827;background:#fff}
+        .page-title{font-size:22px;margin:0}
+        .form-card{background:#fff;border:1px solid #e7e9f0;border-radius:14px;padding:22px;box-shadow:0 6px 24px rgba(17,24,39,.06)}
+        .form-grid{display:grid;grid-template-columns:320px 1fr;gap:22px;align-items:start}
+        @media (max-width: 980pxを見る){.form-grid{grid-template-columns:1fr}}
+
+        .poster-preview{width:100%;aspect-ratio:3/4;border:1px solid #e7e9f0;border-radius:14px;overflow:hidden;background:#f3f4f6}
+        .poster-preview img{width:100%;height:100%;object-fit:cover;display:block}
+
+        .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:12px;border:1px solid #e7e9f0;background:#fff;color:#111827;text-decoration:none;cursor:pointer}
+        .btn.primary{background:#2563eb;border-color:#2563eb;color:#fff}
+        .btn.outline{background:#fff}
+
+        .field{margin-bottom:14px}
+        .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        @media (max-width: 980px){.field-row{grid-template-columns:1fr}}
+        .field-label{font-size:13px;font-weight:700;margin-bottom:8px;color:#111827}
+        .req{color:#ef4444}
+        .input,.select,.textarea{width:100%;padding:10px 12px;border:1px solid #e7e9f0;border-radius:12px;outline:none}
+        .textarea{resize:vertical;min-height:120px}
+        .helper-text{font-size:12px;color:#6b7280;margin-top:8px;white-space:pre-line}
+
+        .chip-group{display:flex;flex-wrap:wrap;gap:8px}
+        .chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid #e7e9f0;border-radius:999px;cursor:pointer;background:#fff;user-select:none}
+        .chip.active{background:#111827;color:#fff;border-color:#111827}
+
+        .divider{height:1px;background:#e7e9f0;margin:16px 0}
+        .pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid #e7e9f0;background:#f9fafb;font-size:12px;color:#111827}
+
+        .extra-image-section{margin-top:18px;padding-top:18px;border-top:1px solid #e7e9f0}
+        .section-title{font-size:14px;font-weight:800;margin-bottom:8px}
+
+        .extra-image-grid{display:grid;grid-template-columns:repeat(6, minmax(0, 1fr));gap:10px}
+        @media (max-width: 980px){.extra-image-grid{grid-template-columns:repeat(3, minmax(0, 1fr))}}
+
+        .extra-thumb{border:1px solid #e7e9f0;border-radius:12px;overflow:hidden;background:#f3f4f6;aspect-ratio:1/1}
+        .extra-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+        .form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+    </style>
 </th:block>
 
 <th:block th:fragment="content">
@@ -15,38 +57,56 @@
         <h1 class="page-title">영화 수정</h1>
     </div>
 
+    <!-- ✅ 컨트롤러가 POST만 받으므로 POST로만 보냄 -->
     <form class="movie-form"
           th:object="${movie}"
           th:action="@{/admin/movies/{movieId}(movieId=${movieId})}"
           method="post"
           enctype="multipart/form-data">
 
-        <input type="hidden" name="_method" value="put"/>
-
         <section class="form-card">
+
             <div class="form-grid">
 
-                <!-- 대표 포스터 -->
+                <!-- 좌측: 포스터 -->
                 <div class="poster-block">
                     <div class="field-label">대표 포스터 <span class="req">*</span></div>
 
-                    <div class="poster-preview" id="posterPreview">
-                        <!-- ✅ movie가 null이면 터지니까 안전하게: (movie.thumbnailImageUrl) -->
-                        <img th:src="${movie != null and movie.thumbnailImageUrl != null ? movie.thumbnailImageUrl : '/images/sample-poster.jpg'}"
-                             alt="대표 포스터"
-                             id="posterImg"/>
+                    <div class="poster-preview">
+                        <img id="posterImg"
+                             th:src="${movie.thumbnailImageUrl != null ? movie.thumbnailImageUrl : '/images/sample-poster.jpg'}"
+                             alt="대표 포스터"/>
                     </div>
 
-                    <label class="btn outline poster-btn" for="thumbnailImage">이미지 변경</label>
+                    <div style="display:flex; gap:10px; margin-top:12px;">
+                        <label class="btn outline" for="thumbnailImage">포스터 변경</label>
+                        <button class="btn outline" type="button" id="clearThumbBtn">포스터 선택 취소</button>
+                    </div>
+
                     <input type="file" id="thumbnailImage" name="thumbnailImage" accept="image/*" hidden>
+
+                    <div class="helper-text">
+                        * 포스터 파일을 선택하면 기존 포스터는 교체됩니다.
+                        * 포스터를 변경하지 않으면 기존 포스터가 유지됩니다.
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="field-label">현재 상태</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <span class="pill" th:text="${movie.status}">UPCOMING</span>
+                        <span class="pill" th:text="${movie.avgScore != null ? '평점: ' + movie.avgScore : '평점: -'}">평점: -</span>
+                        <span class="pill" th:text="${movie.advanceReservationRate != null ? '예매율: ' + movie.advanceReservationRate : '예매율: -'}">예매율: -</span>
+                    </div>
                 </div>
 
-                <!-- 입력 폼 -->
+                <!-- 우측: 필드 -->
                 <div class="fields-block">
 
                     <div class="field">
                         <label class="field-label" for="title">영화 제목 <span class="req">*</span></label>
-                        <input class="input" id="title" type="text" th:field="*{title}" placeholder="영화 제목을 입력하세요"/>
+                        <input class="input" id="title" type="text" th:field="*{title}"
+                               placeholder="영화 제목을 입력하세요"/>
                     </div>
 
                     <div class="field-row">
@@ -68,16 +128,17 @@
                         </div>
                     </div>
 
+                    <!-- ✅ date input: th:field 대신 th:value로 yyyy-MM-dd 강제 -->
                     <div class="field-row">
                         <div class="field">
                             <label class="field-label" for="releaseDate">개봉일 <span class="req">*</span></label>
-                            <input class="input" id="releaseDate" name="releaseDate" type="date"
+                            <input class="input" id="releaseDate" type="date" name="releaseDate"
                                    th:value="${movie.releaseDate != null ? #temporals.format(movie.releaseDate, 'yyyy-MM-dd') : ''}"/>
                         </div>
 
                         <div class="field">
                             <label class="field-label" for="endDate">상영 종료일 <span class="req">*</span></label>
-                            <input class="input" id="endDate" name="endDate" type="date"
+                            <input class="input" id="endDate" type="date" name="endDate"
                                    th:value="${movie.endDate != null ? #temporals.format(movie.endDate, 'yyyy-MM-dd') : ''}"/>
                         </div>
                     </div>
@@ -85,45 +146,59 @@
                     <div class="field">
                         <div class="field-label">장르 <span class="req">*</span></div>
                         <div class="chip-group" id="genreGroup">
-                            <label class="chip" th:each="g : ${T(com.elice.cinema.domain.movie.entity.Genre).values()}">
+                            <label class="chip"
+                                   th:each="g : ${T(com.elice.cinema.domain.movie.entity.Genre).values()}"
+                                   th:if="${g.displayName != null and !#strings.isEmpty(g.displayName)}">
                                 <input type="checkbox" th:field="*{genres}" th:value="${g}" hidden>
                                 <span th:text="${g.displayName}">액션</span>
                             </label>
                         </div>
+                        <div class="helper-text">* 복수 선택 가능</div>
                     </div>
 
                     <div class="field">
                         <div class="field-label">상영 타입 <span class="req">*</span></div>
                         <div class="chip-group" id="typeGroup">
-                            <label class="chip" th:each="st : ${T(com.elice.cinema.domain.common.ScreeningType).values()}">
+                            <label class="chip"
+                                   th:each="st : ${T(com.elice.cinema.domain.common.ScreeningType).values()}"
+                                   th:if="${st.displayName != null and !#strings.isEmpty(st.displayName)}">
                                 <input type="checkbox" th:field="*{screeningTypes}" th:value="${st}" hidden>
                                 <span th:text="${st.displayName}">2D</span>
                             </label>
                         </div>
+                        <div class="helper-text">* 복수 선택 가능</div>
                     </div>
 
                     <div class="field">
                         <label class="field-label" for="synopsis">영화 소개 (시놉시스) <span class="req">*</span></label>
-                        <textarea class="textarea" id="synopsis" rows="6" th:field="*{synopsis}"
+                        <textarea class="textarea" id="synopsis" th:field="*{synopsis}"
                                   placeholder="영화 소개를 입력하세요"></textarea>
                     </div>
 
                 </div>
             </div>
 
+            <!-- 추가 이미지 -->
             <div class="extra-image-section">
                 <div class="section-title">추가 이미지 (선택사항)</div>
-                <div class="extra-image-grid">
 
-                    <div class="extra-thumb" th:each="imgUrl : ${extraImages}">
+                <div class="helper-text">
+                    * 새 이미지를 선택하면 기존 추가 이미지는 전부 교체됩니다.
+                    * 변경하지 않으면 기존 추가 이미지가 유지됩니다.
+                </div>
+
+                <div style="display:flex; gap:10px; margin:12px 0;">
+                    <label class="btn outline" for="extraImages">추가 이미지 변경</label>
+                    <button class="btn outline" type="button" id="clearExtraBtn">추가 이미지 선택 취소</button>
+                </div>
+
+                <input type="file" id="extraImages" name="extraImages" accept="image/*" multiple hidden>
+
+                <div class="extra-image-grid" id="extraGrid">
+                    <!-- 기존 이미지(서버) -->
+                    <div class="extra-thumb existing" th:each="imgUrl : ${extraImages}">
                         <img th:src="${imgUrl}" alt="추가 이미지">
                     </div>
-
-                    <label class="extra-uploader" for="extraImages">
-                        <div class="upload-icon">↑</div>
-                        <div class="upload-text">이미지 추가</div>
-                    </label>
-                    <input type="file" id="extraImages" name="extraImages" accept="image/*" multiple hidden>
                 </div>
             </div>
 
@@ -135,6 +210,7 @@
     </form>
 
     <script>
+        // ===== 칩 토글 =====
         function syncChipActive(groupId) {
             const group = document.getElementById(groupId);
             if (!group) return;
@@ -154,6 +230,8 @@
             group.addEventListener('click', (e) => {
                 const chip = e.target.closest('.chip');
                 if (!chip) return;
+                e.preventDefault();
+
                 const checkbox = chip.querySelector('input[type="checkbox"]');
                 if (!checkbox) return;
 
@@ -165,9 +243,9 @@
         wireChipGroup('genreGroup');
         wireChipGroup('typeGroup');
 
+        // ===== 날짜 min 동기화 =====
         const releaseInput = document.getElementById('releaseDate');
         const endInput = document.getElementById('endDate');
-
         function syncEndDateMin() {
             if (!releaseInput.value) return;
             endInput.min = releaseInput.value;
@@ -175,9 +253,72 @@
                 endInput.value = releaseInput.value;
             }
         }
-
         syncEndDateMin();
         releaseInput.addEventListener('change', syncEndDateMin);
+
+        // ===== 썸네일 미리보기 + 취소 =====
+        const thumbnailInput = document.getElementById('thumbnailImage');
+        const posterImg = document.getElementById('posterImg');
+        const originalPosterSrc = posterImg.getAttribute('src');
+        document.getElementById('clearThumbBtn').addEventListener('click', () => {
+            thumbnailInput.value = '';
+            posterImg.src = originalPosterSrc || '/images/sample-poster.jpg';
+        });
+        thumbnailInput.addEventListener('change', (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const url = URL.createObjectURL(file);
+            posterImg.src = url;
+            posterImg.onload = () => URL.revokeObjectURL(url);
+        });
+
+        // ===== extra: 새 선택 시 기존 숨김, 취소 시 복구 =====
+        const extraInput = document.getElementById('extraImages');
+        const extraGrid = document.getElementById('extraGrid');
+        const clearExtraBtn = document.getElementById('clearExtraBtn');
+
+        function removePreviewThumbs() {
+            extraGrid.querySelectorAll('.extra-thumb.preview').forEach(el => el.remove());
+        }
+        function setExistingVisible(visible) {
+            extraGrid.querySelectorAll('.extra-thumb.existing').forEach(el => {
+                el.style.display = visible ? '' : 'none';
+            });
+        }
+
+        extraInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files || []);
+            removePreviewThumbs();
+
+            if (files.length === 0) {
+                setExistingVisible(true);
+                return;
+            }
+
+            // ✅ 새 파일 선택하면 기존 미리보기는 숨김
+            setExistingVisible(false);
+
+            files.forEach(file => {
+                const wrap = document.createElement('div');
+                wrap.className = 'extra-thumb preview';
+
+                const img = document.createElement('img');
+                img.alt = '추가 이미지 미리보기';
+
+                const url = URL.createObjectURL(file);
+                img.src = url;
+                img.onload = () => URL.revokeObjectURL(url);
+
+                wrap.appendChild(img);
+                extraGrid.appendChild(wrap);
+            });
+        });
+
+        clearExtraBtn.addEventListener('click', () => {
+            extraInput.value = '';
+            removePreviewThumbs();
+            setExistingVisible(true);
+        });
     </script>
 
 </th:block>
