@@ -97,7 +97,7 @@ public class ScreeningService {
 
         return screeningRepository
                 .searchAdmin(request, pageable)
-                .map(screeningMapper::toAdminResponse);
+                .map(screeningMapper::toAdminListResponse);
     }
 
     public List<AdminScreeningFilterOptionResponse> getMovieFilterOptions() {
@@ -126,7 +126,7 @@ public class ScreeningService {
     }
 
     private AdminScreeningResponse toAdminResponse(Screening screening) {
-        return screeningMapper.toAdminResponse(screening);
+        return screeningMapper.toAdminListResponse(screening);
     }
 
     private Screening findScreeningById(Long screeningId) {
