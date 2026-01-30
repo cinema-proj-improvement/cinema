@@ -132,13 +132,13 @@
                     <div class="field-row">
                         <div class="field">
                             <label class="field-label" for="releaseDate">개봉일 <span class="req">*</span></label>
-                            <input class="input" id="releaseDate" type="date" name="releaseDate"
+                            <input class="input" id="releaseDate" type="date" name="releaseDate" disabled
                                    th:value="${movie.releaseDate != null ? #temporals.format(movie.releaseDate, 'yyyy-MM-dd') : ''}"/>
                         </div>
 
                         <div class="field">
                             <label class="field-label" for="endDate">상영 종료일 <span class="req">*</span></label>
-                            <input class="input" id="endDate" type="date" name="endDate"
+                            <input class="input" id="endDate" type="date" name="endDate" disabled
                                    th:value="${movie.endDate != null ? #temporals.format(movie.endDate, 'yyyy-MM-dd') : ''}"/>
                         </div>
                     </div>
