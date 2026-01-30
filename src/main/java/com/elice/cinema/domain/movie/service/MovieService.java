@@ -151,8 +151,6 @@ public class MovieService {
         movie.changeBasicInfo(
                 req.getTitle(),
                 req.getRunningTimeMinutes(),
-                req.getReleaseDate(),
-                req.getEndDate(),
                 req.getAgeRating(),
                 req.getSynopsis()
         );

@@ -80,14 +80,10 @@ public class Movie extends BaseEntity {
 
     public void changeBasicInfo(String title,
                                 Integer runningTimeMinutes,
-                                LocalDate releaseDate,
-                                LocalDate endDate,
                                 AgeRating ageRating,
                                 String synopsis) {
         this.title = title;
         this.runningTimeMinutes = runningTimeMinutes;
-        this.releaseDate = releaseDate;
-        this.endDate = endDate;
         this.ageRating = ageRating;
         this.synopsis = synopsis;
     }
