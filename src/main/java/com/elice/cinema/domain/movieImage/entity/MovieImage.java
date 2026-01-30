@@ -62,4 +62,8 @@ public class MovieImage {  // TODO: Movie에 양방향 연관관계 맺어주지
     public boolean isThumbnail() {
         return this.displayOrder != null && this.displayOrder == 0;
     }
+
+    public void changeDisplayOrder(int displayOrder) {
+        this.displayOrder = displayOrder;
+    }
 }

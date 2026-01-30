@@ -2,11 +2,13 @@ package com.elice.cinema.domain.movie.controller;
 
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
 import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
+import com.elice.cinema.domain.movie.dto.request.MovieUpdateRequest;
 import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieDetailResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
 import com.elice.cinema.domain.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -16,6 +18,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @Controller
 @RequestMapping("/admin/movies")
 @RequiredArgsConstructor
@@ -74,14 +77,21 @@ public class AdminMovieController {
             Model model
     ){
         MovieUpdateFormResponse movie = movieService.getMovieUpdateForm(movieId);
+
+        log.info("releaseDate = {}", movie.getReleaseDate());
+        log.info("endDate = {}", movie.getEndDate());
+
+        model.addAttribute("movieId", movieId);
         model.addAttribute("movie", movie);
+        model.addAttribute("extraImages", movie.getExtraImages());
         return "admin/movie/movie-update";
     }
 
-    /*@PutMapping("/{movieId}")
-    public String updateMovie(
+    @PostMapping("/{movieId}")
+    public String updateMovie(@PathVariable Long movieId,
+                              @Validated @ModelAttribute MovieUpdateRequest req) {
+        movieService.updateMovie(movieId, req);
 
-    ){
-
-    }*/
+        return "redirect:/admin/movies/" + movieId;
+    }
 }

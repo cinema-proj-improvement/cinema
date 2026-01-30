@@ -78,6 +78,28 @@ public class Movie extends BaseEntity {
         );
     }
 
+    public void changeBasicInfo(String title,
+                                Integer runningTimeMinutes,
+                                LocalDate releaseDate,
+                                LocalDate endDate,
+                                AgeRating ageRating,
+                                String synopsis) {
+        this.title = title;
+        this.runningTimeMinutes = runningTimeMinutes;
+        this.releaseDate = releaseDate;
+        this.endDate = endDate;
+        this.ageRating = ageRating;
+        this.synopsis = synopsis;
+    }
+
+    public void changeGenres(Set<Genre> genres) {
+        this.genres = new HashSet<>(genres);
+    }
+
+    public void changeScreeningTypes(Set<ScreeningType> screeningTypes) {
+        this.screeningTypes = new HashSet<>(screeningTypes);
+    }
+
     private Movie(String title,
                   int runningTimeMinutes,
                   LocalDate releaseDate,
