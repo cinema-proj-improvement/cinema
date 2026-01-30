@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: layout(
+        '상영 상세', 'screenings', ~{::pageCss}, ~{::content}
+      )}">
+<th:block th:fragment="pageCss">
+    <link rel="stylesheet" th:href="@{/css/admin/screening/screening-detail.css}">
+</th:block>
+
+<th:block th:fragment="content">
+
+    <!-- 상단 헤더 -->
+    <div class="page-head">
+        <a class="back-link" th:href="@{/admin/screenings}">‹</a>
+
+        <div class="head-title">
+            <div class="head-sub">
+                <a class="list-link" th:href="@{/admin/screenings}">목록으로 돌아가기</a>
+            </div>
+            <h1 class="page-title">상영 상세</h1>
+        </div>
+
+    </div>
+
+    <div class="alert error" th:if="${errorMessage}">
+        <strong>상영 상태 변경 실패</strong>
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <div class="grid">
+        <!-- 기본 정보 -->
+        <section class="card">
+            <h2 class="card-title">기본 정보</h2>
+
+            <div class="info-list">
+                <div class="info-row">
+                    <div class="info-key">
+                        <span class="ico">🎬</span> 영화
+                    </div>
+                    <div class="info-val" th:text="${screening.movie.title}">오션스 엣지</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-key">
+                        <span class="ico">🏢</span> 상영관
+                    </div>
+                    <div class="info-val" th:text="${screening.screen.name}">2관</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-key">
+                        <span class="ico">📽️</span> 상영 유형
+                    </div>
+                    <div class="info-val">
+                        <span class="chip" th:text="${screening.screeningType}">3D</span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-key">
+                        <span class="ico">🟦</span> 상태
+                    </div>
+
+                    <div class="info-val">
+                        <form class="status-inline-form"
+                              th:action="@{|/admin/screenings/${screening.id}/status|}"
+                              th:object="${form}"
+                              method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="_method" value="patch"/>
+
+                            <select class="status-select" th:field="*{screeningStatus}">
+                                <option th:each="st : ${statuses}"
+                                        th:value="${st}"
+                                        th:text="${st}">
+                                </option>
+                            </select>
+
+                            <button class="btn-apply" type="submit">적용</button>
+
+                            <!-- ✅ 에러 메시지도 폼 안으로 -->
+                            <p class="field-error"
+                               th:if="${#fields.hasErrors('screeningStatus')}"
+                               th:errors="*{screeningStatus}">
+                            </p>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 시간 정보 -->
+        <section class="card">
+            <h2 class="card-title">시간 정보</h2>
+
+            <div class="info-list">
+                <div class="info-row">
+                    <div class="info-key">
+                        <span class="ico">📅</span> 날짜
+                    </div>
+                    <div class="info-val"
+                         th:text="${#temporals.format(screening.startAt, 'yyyy년 M월 d일 EEEE')}">
+                        2026년 1월 30일 금요일
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-key">
+                        <span class="ico">🕒</span> 시작 시간
+                    </div>
+                    <div class="info-val time"
+                         th:text="${#temporals.format(screening.startAt, 'HH:mm')}">
+                        13:00
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-key">
+                        <span class="ico">🕓</span> 종료 시간
+                    </div>
+                    <div class="info-val time"
+                         th:text="${#temporals.format(screening.endAt, 'HH:mm')}">
+                        15:20
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+</th:block>
+</html>

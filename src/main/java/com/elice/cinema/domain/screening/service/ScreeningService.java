@@ -5,6 +5,7 @@ import com.elice.cinema.domain.movie.repository.MovieRepository;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.screen.entity.Screen;
 import com.elice.cinema.domain.screen.repository.ScreenRepository;
+import com.elice.cinema.domain.screening.dto.reponse.ScreeningDetailResponse;
 import com.elice.cinema.domain.screening.dto.reponse.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
 import com.elice.cinema.domain.screening.dto.request.ScreeningUpdateRequest;
@@ -47,6 +48,13 @@ public class ScreeningService {
                 .toList();
     }
 
+    public ScreeningDetailResponse getScreeningDetail(Long screeningId) {
+        Screening screening = findScreeningById(screeningId);
+
+        return screeningMapper.toScreeningDetailResponse(screening);
+    }
+
+
     @Transactional
     public void createScreening(ScreeningCreateRequest req) {
         Movie movie = findMovieById(req.getMovieId());
@@ -69,13 +77,16 @@ public class ScreeningService {
 
     @Transactional
     public void updateScreening(Long screeningId, ScreeningUpdateRequest req) {
-
-        Screening screening = screeningRepository.findById(screeningId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.SCREENING_NOT_FOUND));
+        Screening screening = findScreeningById(screeningId);
 
         screeningValidator.validateUpdate(screening.getScreeningStatus(), req);
 
         screening.updateScreeningStatus(req.getScreeningStatus());
+    }
+
+    private Screening findScreeningById(Long screeningId) {
+        return screeningRepository.findById(screeningId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SCREENING_NOT_FOUND));
     }
 
     private Movie findMovieById(Long movieId) {
