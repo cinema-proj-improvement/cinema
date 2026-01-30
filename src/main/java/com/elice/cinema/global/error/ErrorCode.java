@@ -30,6 +30,7 @@ public enum ErrorCode {
     SCREENING_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "SG10", "SCHEDULED 상태의 상영만 삭제 가능합니다."),
     // 401 Unauthorized
 
+
     // 403 Forbidden
 
     // 404 Not Found
