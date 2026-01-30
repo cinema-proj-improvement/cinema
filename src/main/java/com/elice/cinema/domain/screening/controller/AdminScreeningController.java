@@ -71,6 +71,8 @@ public class AdminScreeningController {
         return screeningOptionService.getScreeningTypesByMovie(movieId);
     }
 
+
+    // TODO: 비동기 방식 통일하기
     /**
      * 2) (영화 + 상영 타입) 선택 → 상영 타입을 지원하는 상영관 목록 반환
      */

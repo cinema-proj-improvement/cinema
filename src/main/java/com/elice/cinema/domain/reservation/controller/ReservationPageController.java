@@ -23,6 +23,4 @@ public class ReservationPageController {
         model.addAttribute("movies", movies);
         return "user/reservation/reservation-select";
     }
-
-
 }

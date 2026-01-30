@@ -1,7 +1,7 @@
 (function () {
     // ====== 설정 ======
     const DAYS = 7;
-    const scheduleApiUrl = "/api/reservations/schedule"; // TODO: 실제 API 경로 맞추기
+    const scheduleApiUrl = "/api/reservations/schedule";
 
     // ====== 엘리먼트 ======
     const movieListEl = document.getElementById("movieList");
@@ -126,10 +126,6 @@
 
             const data = await res.json();
 
-            // data는 배열이라고 가정:
-            // [
-            //   { screeningId, startAt, endAt, movieTitle, screenName, screeningType, remainingSeats, totalSeats }
-            // ]
             if (!Array.isArray(data) || data.length === 0) {
                 setEmpty(true);
                 return;
@@ -137,8 +133,6 @@
 
             renderScheduleList(data);
         } catch (err) {
-            // API 아직 없을 때 화면 확인용 더미
-            // renderScheduleList(mockSchedule());
             setEmpty(true);
             console.error(err);
         } finally {
@@ -153,6 +147,18 @@
         return scheduleApiUrl + "?" + params.toString();
     }
 
+    /**
+     * ✅ 백엔드 응답 구조에 맞춘 렌더
+     * [
+     *   {
+     *     id(or Id),
+     *     startAt, endAt,
+     *     movie: { title },
+     *     screen: { name },
+     *     remainingSeats
+     *   }
+     * ]
+     */
     function renderScheduleList(items) {
         if (!scheduleListEl) return;
 
@@ -161,41 +167,48 @@
             const li = document.createElement("li");
             li.className = "schedule-item";
 
+            const screeningId = it.screeningId ?? it.id ?? it.Id;
             const start = toHHmm(it.startAt);
             const end = toHHmm(it.endAt);
 
-            const title = it.movieTitle ?? "";
-            const screen = it.screenName ?? "";
-            const type = it.screeningType ?? "";
-
+            const title = it.movie?.title ?? "";
+            const screenName = it.screen?.name ?? "";
+            const screeningType = it.screen?.screeningTypeDisplayName ?? "";
+            const totalSeats = it.screen?.totalSeats ?? null;
             const remaining = it.remainingSeats ?? null;
-            const total = it.totalSeats ?? null;
 
             const seatsText =
-                remaining !== null && total !== null ? `${remaining}/${total}` : "";
+                remaining !== null && totalSeats !== null
+                    ? `잔여 ${remaining}/${totalSeats}`
+                    : remaining !== null
+                        ? `잔여 ${remaining}`
+                        : "";
 
             li.innerHTML = `
-        <button type="button" class="schedule-btn" data-screening-id="${it.screeningId}">
-          <div class="time">
-            <span class="time-main">${start}</span>
-            <span class="time-sub">~ ${end}</span>
-          </div>
-          <div class="info">
-            <div class="line1">
-              <span class="movie">${escapeHtml(title)}</span>
-              ${type ? `<span class="pill">${escapeHtml(type)}</span>` : ""}
-            </div>
-            <div class="line2">
-              <span class="screen">${escapeHtml(screen)}</span>
-              ${seatsText ? `<span class="seats">잔여 ${seatsText}</span>` : ""}
-            </div>
-          </div>
-        </button>
-      `;
+      <button type="button" class="schedule-btn" data-screening-id="${screeningId ?? ""}">
+        <div class="time">
+          <span class="time-main">${escapeHtml(start)}</span>
+          <span class="time-sub">~ ${escapeHtml(end)}</span>
+        </div>
 
-            // 클릭 시 좌석 선택으로 이동 (경로는 너희 라우팅에 맞게 조정)
+        <div class="info">
+          <div class="line1">
+            <span class="movie">${escapeHtml(title)}</span>
+            ${
+                screeningType
+                    ? `<span class="pill">${escapeHtml(screeningType)}</span>`
+                    : ""
+            }
+          </div>
+          <div class="line2">
+            <span class="screen">${escapeHtml(screenName)}</span>
+            ${seatsText ? `<span class="seats">${escapeHtml(seatsText)}</span>` : ""}
+          </div>
+        </div>
+      </button>
+    `;
+
             li.querySelector(".schedule-btn").addEventListener("click", () => {
-                const screeningId = it.screeningId;
                 if (!screeningId) return;
                 window.location.href = `/reservations/seats?screeningId=${screeningId}`;
             });
@@ -205,13 +218,11 @@
     }
 
     function setLoading(on) {
-        // loadingEl이 없으면 그냥 무시
         if (!loadingEl) return;
         loadingEl.hidden = !on;
     }
 
     function setEmpty(on) {
-        // emptyEl이 없으면 그냥 무시
         if (!emptyEl) return;
         emptyEl.hidden = !on;
     }
@@ -226,7 +237,6 @@
 
     function toHHmm(isoOrDateTime) {
         if (!isoOrDateTime) return "";
-        // "2026-01-30T10:30:00" or "2026-01-30 10:30:00" 등 대응
         const s = String(isoOrDateTime);
         const t = s.includes("T") ? s.split("T")[1] : s.split(" ")[1];
         if (!t) return "";
@@ -240,31 +250,5 @@
             .replaceAll(">", "&gt;")
             .replaceAll('"', "&quot;")
             .replaceAll("'", "&#039;");
-    }
-
-    // API 없을 때 더미 테스트용
-    function mockSchedule() {
-        return [
-            {
-                screeningId: 1,
-                startAt: selectedDate + "T10:30:00",
-                endAt: selectedDate + "T12:40:00",
-                movieTitle: "더미 영화 1",
-                screenName: "1관",
-                screeningType: "2D",
-                remainingSeats: 120,
-                totalSeats: 200,
-            },
-            {
-                screeningId: 2,
-                startAt: selectedDate + "T13:10:00",
-                endAt: selectedDate + "T15:20:00",
-                movieTitle: "더미 영화 2",
-                screenName: "2관",
-                screeningType: "IMAX",
-                remainingSeats: 55,
-                totalSeats: 120,
-            },
-        ];
     }
 })();
