@@ -68,9 +68,8 @@ public class Screen extends BaseEntity {
     }
 
     public void addSeat(String seatCode, boolean active, Integer rowNo, Integer colNo) {
-        Seat seat = Seat.of(seatCode, active, rowNo, colNo); // screen 없이 생성
+        Seat seat = Seat.of(this, seatCode, active, rowNo, colNo); // screen 없이 생성
         seats.add(seat);
-        seat.setScreen(this);
     }
 
     public void addScreening(Movie movie,
@@ -79,9 +78,8 @@ public class Screen extends BaseEntity {
                              LocalDateTime endAt,
                              LocalDateTime endAtWithCleaning,
                              ScreeningStatus screeningStatus) {
-        Screening screening = Screening.of(movie, screeningType, startAt, endAt, endAtWithCleaning, screeningStatus); // screen 없이 생성
+        Screening screening = Screening.of(movie, this, screeningType, startAt, endAt, endAtWithCleaning, screeningStatus); // screen 없이 생성
         screenings.add(screening);
-        screening.assignScreen(this);
     }
 
     public void updateAll(String name,

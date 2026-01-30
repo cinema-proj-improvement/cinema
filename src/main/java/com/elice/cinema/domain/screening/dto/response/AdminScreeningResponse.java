@@ -22,5 +22,5 @@ public class AdminScreeningResponse {
     private final String screenName;
     private final ScreeningType screeningType;
 
-    private final ScreeningStatus status;
+    private final ScreeningStatus screeningStatus;
 }
