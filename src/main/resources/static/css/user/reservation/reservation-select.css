@@ -1,0 +1,315 @@
+/* /static/css/user/reservation/reservation-select.css */
+
+/* 페이지 전체는 header/footer 공통 스타일을 건드리지 않도록 main 범위로만 스타일링 */
+.reservation-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+}
+
+/* 타이틀 */
+.reservation-title h2 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 800;
+}
+.reservation-title p {
+    margin: 0;
+    font-size: 14px;
+    color: #777;
+}
+
+/* 레이아웃 */
+.reservation-layout {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+}
+
+
+/* 공통 패널 */
+.movies-panel,
+.schedule-panel {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 16px;
+}
+
+/* 패널 헤더 */
+.panel-head {
+    padding: 18px 18px 10px;
+}
+.panel-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+}
+.panel-sub {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: #777;
+}
+
+/* ========== 왼쪽: 영화 리스트 ========== */
+.movie-list {
+    list-style: none;
+    margin: 0;
+    padding: 12px 14px 18px;
+    display: grid;
+    gap: 12px;
+}
+
+.movie-item.active .movie-btn {
+    border-color: #ddd;
+    box-shadow: 0 0 0 2px #111 inset;
+}
+
+.movie-btn {
+    width: 100%;
+    border: 1px solid #eee;
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 14px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.movie-btn:hover {
+    border-color: #ddd;
+}
+
+.movie-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.movie-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid #eee;
+    display: grid;
+    place-items: center;
+    color: #888;
+    background: #fafafa;
+    font-size: 18px;
+}
+
+.movie-text {
+    display: grid;
+    gap: 4px;
+}
+
+.movie-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #111;
+}
+
+.movie-age {
+    font-size: 12px;
+    color: #777;
+}
+
+/* ========== 오른쪽: 날짜 선택 섹션 ========== */
+.schedule-panel {
+    padding: 0;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* 상단 날짜 박스 */
+.date-section {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    padding: 18px;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 18px;
+    align-items: start;
+}
+
+.date-head {
+    margin-bottom: 12px;
+}
+
+.date-tabs-row {
+    display: grid;
+    grid-template-columns: 36px 1fr 36px;
+    gap: 12px;
+    align-items: center;
+}
+
+.nav-btn {
+    width: 36px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    background: #fff;
+    cursor: pointer;
+    font-size: 18px;
+    color: #666;
+}
+.nav-btn:hover {
+    border-color: #ddd;
+}
+
+.date-tabs {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+}
+
+/* 날짜 탭 버튼 */
+.date-tab {
+    border: 1px solid #eee;
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 10px;
+    cursor: pointer;
+    display: grid;
+    gap: 6px;
+    justify-items: center;
+    transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+.date-tab:hover {
+    border-color: #ddd;
+}
+.date-tab.active {
+    background: #3f2a7c;   /* 스샷 느낌의 보라 */
+    border-color: transparent;
+    color: #fff;
+}
+
+.tab-day {
+    font-size: 13px;
+    font-weight: 800;
+    color: inherit;
+    opacity: .95;
+}
+.tab-date {
+    font-size: 18px;
+    font-weight: 900;
+    color: inherit;
+}
+.tab-hint {
+    font-size: 12px;
+    color: inherit;
+    opacity: .85;
+}
+
+/* ========== 시간표 섹션 ========== */
+.schedule-section .panel-head {
+    padding: 18px 18px 10px;
+}
+
+.schedule-body {
+    padding: 12px 18px 18px;
+}
+
+.schedule-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+}
+
+/* 시간표 카드 */
+.schedule-item {}
+
+.schedule-btn {
+    width: 100%;
+    border: 1px solid #eee;
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    text-align: left;
+}
+.schedule-btn:hover {
+    border-color: #ddd;
+}
+
+.time {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-weight: 900;
+}
+.time-main {
+    font-size: 28px;
+    color: #111;
+}
+.time-sub {
+    font-size: 18px;
+    color: #111;
+    opacity: .9;
+}
+
+.info {
+    display: grid;
+    gap: 8px;
+}
+.line1 {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.movie {
+    font-size: 16px;
+    font-weight: 900;
+    color: #111;
+}
+.pill {
+    font-size: 12px;
+    font-weight: 800;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid #eee;
+    background: #fafafa;
+    color: #444;
+}
+.line2 {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: #777;
+    font-size: 13px;
+}
+.screen { color: #777; }
+.seats { color: #111; font-weight: 800; }
+
+/* 빈 상태 */
+.schedule-empty {
+    margin-top: 10px;
+    padding: 18px;
+    border: 1px dashed #ddd;
+    border-radius: 14px;
+    color: #777;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* 반응형 */
+@media (max-width: 980px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+    .date-tabs {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .schedule-btn {
+        grid-template-columns: 1fr;
+    }
+}
