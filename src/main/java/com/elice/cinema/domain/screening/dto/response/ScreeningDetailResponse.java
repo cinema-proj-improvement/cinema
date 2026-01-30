@@ -1,4 +1,4 @@
-package com.elice.cinema.domain.screening.dto.reponse;
+package com.elice.cinema.domain.screening.dto.response;
 
 import com.elice.cinema.domain.common.ScreeningType;
 import com.elice.cinema.domain.movie.dto.response.MovieTitleResponse;
