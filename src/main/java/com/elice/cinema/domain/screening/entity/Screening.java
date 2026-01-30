@@ -87,4 +87,8 @@ public class Screening extends BaseEntity {
         this.screen = screen;
     }
 
+    public void updateScreeningStatus(ScreeningStatus screeningStatus) {
+        this.screeningStatus = screeningStatus;
+    }
+
 }

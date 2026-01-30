@@ -1,5 +1,7 @@
 package com.elice.cinema.domain.screening.mapper;
 
+import com.elice.cinema.domain.screening.dto.response.ScreeningDetailResponse;
+import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
 import com.elice.cinema.domain.screening.entity.Screening;
 import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
@@ -14,6 +16,7 @@ import java.time.LocalTime;
 @Mapper(componentModel = "spring")
 public interface ScreeningMapper {
     public abstract ScreeningTimetableResponse toScreeningTimetableResponse(Screening screening);
+    public abstract ScreeningDetailResponse toScreeningDetailResponse(Screening screening);
 
     // 매퍼는 필드연결만 해주고 시간같은 의미 변환은 직접 알려줘야 한다.
     @Mapping(target = "date", source = "startAt", qualifiedByName = "toDate")

@@ -5,6 +5,7 @@ import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.screen.entity.Screen;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
+import com.elice.cinema.domain.screening.dto.request.ScreeningUpdateRequest;
 import com.elice.cinema.domain.screening.entity.ScreeningStatus;
 import com.elice.cinema.domain.screening.repository.ScreeningRepository;
 import com.elice.cinema.global.error.ErrorCode;
@@ -27,6 +28,23 @@ public class ScreeningValidator {
 
         validateStartAtPolicy(movie, req.getStartAt());
         validateTimeConflict(screen.getId(), req.getStartAt(), endAtWithCleaning);
+    }
+
+    /**
+     * 상영 수정 정책:
+     * - 현재 상태가 SCHEDULED일 때만 변경 가능
+     * - 변경 가능한 상태는 CANCELED(또는 너희 enum명)만 가능
+     */
+    // TODO: 환불 만들고 상영 수정 정책 수정 필요
+    public void validateUpdate(ScreeningStatus currentStatus, ScreeningUpdateRequest req) {
+        if (currentStatus != ScreeningStatus.SCHEDULED) {
+            throw new BusinessException(ErrorCode.SCREENING_STATUS_CHANGE_NOT_ALLOWED);
+        }
+
+        // enum이 진짜 CANCLED면 여기만 맞춰 바꿔주면 됨
+        if (req.getScreeningStatus() != ScreeningStatus.CANCELED) {
+            throw new BusinessException(ErrorCode.SCREENING_ONLY_CAN_CANCEL);
+        }
     }
 
     /* ===== validate ===== */
