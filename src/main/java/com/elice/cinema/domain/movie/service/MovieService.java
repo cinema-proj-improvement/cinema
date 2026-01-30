@@ -3,18 +3,14 @@ package com.elice.cinema.domain.movie.service;
 import com.elice.cinema.domain.movie.dto.internal.AdminMovieJoinRow;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
 import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
-import com.elice.cinema.domain.movie.dto.response.*;
 import com.elice.cinema.domain.movie.dto.request.MovieUpdateRequest;
-import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
-import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
+import com.elice.cinema.domain.movie.dto.response.*;
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
 import com.elice.cinema.domain.movie.event.MovieImagesStorageEvent;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.AdminMovieJoinQueryRepository;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
-import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
-import com.elice.cinema.global.common.file.FileService;
 import com.elice.cinema.domain.movieImage.entity.MovieImage;
 import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
 import com.elice.cinema.domain.movieImage.service.MovieImageService;
@@ -29,13 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -146,18 +136,6 @@ public class MovieService {
         return movieUpdateFormResponse;
     }
 
-    /* TODO:
-        - 모든 영화정보는 언제든지 정보를 수정 가능하다.
-            - 단, 러닝타임은 영화와 연관된 상영이 없을 때만 수정 가능하다.
-            - 단, 상태는 Movie 내 releaseDate와 endDate를 기준으로 변경된다. (Batch Job을 통해 변경)
-        - 썸네일 이미지 수정할 경우 MovieImages 테이블에 기존 썸네일 정보 삭제 후 새로 설정한 썸네일 넣어줘야 함.
-            - 또한, 이미지 파일 저장 경로에 고아 파일 생기지 않도록 유의해서 설계 필요
-        - 기타 이미지 수정은 어떻게..?
-            - 기존에 있던 거 테이블에서 다 삭제 + 이미지 파일 저장 위치에서도 다 삭제 후 수정할 때 넣어준 이미지 파일들을 저장하는 방식?
-            - 기존에 있던 거에서 뺀 게 있는지, 중복해서 추가한 게 있는지(애초에 기존에 있는 파일은 선택해서 못 넣도록?), 새로 추가한 게 있는지 확인해서
-                테이블 수정 및 이미지 파일 경로에서 수정하는 방식?
-            - 마찬가지 어느 방식이든 고아 파일 생기지 않도록 유의해서 설계 필요
-     */
     @Transactional
     public void updateMovie(Long movieId, MovieUpdateRequest req) {
         Movie movie = findMovieById(movieId);
