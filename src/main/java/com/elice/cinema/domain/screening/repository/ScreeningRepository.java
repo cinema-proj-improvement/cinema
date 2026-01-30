@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface ScreeningRepository extends JpaRepository<Screening, Long> {
+public interface ScreeningRepository extends JpaRepository<Screening, Long>, ScreeningRepositoryCustom {
 
     @Query("""
         select s
@@ -59,4 +59,3 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long> {
     """)
     int bulkUpdateToFinished(LocalDateTime now);
 }
-

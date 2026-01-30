@@ -6,7 +6,7 @@ import com.elice.cinema.domain.movie.repository.MovieRepository;
 import com.elice.cinema.domain.screen.dto.response.ScreenSelectResponse;
 import com.elice.cinema.domain.screen.mapper.ScreenMapper;
 import com.elice.cinema.domain.screen.repository.ScreenRepository;
-import com.elice.cinema.domain.screening.dto.reponse.ScreeningMovieOptionResponse;
+import com.elice.cinema.domain.screening.dto.response.ScreeningMovieOptionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

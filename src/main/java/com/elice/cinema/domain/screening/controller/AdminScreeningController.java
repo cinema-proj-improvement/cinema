@@ -4,14 +4,20 @@ import com.elice.cinema.domain.common.ScreeningType;
 import com.elice.cinema.domain.movie.dto.response.MovieSelectResponse;
 import com.elice.cinema.domain.movie.service.MovieService;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
-import com.elice.cinema.domain.screening.dto.reponse.ScreeningMovieOptionResponse;
-import com.elice.cinema.domain.screening.dto.reponse.ScreeningTimetableResponse;
+import com.elice.cinema.domain.screening.dto.request.AdminScreeningSearchRequest;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
+import com.elice.cinema.domain.screening.dto.response.AdminScreeningFilterOptionResponse;
+import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
+import com.elice.cinema.domain.screening.dto.response.ScreeningMovieOptionResponse;
+import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.service.ScreeningOptionService;
 import com.elice.cinema.domain.screening.service.ScreeningService;
 import com.elice.cinema.global.error.exception.BusinessException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,6 +31,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/admin/screenings")
 public class AdminScreeningController {
+
     private final ScreeningService screeningService;
     private final MovieService movieService;
     private final EnvironmentPolicyService environmentPolicyService;
@@ -63,7 +70,6 @@ public class AdminScreeningController {
     ) {
         return screeningOptionService.getScreensByMovieAndType(movieId, screeningType);
     }
-
     /**
      * 3) (상영관 + 날짜) 선택 → 해당 날짜의 상영 시간표 반환 (시간순)
      * GET /admin/screenings/timetable?screenId=1&date=2026-01-29
@@ -100,6 +106,31 @@ public class AdminScreeningController {
         }
 
         return "redirect:/admin/screenings";
+    }
+
+    @GetMapping({"", "/"})
+    public String getAdminScreenings(
+            AdminScreeningSearchRequest request,
+            @PageableDefault(size = 20) Pageable pageable,
+            Model model
+    ) {
+        Page<AdminScreeningResponse> screenings =
+                screeningService.searchAdmin(request, pageable);
+
+        List<AdminScreeningFilterOptionResponse> movieFilterOptions =
+                screeningService.getMovieFilterOptions();
+
+        List<AdminScreeningFilterOptionResponse> screenFilterOptions =
+                screeningService.getScreenFilterOptions();
+
+        model.addAttribute("screenings", screenings);
+        model.addAttribute("search", request);
+        model.addAttribute("movieFilterOptions", movieFilterOptions);
+        model.addAttribute("screenFilterOptions", screenFilterOptions);
+
+
+
+        return "admin/screening/screening-list";
     }
 
 }

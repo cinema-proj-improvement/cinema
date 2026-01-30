@@ -5,8 +5,11 @@ import com.elice.cinema.domain.movie.repository.MovieRepository;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.screen.entity.Screen;
 import com.elice.cinema.domain.screen.repository.ScreenRepository;
-import com.elice.cinema.domain.screening.dto.reponse.ScreeningTimetableResponse;
+import com.elice.cinema.domain.screening.dto.request.AdminScreeningSearchRequest;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
+import com.elice.cinema.domain.screening.dto.response.AdminScreeningFilterOptionResponse;
+import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
+import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.entity.Screening;
 import com.elice.cinema.domain.screening.entity.ScreeningStatus;
 import com.elice.cinema.domain.screening.mapper.ScreeningMapper;
@@ -14,6 +17,8 @@ import com.elice.cinema.domain.screening.repository.ScreeningRepository;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +36,7 @@ public class ScreeningService {
     private final ScreeningMapper screeningMapper;
     private final ScreeningValidator screeningValidator;
     private final EnvironmentPolicyService environmentPolicyService;
+
 
     public List<ScreeningTimetableResponse> getTimetable(Long screenId, LocalDate date) {
         LocalDateTime from = date.atStartOfDay();
@@ -83,5 +89,83 @@ public class ScreeningService {
     private LocalDateTime calculateEndAtWithCleaning(LocalDateTime endAt) {
         int cleaningMinutes = environmentPolicyService.getCleaningMinutes();
         return endAt.plusMinutes(cleaningMinutes);
+    }
+
+    public Page<AdminScreeningResponse> searchAdmin(
+            AdminScreeningSearchRequest request,
+            Pageable pageable
+    ) {
+        applyDefaultDateRange(request);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        return screeningRepository
+                .searchAdmin(request, pageable)
+                .map(screening -> toAdminResponse(screening, now));
+    }
+
+    public List<AdminScreeningFilterOptionResponse> getMovieFilterOptions() {
+        return screeningRepository.findAdminScreeningMovieFilterOptions();
+    }
+
+    public List<AdminScreeningFilterOptionResponse> getScreenFilterOptions() {
+        return screeningRepository.findAdminScreeningScreenFilterOptions();
+    }
+
+
+    // 헬퍼 메서드
+    private void applyDefaultDateRange(AdminScreeningSearchRequest request) {
+        if (request.getStartDate() == null || request.getEndDate() == null) {
+            LocalDate today = LocalDate.now();
+            request.setStartDate(today);
+            request.setEndDate(today.plusDays(7));
+        }
+    }
+
+    private AdminScreeningResponse toAdminResponse(
+            Screening screening,
+            LocalDateTime now
+    ) {
+        AdminScreeningResponse base =
+                screeningMapper.toAdminResponse(screening);
+
+        // ★ 표시용 상태만 보정
+        ScreeningStatus displayStatus =
+                resolveDisplayStatus(screening, now);
+
+        return new AdminScreeningResponse(
+                base.getId(),
+                base.getDate(),
+                base.getStartTime(),
+                base.getEndTime(),
+                base.getMovieTitle(),
+                base.getScreenName(),
+                base.getScreeningType(),
+                displayStatus
+        );
+    }
+
+    // 상태 계산 표시용
+    private ScreeningStatus resolveDisplayStatus(
+            Screening screening,
+            LocalDateTime now
+    ) {
+        // 관리자 취소는 무조건 유지
+        if (screening.getScreeningStatus() == ScreeningStatus.CANCELED) {
+            return ScreeningStatus.CANCELED;
+        }
+
+        // 아직 시작 전
+        if (now.isBefore(screening.getStartAt())) {
+            return ScreeningStatus.SCHEDULED;
+        }
+
+        // 상영 + 청소 포함 구간
+        if (now.isBefore(screening.getEndAtWithCleaning())) {
+            return ScreeningStatus.OPEN;
+        }
+
+        // 청소까지 끝남
+        return ScreeningStatus.FINISHED;
     }
 }
