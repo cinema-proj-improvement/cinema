@@ -59,14 +59,14 @@ public class Movie extends BaseEntity {
     @Column(name = "status", nullable = false, length = 20)
     private MovieStatus status;
 
-    public static Movie createUpcomming(String title,
-                           int runningTimeMinutes,
-                           LocalDate releaseDate,
-                           LocalDate endDate,
-                           AgeRating ageRating,
-                           String synopsis,
-                           Set<Genre> genres,
-                           Set<ScreeningType> screeningTypes) {  // 썸네일 이미지 주소는 객체 생성 시 포함되지 않습니다.
+    public static Movie createUpcoming(String title,
+                                       int runningTimeMinutes,
+                                       LocalDate releaseDate,
+                                       LocalDate endDate,
+                                       AgeRating ageRating,
+                                       String synopsis,
+                                       Set<Genre> genres,
+                                       Set<ScreeningType> screeningTypes) {  // 썸네일 이미지 주소는 객체 생성 시 포함되지 않습니다.
         return new Movie(title,
                 runningTimeMinutes,
                 releaseDate,
