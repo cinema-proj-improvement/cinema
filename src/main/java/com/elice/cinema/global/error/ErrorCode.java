@@ -36,7 +36,8 @@ public enum ErrorCode {
     SCREENING_TIME_CONFLICT(HttpStatus.CONFLICT, "SG08", "해당 시간에 이미 등록된 상영이 있어 상영을 생성할 수 없습니다."),
 
     // 500 Internal Server Error
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE01", "서버 내부 오류가 발생했습니다.");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE01", "서버 내부 오류가 발생했습니다."),
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "IO01", "파일 업로드에 실패했습니다.");
 
     private final HttpStatus status;
     private final String code;
