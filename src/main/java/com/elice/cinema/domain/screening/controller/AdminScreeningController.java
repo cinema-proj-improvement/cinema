@@ -5,15 +5,9 @@ import com.elice.cinema.domain.movie.dto.response.MovieSelectResponse;
 import com.elice.cinema.domain.movie.service.MovieService;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.screening.dto.request.AdminScreeningSearchRequest;
-import com.elice.cinema.domain.screening.dto.response.ScreeningDetailResponse;
-import com.elice.cinema.domain.screening.dto.response.ScreeningMovieOptionResponse;
-import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
-import com.elice.cinema.domain.screening.dto.response.AdminScreeningFilterOptionResponse;
-import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
-import com.elice.cinema.domain.screening.dto.response.ScreeningMovieOptionResponse;
-import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.dto.request.ScreeningUpdateRequest;
+import com.elice.cinema.domain.screening.dto.response.*;
 import com.elice.cinema.domain.screening.entity.ScreeningStatus;
 import com.elice.cinema.domain.screening.service.ScreeningOptionService;
 import com.elice.cinema.domain.screening.service.ScreeningService;
@@ -126,7 +120,7 @@ public class AdminScreeningController {
         return "redirect:/admin/screenings";
     }
 
-    //TODO: 상세 조회 만들고 나면 다시 만들기
+    //TODO: 상세 조회 만들고 나면 다시 만들기, 상태 변경 적용 시 적용 됐다고 메시지 만들기
     @PatchMapping("/{screeningId}/status")
     public String updateScreeningStatus(@PathVariable Long screeningId,
                                         @Valid @ModelAttribute("form") ScreeningUpdateRequest form,
