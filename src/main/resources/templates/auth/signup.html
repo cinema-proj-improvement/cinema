@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원가입</title>
+    <!-- 공용 CSS -->
+    <link rel="stylesheet" th:href="@{/css/common/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/common/header.css}">
+    <link rel="stylesheet" th:href="@{/css/common/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/auth/signup.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="auth-page">
+    <div class="auth-bg"></div>
+    <div class="auth-overlay"></div>
+
+    <section class="auth-card">
+        <h1 class="auth-title">회원가입</h1>
+        <p class="auth-desc">간단한 정보 입력으로 회원이 되어보세요.</p>
+
+        <p class="alert error" th:if="${signupError}" th:text="${signupError}"></p>
+
+        <form class="auth-form" th:action="@{/signup}" method="post" th:object="${signupRequest}">
+            <div class="field">
+                <label>이메일</label>
+                <input type="email" th:field="*{email}" placeholder="example@email.com">
+            </div>
+
+            <div class="field">
+                <label>비밀번호</label>
+                <div class="password-wrap">
+                    <input id="signupPw" type="password" th:field="*{password}" placeholder="비밀번호를 입력하세요">
+                    <button type="button" class="eye-btn" data-target="signupPw">
+                        <svg class="eye-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"
+                                  stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                                  stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>비밀번호 확인</label>
+                <input type="password" th:field="*{passwordConfirm}"placeholder="비밀번호를 다시 입력하세요">
+            </div>
+
+            <div class="field">
+                <label>이름</label>
+                <input type="text" th:field="*{name}"placeholder="이름를 입력하세요">
+            </div>
+
+            <div class="field">
+                <label>닉네임</label>
+                <input type="text" th:field="*{nickname}"placeholder="닉네임을 입력하세요">
+            </div>
+
+            <div class="field">
+                <label>생년월일</label>
+                <input type="date" th:field="*{birthDate}">
+            </div>
+
+            <button class="submit" type="submit">회원가입</button>
+
+            <p class="bottom">
+                이미 계정이 있으신가요? <a class="link" href="/login">로그인</a>
+            </p>
+        </form>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script>document.querySelectorAll('.eye-btn').forEach(btn => {
+    const targetId = btn.dataset.target;
+    const input = document.getElementById(targetId);
+    if (!input) return;
+
+    btn.addEventListener('click', () => {
+        input.type = input.type === 'password' ? 'text' : 'password';
+    });
+});
+</script>
+</body>
+</html>

@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",                 // 메인 페이지
                                 "/login",       // 로그인 페이지
+                                "/signup",
                                 "/h2-console/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/admin/**").hasRole("ADMIN")
