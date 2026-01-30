@@ -7,6 +7,24 @@
     border-bottom: 1px solid #eef0f3;
 }
 
+.delete-form {
+    margin-left: auto;
+}
+
+.btn.danger {
+    background-color: #e54848;
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn.danger:hover {
+    background-color: #cc3d3d;
+}
+
 .back-link {
     display: inline-flex;
     align-items: center;
@@ -204,6 +222,11 @@
     color: #9f1239;
 }
 
+.alert.success {
+    border: 1px solid #b7eb8f;
+    background: #f6ffed;
+    color: #135200;
+}
 
 @media (max-width: 1024px) {
     .grid { grid-template-columns: 1fr; }

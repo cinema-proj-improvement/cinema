@@ -5,15 +5,9 @@ import com.elice.cinema.domain.movie.dto.response.MovieSelectResponse;
 import com.elice.cinema.domain.movie.service.MovieService;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.screening.dto.request.AdminScreeningSearchRequest;
-import com.elice.cinema.domain.screening.dto.response.ScreeningDetailResponse;
-import com.elice.cinema.domain.screening.dto.response.ScreeningMovieOptionResponse;
-import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
-import com.elice.cinema.domain.screening.dto.response.AdminScreeningFilterOptionResponse;
-import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
-import com.elice.cinema.domain.screening.dto.response.ScreeningMovieOptionResponse;
-import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.dto.request.ScreeningUpdateRequest;
+import com.elice.cinema.domain.screening.dto.response.*;
 import com.elice.cinema.domain.screening.entity.ScreeningStatus;
 import com.elice.cinema.domain.screening.service.ScreeningOptionService;
 import com.elice.cinema.domain.screening.service.ScreeningService;
@@ -28,6 +22,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -126,12 +121,13 @@ public class AdminScreeningController {
         return "redirect:/admin/screenings";
     }
 
-    //TODO: 상세 조회 만들고 나면 다시 만들기
+    //TODO: 상세 조회 만들고 나면 다시 만들기, 상태 변경 적용 시 적용 됐다고 메시지 만들기
     @PatchMapping("/{screeningId}/status")
     public String updateScreeningStatus(@PathVariable Long screeningId,
                                         @Valid @ModelAttribute("form") ScreeningUpdateRequest form,
                                         BindingResult bindingResult,
-                                        Model model) {
+                                        Model model,
+                                        RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             ScreeningDetailResponse screening = screeningService.getScreeningDetail(screeningId);
             model.addAttribute("screening", screening);
@@ -142,11 +138,11 @@ public class AdminScreeningController {
         // 2) 비즈니스 예외(상태 변경 불가 등) -> 상단 알림으로 노출
         try {
             screeningService.updateScreening(screeningId, form);
+            redirectAttributes.addFlashAttribute("successMessage", "상영 상태가 변경되었습니다.");
         } catch (BusinessException e) {
             ScreeningDetailResponse screening = screeningService.getScreeningDetail(screeningId);
             model.addAttribute("screening", screening);
             model.addAttribute("statuses", ScreeningStatus.values());
-
             model.addAttribute("errorMessage", e.getMessage());
             return "admin/screening/screening-detail";
         }
@@ -179,4 +175,19 @@ public class AdminScreeningController {
         return "admin/screening/screening-list";
     }
 
+    @DeleteMapping("/{screeningId}")
+    public String deleteScreening(@PathVariable Long screeningId,
+                                  Model model) {
+        try {
+            screeningService.deleteScreening(screeningId);
+        } catch (BusinessException e) {
+            ScreeningDetailResponse screening = screeningService.getScreeningDetail(screeningId);
+            model.addAttribute("screening", screening);
+            model.addAttribute("statuses", ScreeningStatus.values());
+            model.addAttribute("form", new ScreeningUpdateRequest()); //
+            model.addAttribute("errorMessage", e.getMessage());
+            return "admin/screening/screening-detail";
+        }
+        return "redirect:/admin/screenings";
+    }
 }
