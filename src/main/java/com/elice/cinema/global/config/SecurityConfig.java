@@ -1,7 +1,10 @@
 package com.elice.cinema.global.config;
 
+import com.elice.cinema.global.security.CustomAuthSuccessHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -12,7 +15,10 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final CustomAuthSuccessHandler customAuthSuccessHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -42,6 +48,7 @@ public class SecurityConfig {
                                 "/login",       // 로그인 페이지
                                 "/h2-console/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/admin/**").hasRole("ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -53,6 +60,7 @@ public class SecurityConfig {
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .defaultSuccessUrl("/", true)
+                        .successHandler(customAuthSuccessHandler)
                         .failureUrl("/login?error=true")
                         .permitAll()
                 )

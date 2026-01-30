@@ -1,6 +1,7 @@
 package com.elice.cinema.domain.screen.service;
 
 import com.elice.cinema.domain.screen.dto.request.ScreenCreateRequest;
+import com.elice.cinema.domain.screen.dto.request.ScreenUpdateRequest;
 import com.elice.cinema.domain.screen.dto.response.ScreenDetailResponse;
 import com.elice.cinema.domain.screen.dto.response.ScreenListResponse;
 import com.elice.cinema.domain.screen.entity.Screen;
@@ -35,8 +36,7 @@ public class ScreenService {
     }
 
     public ScreenDetailResponse getScreenDetail(Long screenId) {
-        Screen screen = screenRepository.findById(screenId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.SCREEN_NOT_FOUND));
+        Screen screen = findScreenById(screenId);
 
         return screenMapper.toScreenDetailResponse(screen);
     }
@@ -59,5 +59,30 @@ public class ScreenService {
         screenRepository.save(screen);
     }
 
+    public ScreenUpdateRequest getScreenUpdateForm(Long screenId) {
+        Screen screen = findScreenById(screenId);
 
+        return screenMapper.toScreenUpdateRequest(screen);
+    }
+
+    @Transactional
+    public void updateScreen(Long screenId, ScreenUpdateRequest req) {
+        Screen screen = findScreenById(screenId);
+
+        // 1. 변경 사항 검증 (정책 검증)
+        screenValidator.validateUpdate(screen, req);
+
+        // 2. 엔티티 값 변경 (Dirty Checking)
+        screen.updateAll(
+                req.getName(),
+                req.getScreeningType(),
+                req.getOperating()
+        );
+    }
+
+    // === Helper Methods ===
+    private Screen findScreenById(Long screenId) {
+        return screenRepository.findById(screenId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SCREEN_NOT_FOUND));
+    }
 }

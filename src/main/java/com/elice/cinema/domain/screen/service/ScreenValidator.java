@@ -1,7 +1,9 @@
 package com.elice.cinema.domain.screen.service;
 
 import com.elice.cinema.domain.screen.dto.request.ScreenCreateRequest;
+import com.elice.cinema.domain.screen.dto.request.ScreenUpdateRequest;
 import com.elice.cinema.domain.screen.dto.request.SeatCreateRequest;
+import com.elice.cinema.domain.screen.entity.Screen;
 import com.elice.cinema.domain.screen.repository.ScreenRepository;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
@@ -26,9 +28,23 @@ public class ScreenValidator {
         validateSeatUniqueness(request.getSeats());
     }
 
+    /* 상영관 수정 공통 검증 */
+    public void validateUpdate(Screen screen, ScreenUpdateRequest request) {
+        validateScreenNameUniqueOnUpdate(screen.getName(), request.getName());
+        // TODO: 상영 객체 만든 후 "해당 상영관과 연관된 상영이 존재하지 않을 때에만 수정 가능" 조건 추가 하기
+    }
+
     /* 상영관 이름 중복 검증 */
     private void validateScreenNameUnique(String name) {
+        // 동시성 문제가 발생할 수 있음 (필요시 LOCK)
         if (screenRepository.existsByName(name)) {
+            throw new BusinessException(ErrorCode.SCREEN_NAME_DUPLICATED);
+        }
+    }
+
+    /* 수정 시 상영관 이름 중복 검증 (본인 제외) */
+    private void validateScreenNameUniqueOnUpdate(String oldName, String newName) {
+        if (!oldName.equals(newName) && screenRepository.existsByName(newName)) {
             throw new BusinessException(ErrorCode.SCREEN_NAME_DUPLICATED);
         }
     }

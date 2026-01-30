@@ -8,6 +8,11 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface MovieImageRepository extends JpaRepository<MovieImage, Long> {
     // 썸네일(0)
@@ -30,4 +35,24 @@ public interface MovieImageRepository extends JpaRepository<MovieImage, Long> {
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("delete from MovieImage mi where mi.movie.id = :movieId and mi.displayOrder >= 1")
     int deleteExtrasByMovieId(@Param("movieId") Long movieId);
+
+    // 대표 포스터 (displayOrder = 0)
+    @Query("""
+        select mi.imageUrl
+        from MovieImage mi
+        where mi.movie.id = :movieId
+          and mi.displayOrder = 0
+    """)
+    Optional<String> findThumbnailUrlByMovieId(@Param("movieId") Long movieId);
+
+    // 엑스트라 이미지 (displayOrder > 0)
+    @Query("""
+        select mi.imageUrl
+        from MovieImage mi
+        where mi.movie.id = :movieId
+          and mi.displayOrder > 0
+        order by mi.displayOrder asc
+    """)
+    List<String> findExtraImagesByMovieId(@Param("movieId") Long movieId);
+
 }

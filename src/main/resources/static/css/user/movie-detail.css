@@ -1,0 +1,150 @@
+.movie-detail-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* 상단 요약 */
+.movie-summary {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.poster-placeholder {
+    width: 280px;
+    height: 400px;
+    background: #e5e7eb;
+    border-radius: 8px;
+}
+
+.info h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+}
+
+.info-list li {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #374151;
+}
+
+.info-list strong {
+    display: inline-block;
+    width: 80px;
+    color: #111827;
+}
+
+.reserve-btn {
+    display: inline-block;
+    width: 240px;
+    height: 44px;
+    background: #10b981;
+    color: #fff;
+    text-align: center;
+    line-height: 44px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* 공통 섹션 */
+.movie-section {
+    margin-bottom: 48px;
+}
+
+.movie-section h3 {
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+/* 스틸컷 */
+.stillcut-list {
+    display: flex;
+    gap: 16px;
+}
+
+.stillcut-placeholder {
+    width: 220px;
+    height: 130px;
+    background: #e5e7eb;
+    border-radius: 6px;
+}
+
+/* 관람평 */
+.review-placeholder {
+    border: 1px solid #e5e7eb;
+    padding: 16px;
+    border-radius: 6px;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.thumbnail-box {
+    width: 64px;
+    height: 88px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fafbff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.thumbnail-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 사용자 디테일 - 포스터 카드 (관리자 썸네일 재사용) */
+.poster-detail {
+    width: 240px;     /* 디테일용 확대 */
+    height: 360px;    /* 관리자 비율 그대로 유지 */
+    border-radius: 16px;
+}
+
+/* 사용자 디테일 - 스틸컷 카드 */
+.stillcut {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+}
+/* 스틸컷 영역 - 가로 카드 정렬 */
+.image-grid {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.image-preview-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.image-preview-overlay.active {
+    display: flex;
+}
+
+.image-preview-container {
+    background: #fff;
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.image-preview-container img {
+    max-width: 80vw;
+    max-height: 80vh;
+    object-fit: contain;
+}

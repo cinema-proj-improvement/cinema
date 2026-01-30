@@ -1,14 +1,20 @@
 package com.elice.cinema.domain.movie.service;
 
+import com.elice.cinema.domain.movie.dto.internal.AdminMovieJoinRow;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
 import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
+import com.elice.cinema.domain.movie.dto.response.*;
 import com.elice.cinema.domain.movie.dto.request.MovieUpdateRequest;
 import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
 import com.elice.cinema.domain.movie.entity.Movie;
+import com.elice.cinema.domain.movie.entity.MovieStatus;
 import com.elice.cinema.domain.movie.event.MovieImagesStorageEvent;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
+import com.elice.cinema.domain.movie.repository.AdminMovieJoinQueryRepository;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
+import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
+import com.elice.cinema.global.common.file.FileService;
 import com.elice.cinema.domain.movieImage.entity.MovieImage;
 import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
 import com.elice.cinema.domain.movieImage.service.MovieImageService;
@@ -17,11 +23,16 @@ import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -31,9 +42,10 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class MovieService {
     private final MovieRepository movieRepository;
-    private final MovieImageRepository movieImageRepository;
     private final MovieMapper movieMapper;
     private final ApplicationEventPublisher publisher;
+    private final MovieImageRepository movieImageRepository;
+    private final AdminMovieJoinQueryRepository adminMovieJoinQueryRepository;
 
     private final MovieImageService movieImageService;
 
@@ -56,14 +68,55 @@ public class MovieService {
 
     // 관리자 영화 목록 조회 (검색조건 + 페이지네이션 + 정렬)
     public Page<AdminMovieListResponse> getAdminMovieListPage(AdminMovieSearchRequest request, Pageable pageable) {
-        return movieRepository.findAdminMovieList(request, pageable)
-                .map(movieMapper::toAdminListResponse);
+        List<Long> movieIds =
+                movieRepository.findAdminMovieIds(request, pageable);
+
+        if (movieIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+        long totalCount =
+                movieRepository.countAdminMovies(request);
+        List<AdminMovieJoinRow> rows =
+                adminMovieJoinQueryRepository.findAdminMovieJoinRows(movieIds);
+
+        Map<Long, AdminMovieListResponse> map = new LinkedHashMap<>();
+
+        for (AdminMovieJoinRow row : rows) {
+            map.computeIfAbsent(row.getMovieId(), id ->
+                    new AdminMovieListResponse(
+                            row.getMovieId(),
+                            row.getThumbnail(),
+                            row.getTitle(),
+                            new ArrayList<>(),
+                            row.getStatus(),
+                            row.getAgeRating(),
+                            row.getReleaseDate(),
+                            row.getEndDate(),
+                            row.getAvgScore(),
+                            row.getAdvanceReservationRate()
+                    )
+            ).getGenres().add(row.getGenre());
+        }
+
+        List<AdminMovieListResponse> contents =
+                new ArrayList<>(map.values());
+
+        return new PageImpl<>(contents, pageable, totalCount);
     }
 
     // 관리자 상세 조회
-    public AdminMovieListResponse getAdminMovieDetail(Long movieId) {
+    public MovieDetailResponse getAdminMovieDetail(Long movieId) {
+
         Movie movie = findMovieById(movieId);
-        return movieMapper.toAdminListResponse(movie);
+
+        String thumbnail = movieImageRepository
+                .findThumbnailUrlByMovieId(movieId)
+                .orElse(null);
+
+        List<String> images = movieImageRepository
+                .findExtraImagesByMovieId(movieId);
+
+        return movieMapper.toMovieDetailResponse(movie, thumbnail, images);
     }
 
     // 업데이트 폼 조회
@@ -138,7 +191,7 @@ public class MovieService {
 
     // === Helper Methods ===
     private void validateDates(LocalDate releaseDate, LocalDate endDate) {  // FIXME: 이 로직을 DTO level에서 custom annotation으로?
-        if(!endDate.isAfter(releaseDate)) {  // 개봉일과 종료일이 동일한 케이스도 에러로 취급
+        if (!endDate.isAfter(releaseDate)) {  // 개봉일과 종료일이 동일한 케이스도 에러로 취급
             throw new BusinessException(ErrorCode.MOVIE_INVALID_DATE_RANGE);
         }
     }
@@ -146,5 +199,41 @@ public class MovieService {
     private Movie findMovieById(Long movieId) {
         return movieRepository.findById(movieId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_NOT_FOUND));
+    }
+
+    // 사용자 영화 목록 조회
+    public Page<MovieListResponse> getUserMovieList(
+            String keyword,
+            String sort,
+            Pageable pageable
+    ) {
+        return movieRepository.findUserMovies(keyword, sort, pageable)
+                .map(movieMapper::toMovieListResponse);
+    }
+
+    // 사용자 영화 상세 조회
+    public MovieDetailResponse getUserMovieDetail(Long movieId) {
+
+        Movie movie = movieRepository.findUserMovieById(movieId)
+                .orElseThrow(() ->
+                        new BusinessException(ErrorCode.MOVIE_NOT_FOUND)
+                );
+
+        String thumbnail = movieImageRepository
+                .findThumbnailUrlByMovieId(movieId)
+                .orElse(null);
+
+        List<String> images = movieImageRepository
+                .findExtraImagesByMovieId(movieId);
+
+        return movieMapper.toMovieDetailResponse(movie, thumbnail, images);
+    }
+
+    // “상영 종료가 아닌 영화” 조회
+    public List<MovieSelectResponse> getAvailableMoviesForScreening() {
+        return movieRepository.findAllByStatusNot(MovieStatus.ENDED)
+                .stream()
+                .map(movieMapper::toMovieSelectResponse)
+                .toList();
     }
 }
