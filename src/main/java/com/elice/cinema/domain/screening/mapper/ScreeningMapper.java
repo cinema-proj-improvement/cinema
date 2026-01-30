@@ -21,9 +21,7 @@ public interface ScreeningMapper {
     @Mapping(target = "date", source = "startAt", qualifiedByName = "toDate")
     @Mapping(target = "startTime", source = "startAt", qualifiedByName = "toStartTime")
     @Mapping(target = "endTime", source = "endAt", qualifiedByName = "toEndTime")
-    @Mapping(target = "movieTitle", source = "movie.title")
-    @Mapping(target = "screenName", source = "screen.name")
-    AdminScreeningResponse toAdminResponse(Screening screening);
+    AdminScreeningResponse toAdminListResponse(Screening screening);
 
     // LocalDateTime → LocalDate / LocalTime 변환 메서드 (날짜 시간 분해를 자동으로 하지 않기에 변환 메서드 필수)
     @Named("toDate")
