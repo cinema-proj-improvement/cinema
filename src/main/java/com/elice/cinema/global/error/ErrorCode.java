@@ -23,8 +23,13 @@ public enum ErrorCode {
     SCREENING_INVALID_STATUS(HttpStatus.BAD_REQUEST, "SG07", "상영 상태를 결정할 수 없습니다."),
     SCREENING_STATUS_CHANGE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "SG08", "SCHEDULED 상태의 상영만 상태 변경이 가능합니다."),
     SCREENING_ONLY_CAN_CANCEL(HttpStatus.BAD_REQUEST, "SG09", "상영 상태는 CANCELED로만 변경할 수 있습니다."),
+    MEMBER_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "MB01", "비밀번호 확인이 일치하지 않습니다."),
+    MEMBER_EMAIL_DUPLICATED(HttpStatus.BAD_REQUEST, "MB02", "이미 사용 중인 이메일입니다."),
+    MEMBER_NICKNAME_DUPLICATED(HttpStatus.BAD_REQUEST, "MB03", "이미 사용 중인 닉네임입니다."),
+
     SCREENING_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "SG10", "SCHEDULED 상태의 상영만 삭제 가능합니다."),
     // 401 Unauthorized
+
 
     // 403 Forbidden
 
