@@ -27,18 +27,20 @@ public interface MovieRepository extends JpaRepository<Movie, Long>, MovieReposi
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
         update Movie m
-           set m.status = com.elice.cinema.domain.movie.MovieStatus.NOW_SHOWING
-         where m.status = com.elice.cinema.domain.movie.MovieStatus.UPCOMING
+           set m.status = :to
+         where m.status = :from 
            and m.releaseDate = :today
     """)
-    int bulkUpdateUpcomingToNowShowing(@Param("today") LocalDate today);
+    int bulkUpdateUpcomingToNowShowing(@Param("from") MovieStatus from,
+                                       @Param("to") MovieStatus to,
+                                       @Param("today") LocalDate today);
 
     // endDate == today 인 영화들을 ENDED 로 변경 (endDate가 되면 무조건 ENDED)
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
         update Movie m
-           set m.status = com.elice.cinema.domain.movie.MovieStatus.ENDED
+           set m.status = :to
          where m.endDate = :today
     """)
-    int bulkUpdateToEndedByEndDate(@Param("today") LocalDate today);
+    int bulkUpdateToEndedByEndDate(@Param("to") MovieStatus to, @Param("today") LocalDate today);
 }
