@@ -42,7 +42,7 @@ public class Review extends BaseEntity {
     @Column(name = "score", nullable = false)
     private Integer score;
 
-    @Column(name = "score", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
     private Review(Member member,
