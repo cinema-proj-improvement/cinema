@@ -1,10 +1,9 @@
 package com.elice.cinema.domain.screening.mapper;
 
+import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
 import com.elice.cinema.domain.screening.dto.response.ScreeningDetailResponse;
 import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
-import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
 import com.elice.cinema.domain.screening.entity.Screening;
-import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -24,7 +23,6 @@ public interface ScreeningMapper {
     @Mapping(target = "endTime", source = "endAt", qualifiedByName = "toEndTime")
     @Mapping(target = "movieTitle", source = "movie.title")
     @Mapping(target = "screenName", source = "screen.name")
-    @Mapping(target = "status", ignore = true) // 상태는 서비스 계산
     AdminScreeningResponse toAdminResponse(Screening screening);
 
     // LocalDateTime → LocalDate / LocalTime 변환 메서드 (날짜 시간 분해를 자동으로 하지 않기에 변환 메서드 필수)

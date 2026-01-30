@@ -23,6 +23,7 @@ public enum ErrorCode {
     SCREENING_INVALID_STATUS(HttpStatus.BAD_REQUEST, "SG07", "상영 상태를 결정할 수 없습니다."),
     SCREENING_STATUS_CHANGE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "SG08", "SCHEDULED 상태의 상영만 상태 변경이 가능합니다."),
     SCREENING_ONLY_CAN_CANCEL(HttpStatus.BAD_REQUEST, "SG09", "상영 상태는 CANCELED로만 변경할 수 있습니다."),
+    SCREENING_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "SG10", "SCHEDULED 상태의 상영만 삭제 가능합니다."),
     // 401 Unauthorized
 
     // 403 Forbidden
@@ -31,11 +32,11 @@ public enum ErrorCode {
     MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "MV01", "영화를 찾을 수 없습니다."),
     SCREEN_NOT_FOUND(HttpStatus.NOT_FOUND, "SC05", "상영관을 찾을 수 없습니다."),
     SEAT_NOT_FOUND(HttpStatus.NOT_FOUND, "ST05", "좌석을 찾을 수 없습니다."),
-    SCREENING_NOT_FOUND(HttpStatus.NOT_FOUND, "SG10", "상영을 찾을 수 없습니다."),
+    SCREENING_NOT_FOUND(HttpStatus.NOT_FOUND, "SG11", "상영을 찾을 수 없습니다."),
 
     // 409 Conflict
     SCREEN_NAME_DUPLICATED(HttpStatus.CONFLICT, "SC06", "이미 존재하는 상영관 이름입니다."),
-    SCREENING_TIME_CONFLICT(HttpStatus.CONFLICT, "SG08", "해당 시간에 이미 등록된 상영이 있어 상영을 생성할 수 없습니다."),
+    SCREENING_TIME_CONFLICT(HttpStatus.CONFLICT, "SG12", "해당 시간에 이미 등록된 상영이 있어 상영을 생성할 수 없습니다."),
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE01", "서버 내부 오류가 발생했습니다."),
