@@ -11,6 +11,9 @@ public class ScreeningStatusScheduler {
 
     private final ScreeningStatusBatchService screeningStatusBatchService;
 
+    // 서버가 여러 대이면 같은 UPDATE 쿼리를 여러 번 실행할 수 있으므로 데이터 중복 변경/버그 발생 가능
+    // 그때는 스케줄 락을 걸어서 여러 서버 중 1개의 스케줄만 실행하게 만들어줘야함
+
     /**
      * 매일 자정(한국시간)에:
      * SCHEDULED 중에서 "상영일이 7일 이내"인 것들을 OPEN으로 변경

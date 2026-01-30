@@ -41,19 +41,16 @@ public class Seat extends BaseEntity {
     @Column(name = "col_no", nullable = false)
     private Integer colNo;
 
-    private Seat(String seatCode, boolean active, Integer rowNo, Integer colNo) {
+    private Seat(Screen screen, String seatCode, boolean active, Integer rowNo, Integer colNo) {
+        this.screen = screen;
         this.seatCode = seatCode;
         this.active = active;
         this.rowNo = rowNo;
         this.colNo = colNo;
     }
 
-    public static Seat of(String seatCode, boolean active, Integer rowNo, Integer colNo) {
-        return new Seat(seatCode, active, rowNo, colNo);
-    }
-
-    protected void setScreen(Screen screen) {
-        this.screen = screen;
+    public static Seat of(Screen screen, String seatCode, boolean active, Integer rowNo, Integer colNo) {
+        return new Seat(screen, seatCode, active, rowNo, colNo);
     }
 
     public void setActive(Boolean active){

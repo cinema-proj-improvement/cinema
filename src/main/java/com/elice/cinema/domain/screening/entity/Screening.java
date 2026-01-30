@@ -55,12 +55,14 @@ public class Screening extends BaseEntity {
     private ScreeningStatus screeningStatus;
 
     private Screening(Movie movie,
+                      Screen screen,
                       ScreeningType screeningType,
                       LocalDateTime startAt,
                       LocalDateTime endAt,
                       LocalDateTime endAtWithCleaning,
                       ScreeningStatus screeningStatus) {
         this.movie = movie;
+        this.screen = screen;
         this.screeningType = screeningType;
         this.startAt = startAt;
         this.endAt = endAt;
@@ -69,6 +71,7 @@ public class Screening extends BaseEntity {
     }
 
     public static Screening of(Movie movie,
+                               Screen screen,
                                ScreeningType screeningType,
                                LocalDateTime startAt,
                                LocalDateTime endAt,
@@ -76,6 +79,7 @@ public class Screening extends BaseEntity {
                                ScreeningStatus screeningStatus) {
         return new Screening(
                 movie,
+                screen,
                 screeningType,
                 startAt,
                 endAt,
