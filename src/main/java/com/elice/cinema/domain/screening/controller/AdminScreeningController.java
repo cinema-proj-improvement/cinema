@@ -1,14 +1,15 @@
 package com.elice.cinema.domain.screening.controller;
 
-import com.elice.cinema.domain.screening.dto.request.AdminScreeningSearchRequest;
-import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
 import com.elice.cinema.domain.common.ScreeningType;
 import com.elice.cinema.domain.movie.dto.response.MovieSelectResponse;
 import com.elice.cinema.domain.movie.service.MovieService;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
-import com.elice.cinema.domain.screening.dto.reponse.ScreeningMovieOptionResponse;
-import com.elice.cinema.domain.screening.dto.reponse.ScreeningTimetableResponse;
+import com.elice.cinema.domain.screening.dto.request.AdminScreeningSearchRequest;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
+import com.elice.cinema.domain.screening.dto.response.AdminScreeningFilterOptionResponse;
+import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
+import com.elice.cinema.domain.screening.dto.response.ScreeningMovieOptionResponse;
+import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.service.ScreeningOptionService;
 import com.elice.cinema.domain.screening.service.ScreeningService;
 import com.elice.cinema.global.error.exception.BusinessException;
@@ -20,8 +21,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -118,8 +117,18 @@ public class AdminScreeningController {
         Page<AdminScreeningResponse> screenings =
                 screeningService.searchAdmin(request, pageable);
 
+        List<AdminScreeningFilterOptionResponse> movieFilterOptions =
+                screeningService.getMovieFilterOptions();
+
+        List<AdminScreeningFilterOptionResponse> screenFilterOptions =
+                screeningService.getScreenFilterOptions();
+
         model.addAttribute("screenings", screenings);
         model.addAttribute("search", request);
+        model.addAttribute("movieFilterOptions", movieFilterOptions);
+        model.addAttribute("screenFilterOptions", screenFilterOptions);
+
+
 
         return "admin/screening/screening-list";
     }

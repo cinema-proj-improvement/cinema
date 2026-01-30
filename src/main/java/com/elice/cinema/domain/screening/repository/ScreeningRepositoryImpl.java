@@ -1,8 +1,11 @@
 package com.elice.cinema.domain.screening.repository;
 
 import com.elice.cinema.domain.screening.dto.request.AdminScreeningSearchRequest;
+import com.elice.cinema.domain.screening.dto.response.AdminScreeningFilterOptionResponse;
 import com.elice.cinema.domain.screening.entity.Screening;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -52,6 +55,39 @@ public class ScreeningRepositoryImpl implements ScreeningRepositoryCustom {
                 count == null ? 0 : count
         );
     }
+
+    @Override
+    public List<AdminScreeningFilterOptionResponse> findAdminScreeningMovieFilterOptions() {
+        return queryFactory
+                .select(Projections.constructor(
+                        AdminScreeningFilterOptionResponse.class,
+                        movie.id,                                // movieId
+                        movie.title,                             // movieName
+                        Expressions.nullExpression(Long.class),  // screenId
+                        Expressions.nullExpression(String.class) // screenName
+                ))
+                .from(screening)
+                .join(screening.movie, movie)
+                .groupBy(movie.id, movie.title)
+                .fetch();
+    }
+
+    @Override
+    public List<AdminScreeningFilterOptionResponse> findAdminScreeningScreenFilterOptions() {
+        return queryFactory
+                .select(Projections.constructor(
+                        AdminScreeningFilterOptionResponse.class,
+                        Expressions.nullExpression(Long.class),  // movieId
+                        Expressions.nullExpression(String.class),// movieName
+                        screen.id,                               // screenId
+                        screen.name                              // screenName
+                ))
+                .from(screening)
+                .join(screening.screen, screen)
+                .groupBy(screen.id, screen.name)
+                .fetch();
+    }
+
 
     private BooleanExpression adminConditions(AdminScreeningSearchRequest r) {
         return dateBetween(r)

@@ -11,7 +11,6 @@ import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.AdminMovieJoinQueryRepository;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
 import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
-import com.elice.cinema.global.common.file.FileService;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +34,6 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final MovieMapper movieMapper;
     private final ApplicationEventPublisher publisher;
-    private final FileService fileService;
     private final MovieImageRepository movieImageRepository;
     private final AdminMovieJoinQueryRepository adminMovieJoinQueryRepository;
 

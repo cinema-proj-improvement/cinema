@@ -1,4 +1,4 @@
-package com.elice.cinema.domain.screening.dto.reponse;
+package com.elice.cinema.domain.screening.dto.response;
 
 import com.elice.cinema.domain.movie.dto.response.MovieTitleResponse;
 import lombok.Getter;

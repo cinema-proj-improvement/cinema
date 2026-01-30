@@ -1,14 +1,15 @@
 package com.elice.cinema.domain.screening.service;
 
-import com.elice.cinema.domain.screening.dto.request.AdminScreeningSearchRequest;
-import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.screen.entity.Screen;
 import com.elice.cinema.domain.screen.repository.ScreenRepository;
-import com.elice.cinema.domain.screening.dto.reponse.ScreeningTimetableResponse;
+import com.elice.cinema.domain.screening.dto.request.AdminScreeningSearchRequest;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
+import com.elice.cinema.domain.screening.dto.response.AdminScreeningFilterOptionResponse;
+import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
+import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
 import com.elice.cinema.domain.screening.entity.Screening;
 import com.elice.cinema.domain.screening.entity.ScreeningStatus;
 import com.elice.cinema.domain.screening.mapper.ScreeningMapper;
@@ -101,6 +102,14 @@ public class ScreeningService {
         return screeningRepository
                 .searchAdmin(request, pageable)
                 .map(screening -> toAdminResponse(screening, now));
+    }
+
+    public List<AdminScreeningFilterOptionResponse> getMovieFilterOptions() {
+        return screeningRepository.findAdminScreeningMovieFilterOptions();
+    }
+
+    public List<AdminScreeningFilterOptionResponse> getScreenFilterOptions() {
+        return screeningRepository.findAdminScreeningScreenFilterOptions();
     }
 
 
