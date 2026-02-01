@@ -39,4 +39,5 @@ public interface MovieMapper {
         return response;
     }
     MovieSelectResponse toMovieSelectResponse(Movie movie);
+    ReservationMovieSelectResponse toReservationMovieSelectResponse(Movie movie);
 }
