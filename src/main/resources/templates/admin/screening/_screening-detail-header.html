@@ -1,0 +1,110 @@
+<th:block th:fragment="header">
+
+  <!-- 상단 헤더 -->
+  <div class="page-head">
+    <a class="back-link" th:href="@{/admin/screenings}">‹</a>
+
+    <div class="head-title">
+      <div class="head-sub">
+        <a class="list-link" th:href="@{/admin/screenings}">목록으로 돌아가기</a>
+      </div>
+      <h1 class="page-title">상영 상세</h1>
+    </div>
+
+    <!-- 삭제 버튼 -->
+    <form class="delete-form"
+          th:action="@{|/admin/screenings/${screening.id}|}"
+          method="post"
+          onsubmit="return confirm('정말 이 상영을 삭제하시겠습니까?');">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <input type="hidden" name="_method" value="delete"/>
+      <button type="submit" class="btn danger">삭제</button>
+    </form>
+  </div>
+
+  <!-- 메시지 -->
+  <div class="alert success" th:if="${successMessage}">
+    <strong>완료</strong>
+    <p th:text="${successMessage}"></p>
+  </div>
+  <div class="alert error" th:if="${errorMessage}">
+    <strong>에러</strong>
+    <p th:text="${errorMessage}"></p>
+  </div>
+
+  <!-- 기본 정보 / 시간 정보 -->
+  <div class="grid">
+    <!-- 기본 정보 -->
+    <section class="card">
+      <h2 class="card-title">기본 정보</h2>
+
+      <div class="info-list">
+        <div class="info-row">
+          <div class="info-key"><span class="ico">🎬</span> 영화</div>
+          <div class="info-val" th:text="${screening.movie.title}"></div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-key"><span class="ico">🏢</span> 상영관</div>
+          <div class="info-val" th:text="${screening.screen.name}"></div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-key"><span class="ico">📽️</span> 상영 유형</div>
+          <div class="info-val">
+            <span class="chip" th:text="${screening.screeningType}"></span>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-key"><span class="ico">🟦</span> 상태</div>
+          <div class="info-val">
+            <form class="status-inline-form"
+                  th:action="@{|/admin/screenings/${screening.id}/status|}"
+                  th:object="${form}"
+                  method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <input type="hidden" name="_method" value="patch"/>
+
+              <select class="status-select" th:field="*{screeningStatus}">
+                <option th:each="st : ${statuses}"
+                        th:value="${st}"
+                        th:text="${st}">
+                </option>
+              </select>
+              <button class="btn-apply" type="submit">적용</button>
+
+              <p class="field-error"
+                 th:if="${#fields.hasErrors('screeningStatus')}"
+                 th:errors="*{screeningStatus}">
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 시간 정보 -->
+    <section class="card">
+      <h2 class="card-title">시간 정보</h2>
+      <div class="info-list">
+        <div class="info-row">
+          <div class="info-key"><span class="ico">📅</span> 날짜</div>
+          <div class="info-val"
+               th:text="${#temporals.format(screening.startAt, 'yyyy년 M월 d일 EEEE')}"></div>
+        </div>
+        <div class="info-row">
+          <div class="info-key"><span class="ico">🕒</span> 시작 시간</div>
+          <div class="info-val time"
+               th:text="${#temporals.format(screening.startAt, 'HH:mm')}"></div>
+        </div>
+        <div class="info-row">
+          <div class="info-key"><span class="ico">🕓</span> 종료 시간</div>
+          <div class="info-val time"
+               th:text="${#temporals.format(screening.endAt, 'HH:mm')}"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</th:block>
