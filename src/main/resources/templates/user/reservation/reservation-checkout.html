@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>결제하기</title>
+
+    <link rel="stylesheet" href="/css/common/reset.css">
+    <link rel="stylesheet" href="/css/common/header.css">
+    <link rel="stylesheet" href="/css/common/footer.css">
+    <link rel="stylesheet" th:href="@{/css/user/reservation/reservation-checkout.css}">
+</head>
+
+<body>
+<!-- HEADER -->
+<div th:replace="fragments/header :: header"></div>
+
+<main class="checkout-page">
+
+    <!-- 페이지 타이틀 -->
+    <section class="checkout-title">
+        <h2>결제하기</h2>
+    </section>
+
+    <!-- 2컬럼 레이아웃 -->
+    <section class="checkout-layout">
+
+        <!-- 좌측: 예매 정보 + 결제 수단 -->
+        <div class="left-col">
+
+            <!-- 예매 정보 카드 -->
+            <section class="panel ticket-panel">
+                <div class="panel-head">
+                    <h3 class="panel-title">예매 정보</h3>
+                </div>
+
+                <div class="ticket-card">
+                    <!-- 포스터 -->
+                    <div class="poster">
+                        <img th:src="${reservation.movieThumbnail}" alt="영화 포스터">
+                    </div>
+
+                    <!-- 영화/상영 정보 -->
+                    <div class="ticket-info">
+                        <div class="movie-head">
+                            <div class="movie-title-wrap">
+                                <h4 class="movie-title" th:text="${reservation.movieTitle}">영화 제목</h4>
+                                <!-- 상영타입(예: IMAX) - 있으면 보여주기 -->
+                                <span class="badge"
+                                      th:if="${reservation.screening != null and reservation.screening.screeningType != null}"
+                                      th:text="${reservation.screening.screeningType.displayName}">
+                  IMAX
+                </span>
+                            </div>
+                        </div>
+
+                        <div class="info-grid">
+                            <div class="info-item">
+                <span class="info-label">
+                  <span class="ico">📍</span> 극장
+                </span>
+                                <span class="info-value">
+                  <span th:text="${reservation.screening != null ? reservation.screenName : ''}">3관</span>
+                </span>
+                            </div>
+
+                            <div class="info-item">
+                <span class="info-label">
+                  <span class="ico">🗓️</span> 날짜
+                </span>
+                                <span class="info-value">
+                  <span class="today" id="screeningDateText"
+                        th:text="${reservation.screening != null ? reservation.screening.startAt : ''}">
+                    2026년 1월 25일 일요일
+                  </span>
+                </span>
+                            </div>
+
+                            <div class="info-item">
+                <span class="info-label">
+                  <span class="ico">🕒</span> 시간
+                </span>
+                                <span class="info-value">
+                  <span th:text="${reservation.screening != null ? reservation.screening.startAt : ''}">19:30</span>
+                  <span class="dash">-</span>
+                  <span th:text="${reservation.screening != null ? reservation.screening.endAt : ''}">22:15</span>
+                </span>
+                            </div>
+
+                            <div class="info-item">
+                <span class="info-label">
+                  <span class="ico">💺</span> 좌석
+                </span>
+                                <span class="info-value" id="seatCodesText"
+                                      th:text="${reservation.screening != null ? reservation.seatCodes : ''}">
+                  A5, A6
+                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 결제 수단 -->
+            <section class="panel payment-panel">
+                <div class="panel-head">
+                    <h3 class="panel-title">결제 수단</h3>
+                </div>
+
+                <div class="pay-method-grid" id="payMethodGrid">
+                    <button type="button" class="pay-method" data-method="CARD">
+                        <div class="pm-icon">💳</div>
+                        <div class="pm-text">신용/체크카드</div>
+                    </button>
+
+                    <button type="button" class="pay-method" data-method="EASY">
+                        <div class="pm-icon">👛</div>
+                        <div class="pm-text">간편결제</div>
+                    </button>
+
+                    <button type="button" class="pay-method" data-method="PHONE">
+                        <div class="pm-icon">📱</div>
+                        <div class="pm-text">휴대폰 결제</div>
+                    </button>
+
+                    <button type="button" class="pay-method" data-method="BANK">
+                        <div class="pm-icon">🏦</div>
+                        <div class="pm-text">계좌이체</div>
+                    </button>
+                </div>
+
+                <input type="hidden" name="paymentMethod" id="paymentMethod" value="CARD">
+            </section>
+
+        </div>
+
+        <!-- 우측: 결제 요약(스티키 카드) -->
+        <aside class="right-col">
+            <section class="summary-card">
+                <h3 class="summary-title">결제 금액</h3>
+
+                <div class="summary-row">
+                    <div class="summary-left">
+                        <div class="summary-sub" id="seatCodesText2"
+                             th:text="${reservation.screening != null ? reservation.seatCodes : ''}">
+                            A5, A6
+                        </div>
+                    </div>
+                    <div class="summary-right" id="seatPriceText"
+                         th:text="${#numbers.formatInteger(reservation.totalPrice, 3, 'COMMA') + '원'}">
+                        ₩28,000
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="summary-row total">
+                    <div class="summary-left">
+                        <div class="summary-label">최종 결제 금액</div>
+                    </div>
+                    <div class="summary-right total-price"
+                         th:text="${#numbers.formatInteger(reservation.totalPrice, 3, 'COMMA') + '원'}">
+                        ₩28,000
+                    </div>
+                </div>
+
+                <div class="summary-actions">
+                    <a class="btn ghost"
+                       th:href="@{/reservations/select}">
+                        ‹ 이전
+                    </a>
+
+                    <!-- 결제하기(POST) -->
+                    <form class="pay-form"
+                          th:action="@{/reservations/{reservationId}/pay(reservationId=${reservation.id})}"
+                          method="post">
+                        <input type="hidden" name="paymentMethod" id="paymentMethodSubmit" value="CARD">
+                        <button class="btn primary" type="submit" id="payBtn">결제하기</button>
+                    </form>
+                </div>
+
+                <p class="summary-hint">
+                    결제 버튼을 누르면 예매가 확정됩니다.
+                </p>
+            </section>
+        </aside>
+
+    </section>
+</main>
+
+<!-- FOOTER -->
+<div th:replace="fragments/footer :: footer"></div>
+
+<script src="/js/user/reservation/reservation-checkout.js"></script>
+</body>
+</html>
