@@ -309,66 +309,12 @@ INSERT INTO members (
       );
 
 
-INSERT INTO reservations (
-    id,
-    reservation_code,
-    member_id,
-    member_name,
-    movie_title,
-    screen_name,
-    screening_id,
-    status,
-    reserved_at,
-    total_price
-) VALUES
-      (
-          1,
-          'R-20260201-001',
-          1,
-          '홍길동',
-          '인터스텔라',
-          '1관',
-          2,
-          'CONFIRMED',
-          '2026-01-31 10:00:00',
-          20000
-      ),
-      (
-          2,
-          'R-20260201-002',
-          2,
-          '김영희',
-          '인터스텔라',
-          '1관',
-          2,
-          'CONFIRMED',
-          '2026-01-31 10:05:00',
-          30000
-      ),
-      (
-          3,
-          'R-20260201-003',
-          1,
-          '홍길동',
-          '인터스텔라',
-          '1관',
-          2,
-          'HOLD',
-          '2026-01-31 10:10:00',
-          15000
-      ),
-      (
-          4,
-          'R-20260201-004',
-          2,
-          '김영희',
-          '인터스텔라',
-          '1관',
-          2,
-          'CANCELED',
-          '2026-01-31 10:15:00',
-          10000
-      );
+INSERT INTO reservations ( id, reservation_code, member_id, member_name, movie_title, screen_name, screening_id, status, reserved_at, total_price, created_at, updated_at )
+VALUES
+    ( 1, 'R-20260201-001', 1, '홍길동', '인터스텔라', '1관', 2, 'CONFIRMED', '2026-01-31 10:00:00', 20000, NOW(), NOW() ),
+    ( 2, 'R-20260201-002', 2, '김영희', '인터스텔라', '1관', 2, 'CONFIRMED', '2026-01-31 10:05:00', 30000, NOW(), NOW() ),
+    ( 3, 'R-20260201-003', 1, '홍길동', '인터스텔라', '1관', 2, 'HOLD', '2026-01-31 10:10:00', 15000, NOW(), NOW() ),
+    ( 4, 'R-20260201-004', 2, '김영희', '인터스텔라', '1관', 2, 'CANCELED', '2026-01-31 10:15:00', 10000, NOW(), NOW() );
 
 INSERT INTO reserved_seats (
     reservation_id,

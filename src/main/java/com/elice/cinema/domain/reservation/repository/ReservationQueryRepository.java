@@ -1,10 +1,13 @@
 package com.elice.cinema.domain.reservation.repository;
 
+import com.elice.cinema.domain.reservation.dto.response.AdminReservationDetailResponse;
 import com.elice.cinema.domain.reservation.dto.response.AdminReservationPageResponse;
 import com.elice.cinema.domain.reservation.dto.response.AdminReservationSummaryResponse;
 import com.elice.cinema.domain.reservation.entity.ReservationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
 
 public interface ReservationQueryRepository {
     Page<AdminReservationPageResponse> findAdminReservationPage(
@@ -17,4 +20,6 @@ public interface ReservationQueryRepository {
     AdminReservationSummaryResponse findReservationSummaryByScreening(
             Long screeningId
     );
+
+    Optional<AdminReservationDetailResponse> findAdminDetailById(Long reservationId);
 }

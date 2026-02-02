@@ -5,11 +5,7 @@ import com.elice.cinema.domain.reservation.dto.response.AdminReservationPageResp
 import com.elice.cinema.domain.reservation.dto.response.AdminReservationSummaryResponse;
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import com.elice.cinema.domain.reservation.entity.ReservationStatus;
-import com.elice.cinema.domain.reservation.entity.ReservedSeat;
-import com.elice.cinema.domain.reservation.mapper.ReservationMapper;
-import com.elice.cinema.domain.reservation.repository.ReservationQueryRepository;
 import com.elice.cinema.domain.reservation.repository.ReservationRepository;
-import com.elice.cinema.domain.reservation.repository.ReservedSeatRepository;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,9 +23,6 @@ import java.util.stream.Collectors;
 public class AdminReservationService {
 
     private final ReservationRepository reservationRepository;
-    private final ReservedSeatRepository reservedSeatRepository;
-    private final ReservationMapper reservationMapper;
-    private final ReservationQueryRepository reservationQueryRepository;
 
     // 관리자 상영별 예매 목록 조회 (페이지 + 좌석 정렬)
     public Page<AdminReservationPageResponse> getAdminReservationListByScreening(
@@ -39,7 +31,7 @@ public class AdminReservationService {
             Pageable pageable
     ) {
         Page<AdminReservationPageResponse> page =
-                reservationQueryRepository
+                reservationRepository
                         .findAdminReservationPage(screeningId, status, pageable);
 
         // 좌석 요약 문자열만 도메인 기준으로 정렬
@@ -61,27 +53,26 @@ public class AdminReservationService {
     public AdminReservationSummaryResponse getReservationSummaryByScreening(
             Long screeningId
     ) {
-        return reservationQueryRepository
+        return reservationRepository
                 .findReservationSummaryByScreening(screeningId);
     }
 
     // 관리자 예매 상세 조회
     public AdminReservationDetailResponse getAdminReservationDetail(Long reservationId) {
 
-        Reservation reservation = reservationRepository.findById(reservationId)
+        Reservation reservation = reservationRepository
+                .findByIdWithScreeningAndMovie(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
-        List<String> seatCodes = reservedSeatRepository.findByReservationId(reservationId)
-                .stream()
-                .map(ReservedSeat::getSeatCode)
-                .sorted()
-                .toList();
+        AdminReservationDetailResponse raw = reservationRepository
+                .findAdminDetailById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
-        return reservationMapper.toAdminDetailResponse(
-                reservation,
-                seatCodes,
-                "PAID"
-        );
+        boolean cancelable =
+                reservation.isCancelableStatus()
+                        && reservation.isBeforeScreening();
+
+        return raw.withCancelable(cancelable);
     }
 
     // 좌석 번호 정렬
@@ -107,5 +98,15 @@ public class AdminReservationService {
                 .collect(Collectors.joining(", "));
     }
 
+    @Transactional
+    public void cancelReservation(Long reservationId) {
+
+        Reservation reservation = reservationRepository
+                .findByIdWithScreeningAndMovie(reservationId)
+                .orElseThrow(() ->
+                        new BusinessException(ErrorCode.RESERVATION_NOT_FOUND)
+                );
+        reservation.cancel();
+    }
 
 }

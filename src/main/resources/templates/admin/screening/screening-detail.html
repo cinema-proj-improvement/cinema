@@ -6,6 +6,7 @@
 
 <th:block th:fragment="pageCss">
     <link rel="stylesheet" th:href="@{/css/admin/screening/screening-detail.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/screening/screening-seat-status.css}">
 </th:block>
 
 <th:block th:fragment="content">
@@ -16,5 +17,10 @@
     <!-- ✅ 하단: 예매 관리 -->
     <th:block th:replace="admin/screening/_screening-detail-reservations :: reservations"/>
 
+    <th:block th:replace="admin/screening/_screening-seat-status-modal :: seatStatusModal"/>
+
+    <script th:src="@{/js/admin/reservation-detail.js}"></script>
+    <script th:src="@{/js/admin/screening-seat-status.js}"></script>
 </th:block>
+
 </html>

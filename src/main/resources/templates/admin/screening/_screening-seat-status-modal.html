@@ -1,0 +1,59 @@
+<th:block th:fragment="seatStatusModal">
+
+    <div id="seatStatusModal" class="modal hidden">
+        <div class="modal-content seat-modal">
+
+            <!-- Header -->
+            <div class="modal-header">
+                <div>
+                    <h3>좌석 배치도</h3>
+                    <p id="seatModalSubtitle"></p>
+                </div>
+                <button onclick="closeSeatModal()">✕</button>
+            </div>
+
+            <!-- SCREEN -->
+            <div class="screen-area">
+                <div class="screen-bar"></div>
+                <span>SCREEN</span>
+            </div>
+
+            <!-- Seat Grid -->
+            <div id="seatGrid" class="seat-grid"></div>
+
+            <!-- Legend -->
+            <div class="seat-legend">
+                <div><span class="seat available"></span> 예약 가능</div>
+                <div><span class="seat confirmed"></span> 예약 완료</div>
+                <div><span class="seat hold"></span> 예약 대기</div>
+                <div><span class="seat inactive"></span> 이용 불가</div>
+            </div>
+
+            <!-- Summary -->
+            <div class="seat-summary">
+                <div class="summary-card total">
+                    <span>총 좌석</span>
+                    <strong id="sumTotal"></strong>
+                </div>
+                <div class="summary-card confirmed">
+                    <span>예약 완료</span>
+                    <strong id="sumConfirmed"></strong>
+                </div>
+                <div class="summary-card hold">
+                    <span>예약 대기</span>
+                    <strong id="sumHold"></strong>
+                </div>
+                <div class="summary-card available">
+                    <span>예약 가능</span>
+                    <strong id="sumAvailable"></strong>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button onclick="closeSeatModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
+</th:block>

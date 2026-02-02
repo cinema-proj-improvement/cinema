@@ -530,3 +530,353 @@
     background: #fee2e2;
     color: #991b1b;
 }
+
+/* ===== Modal Overlay ===== */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+/* ===== Modal Box ===== */
+.modal-content {
+    width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    padding: 24px;
+    font-size: 14px;
+}
+
+/* ===== Header ===== */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.modal-header button {
+    background: #334155;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* ===== Section ===== */
+.section {
+    margin-bottom: 20px;
+}
+
+.section h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 10px;
+}
+
+/* ===== Highlight (예약 코드) ===== */
+.section.highlight {
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 14px 16px;
+}
+
+.section.highlight .label {
+    font-size: 12px;
+    color: #64748b;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.section.highlight strong {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2563eb;
+}
+
+/* ===== Rows ===== */
+.row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 13px;
+    color: #0f172a;
+}
+
+.row span:first-child {
+    color: #64748b;
+}
+
+/* ===== Seats ===== */
+.seat-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.seat-badges span {
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* ===== Status Badge ===== */
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-badge.CONFIRMED {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.status-badge.CANCELED {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.status-badge.HOLD {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* ===== Footer ===== */
+.modal-footer {
+    margin-top: 24px;
+}
+
+.modal-footer button {
+    width: 100%;
+    padding: 12px;
+    background: #334155;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* ===== Reservation Summary (Figma Style) ===== */
+
+.reservation-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.summary-card {
+    padding: 18px 18px 14px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    text-align: left;
+}
+
+.summary-card .label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.summary-card strong {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* 색상 매핑 (피그마 기준) */
+.summary-card.total {
+    background: #eff6ff;
+    border-color: #bedbff;
+    color: #1c398e;
+}
+
+.summary-card.confirmed {
+    background: #f0fdf4;
+    border-color: #b9f8cf;
+    color: #0d542b;
+}
+
+.summary-card.hold {
+    background: #fefce8;
+    border-color: #fff085;
+    color: #733e0a;
+}
+
+.summary-card.canceled {
+    background: #fef2f2;
+    border-color: #ffc9c9;
+    color: #82181a;
+}
+/* ===== Reservation Filter (Figma) ===== */
+
+.reservation-filter {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.reservation-filter button {
+    padding: 8px 14px;
+    font-size: 14px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #364153;
+    cursor: pointer;
+}
+
+.reservation-filter button.active {
+    background: #dbeafe;
+    border-color: #155dfc;
+    color: #1447e6;
+    font-weight: 600;
+}
+.table thead th {
+    background: #f9fafb;
+    font-size: 14px;
+    font-weight: 700;
+    color: #101828;
+    padding: 14px 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+.table tbody td {
+    padding: 18px 12px;
+    font-size: 14px;
+    color: #364153;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+}
+/* ===== Status Badge (Figma) ===== */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* 예약 상태 */
+.status-confirmed {
+    background: #dcfce7;
+    border: 1px solid #b9f8cf;
+    color: #016630;
+}
+
+.status-hold {
+    background: #fef9c2;
+    border: 1px solid #fff085;
+    color: #894b00;
+}
+
+.status-canceled {
+    background: #ffe2e2;
+    border: 1px solid #ffc9c9;
+    color: #9f0712;
+}
+
+/* 결제 상태 */
+.payment-done {
+    background: #dbeafe;
+    color: #193cb8;
+}
+
+.payment-wait {
+    background: #f3f4f6;
+    color: #1e2939;
+}
+
+.payment-refund {
+    background: #ffedd4;
+    color: #9f2d00;
+}
+.btn-detail {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 1px solid #1447e6;
+    background: transparent;
+    font-size: 14px;
+    color: #1447e6;
+    cursor: pointer;
+}
+
+.btn-detail:hover {
+    background: #eff6ff;
+}
+.reservation-filter a {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    font-size: 14px;
+    color: #364153;
+    text-decoration: none;
+}
+
+.reservation-filter a.active {
+    background: #dbeafe;
+    border-color: #155dfc;
+    color: #1447e6;
+    font-weight: 600;
+}
+/* ===== Card Header ===== */
+.card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+/* ===== Seat Status Button ===== */
+.btn-seat-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: #9810fa;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 10px;
+    text-decoration: none;
+}
+
+.btn-seat-status:hover {
+    background: #7c0fd1;
+}

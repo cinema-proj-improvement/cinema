@@ -56,7 +56,7 @@ public class MovieService {
         return movie.getId();
     }
 
-    // 관리자 영화 목록 조회 (검색조건 + 페이지네이션 + 정렬)
+    // 관리자 영화 목록 조회 (검색조건 + 페이지네이션 + 정렬) //todo : 리팩토링 대상 매퍼로 받아와서 할 수 있다? 찾아보기
     public Page<AdminMovieListResponse> getAdminMovieListPage(AdminMovieSearchRequest request, Pageable pageable) {
         List<Long> movieIds =
                 movieRepository.findAdminMovieIds(request, pageable);
