@@ -67,7 +67,9 @@ public class DataInitialize implements CommandLineRunner {
                     8,  // maxReservationCount
                     7,  // scheduledToOpenDays
                     20, // openToClosedMinutes
-                    10  // cinemaOpenHour
+                    10,  // cinemaOpenHour
+                    5,  // reservation_TTL
+                    8000  // defaultPrice
             );
 
             environmentPolicyRepository.save(policy);

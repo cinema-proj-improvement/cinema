@@ -25,4 +25,16 @@ public class EnvironmentPolicyService {
     public int getScheduledToOpenDays() {
         return getPolicy().getScheduledToOpenDays();
     }
+
+    public int getMaxReservationCount() {
+        return getPolicy().getMaxReservationCount();
+    }
+
+    public int getReservationTTL() {
+        return getPolicy().getReservationTTL();
+    }
+
+    public int getDefaultPrice() {
+        return getPolicy().getDafaultPrice();
+    }
 }

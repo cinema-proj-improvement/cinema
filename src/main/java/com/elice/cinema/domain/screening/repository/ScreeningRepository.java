@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ScreeningRepository extends JpaRepository<Screening, Long>, ScreeningRepositoryCustom {
 
@@ -58,4 +59,13 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long>, Scr
            and s.endAt < :now
     """)
     int bulkUpdateToFinished(LocalDateTime now);
+
+    @Query("""
+        select s
+        from Screening s
+        join fetch s.movie m
+        join fetch s.screen sc
+        where s.id = :id
+""")
+    Optional<Screening> findByIdWithMovieAndScreen(@Param("id") Long id);
 }
