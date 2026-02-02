@@ -1,3 +1,29 @@
+-- =========================================================
+-- 테스트 멤버 생성 (Member 엔티티 기준, id = 3)
+-- =========================================================
+INSERT INTO members (
+    id,
+    email,
+    password,
+    name,
+    nickname,
+    age,
+    role,
+    created_at,
+    updated_at
+) VALUES (
+             3,
+             'test3@cinema.com',
+             '$2a$10$M6AGWhAhrcsIxezsyoMVuuK1DfQ4Y8pECszpHwAWv3D8ZePBUHYNW',
+             '테스트회원',
+             'testuser3',   -- ✅ UNIQUE + NOT NULL
+             25,            -- ✅ NOT NULL
+             'USER',
+             '2026-02-02 00:00:00',
+             '2026-02-02 00:00:00'
+         );
+
+
 INSERT INTO movies (
     title,
     running_time_minutes,
@@ -316,3 +342,85 @@ INSERT INTO screenings (
     '2026-01-20 00:00:00',
     '2026-01-20 00:00:00'
 );
+
+-- =========================================================
+-- 1) (선택) 9번 상영의 상영관에 A1~A3 좌석이 없다면 먼저 만들어두기
+--    * 이미 seats가 충분히 들어가 있으면 이 블록은 빼도 됨
+--    * screen_id는 9번 상영의 screen_id를 따라감
+-- =========================================================
+INSERT INTO seats (screen_id, seat_code, is_active, row_no, col_no, created_at, updated_at)
+SELECT sc.screen_id, 'A1', true, 1, 1, '2026-02-02 00:00:00', '2026-02-02 00:00:00'
+FROM screenings sc
+WHERE sc.id = 9;
+
+INSERT INTO seats (screen_id, seat_code, is_active, row_no, col_no, created_at, updated_at)
+SELECT sc.screen_id, 'A2', true, 1, 2, '2026-02-02 00:00:00', '2026-02-02 00:00:00'
+FROM screenings sc
+WHERE sc.id = 9;
+
+INSERT INTO seats (screen_id, seat_code, is_active, row_no, col_no, created_at, updated_at)
+SELECT sc.screen_id, 'A3', true, 1, 3, '2026-02-02 00:00:00', '2026-02-02 00:00:00'
+FROM screenings sc
+WHERE sc.id = 9;
+
+
+-- =========================================================
+-- 2) 9번 상영 예약 1건 생성 (Reservation 엔티티 컬럼 맞춤)
+--    reservation_code 는 유니크여야 하니 충돌 안 나게 고정값 추천
+-- =========================================================
+INSERT INTO reservations (
+    reservation_code,
+    status,
+    reserved_at,
+    total_price,
+    screening_id,
+    member_id,
+    movie_title,
+    screen_name,
+    member_name,
+    created_at,
+    updated_at
+) VALUES (
+             'RES-000009-01',          -- 유니크 코드 (원하는 규칙으로 바꿔도 됨)
+             'CONFIRMED',
+             '2026-02-02 13:10:00',
+             45000,                    -- 예: 15000 * 3좌석
+             9,
+             3,                        -- member_id=1 이 DB에 있어야 함
+             (SELECT m.title
+              FROM screenings sc
+                       JOIN movies m ON m.id = sc.movie_id
+              WHERE sc.id = 9),
+             (SELECT s.name
+              FROM screenings sc
+                       JOIN screens s ON s.id = sc.screen_id
+              WHERE sc.id = 9),
+             '테스트회원',               -- member_name 컬럼이 NOT NULL이라 임시값 필수
+             '2026-02-02 13:10:00',
+             '2026-02-02 13:10:00'
+         );
+
+-- =========================================================
+-- 3) 예약 좌석 3개 생성 (ReservedSeat 엔티티 컬럼 맞춤)
+--    ReservedSeat.status 는 @Enumerated가 없어서 ORDINAL(TINYINT)로 저장됨
+--    ※ ReservationStatus enum 순서 기준으로 CONFIRMED 값(보통 1) 넣기
+-- =========================================================
+INSERT INTO reserved_seats (
+    status,
+    reservation_id,
+    screening_id,
+    seat_id,
+    seat_code
+)
+SELECT
+    1            AS status,          -- ✅ CONFIRMED (ORDINAL 가정: 0=HOLD, 1=CONFIRMED, 2=CANCELED)
+    r.id         AS reservation_id,
+    9            AS screening_id,
+    st.id        AS seat_id,
+    st.seat_code AS seat_code
+FROM reservations r
+         JOIN screenings sc ON sc.id = 9
+         JOIN seats st ON st.screen_id = sc.screen_id
+WHERE r.reservation_code = 'RES-000009-01'
+  AND st.seat_code IN ('A1', 'A2', 'A3');
+

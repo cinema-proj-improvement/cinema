@@ -2,6 +2,7 @@ package com.elice.cinema.domain.reservation.entity;
 
 import com.elice.cinema.domain.member.entity.Member;
 import com.elice.cinema.domain.screening.entity.Screening;
+import com.elice.cinema.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "reservations")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Reservation {
+public class Reservation extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
