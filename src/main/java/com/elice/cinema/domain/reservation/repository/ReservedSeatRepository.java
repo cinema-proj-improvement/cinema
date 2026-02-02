@@ -12,4 +12,5 @@ public interface ReservedSeatRepository extends JpaRepository<ReservedSeat, Long
     List<ReservedSeat> findByReservationIdIn(Collection<Long> reservationIds);
     // 상세 모달용
     List<ReservedSeat> findByReservationId(Long reservationId);
+    int countAllByScreening_Id(Long screeningId);
 }
