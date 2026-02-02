@@ -4,11 +4,18 @@ import com.elice.cinema.domain.movie.dto.response.ReservationMovieSelectResponse
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
+import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
+import com.elice.cinema.domain.reservation.dto.response.ReservationCheckoutResponse;
+import com.elice.cinema.domain.reservation.entity.Reservation;
+import com.elice.cinema.domain.reservation.mapper.ReservationMapper;
+import com.elice.cinema.domain.reservation.repository.ReservationRepository;
 import com.elice.cinema.domain.reservation.repository.ReservedSeatRepository;
 import com.elice.cinema.domain.screening.dto.response.ReservationScheduleResponse;
 import com.elice.cinema.domain.screening.entity.Screening;
 import com.elice.cinema.domain.screening.mapper.ScreeningMapper;
 import com.elice.cinema.domain.screening.repository.ScreeningRepository;
+import com.elice.cinema.global.error.ErrorCode;
+import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +33,12 @@ public class ReservationService {
     private final MovieRepository movieRepository;
     private final ScreeningRepository screeningRepository;
     private final ReservedSeatRepository reservedSeatRepository;
+    private final ReservationRepository reservationRepository;
     private final MovieMapper movieMapper;
     private final ScreeningMapper screeningMapper;
+    private final ReservationMapper reservationMapper;
+
+    private final MovieImageRepository movieImageRepository;
 
     public List<ReservationMovieSelectResponse> getMoviesWithScreeningsWithin() {
         LocalDate today = LocalDate.now();
@@ -35,7 +46,6 @@ public class ReservationService {
         LocalDateTime from = today.atStartOfDay();
         LocalDateTime toExclusive = today.plusDays(DAYS_RANGE_INCLUSIVE + 1).atStartOfDay();
 
-        //TODO: 현재는 7일이내 상영 상태가 OPEN인 상영이 있는 영화만 가져오는 중, 기능 명세에는 영화 개봉일 기준으로 가져오기로 함. 내 생각에는 상영이 있는 영화만 가져와서 보여주는게 좋아보임. 팀원 생각 물어보기
         List<Movie> movies = movieRepository.findDistinctMoviesHavingScreeningsBetween(from, toExclusive);
 
         return movies.stream()
@@ -60,6 +70,20 @@ public class ReservationService {
                             .toReservationScheduleResponse(screening, remainingSeats);
                 })
                 .toList();
+    }
+
+    public ReservationCheckoutResponse getCheckoutPage(Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdWithScreeningAndMovie(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        Movie movie = reservation.getScreening().getMovie();
+
+        String movieThumbnail = /*movieImageRepository.findThumbnailUrlByMovieId(movie.getId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_THUMBNAIL_NOT_FOUND));*/ null;
+                // TODO: 데이터로 영화 썸네일 넣고 다시 시도하기, 예매 생성 생기면 다시 시도
+        List<String> seatCodes = reservedSeatRepository.findSeatCodesByReservationId(reservationId);
+
+        return reservationMapper.toReservationCheckoutResponse(reservation, movieThumbnail, seatCodes);
     }
 
     private Integer calculateRemainingSeats(Screening screening) {

@@ -20,7 +20,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class ScreenValidator {
     private final ScreenRepository screenRepository;
-
+    //TODO: 2팀 Validator 형식 확인하고 수정 및 공부하기
     /* 상영관 생성 공통 검증 */
     public void validateCreate(ScreenCreateRequest request) {
         validateScreenNameUnique(request.getName());
