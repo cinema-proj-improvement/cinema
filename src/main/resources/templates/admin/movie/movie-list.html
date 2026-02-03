@@ -19,6 +19,15 @@
     </div>
 
     <!-- ================= 검색 / 필터 ================= -->
+    <meta name="statuses"
+          th:content="${search.statuses != null ? #strings.listJoin(search.statuses, ',') : ''}">
+
+    <meta name="genres"
+          th:content="${search.genres != null ? #strings.listJoin(search.genres, ',') : ''}">
+
+    <meta name="ageRatings"
+          th:content="${search.ageRatings != null ? #strings.listJoin(search.ageRatings, ',') : ''}">
+
     <form id="filterForm"
           method="get"
           th:action="@{/admin/movies}"
@@ -52,7 +61,9 @@
                 <label class="pill"
                        th:classappend="${search.statuses != null and search.statuses.contains(s)} ? 'selected' : ''"
                        th:each="s : ${T(com.elice.cinema.domain.movie.entity.MovieStatus).values()}">
-                    <input th:field="*{statuses}" th:value="${s}" type="checkbox">
+                    <input type="checkbox"
+                           class="status-chk"
+                           th:value="${s}">
                     <span th:text="${s.displayName}"></span>
                 </label>
             </div>
@@ -65,7 +76,9 @@
                 <label class="pill"
                        th:classappend="${search.genres != null and search.genres.contains(g)} ? 'selected' : ''"
                        th:each="g : ${T(com.elice.cinema.domain.movie.entity.Genre).values()}">
-                    <input th:field="*{genres}" th:value="${g}" type="checkbox">
+                    <input type="checkbox"
+                           class="genre-chk"
+                           th:value="${g}">
                     <span th:text="${g.displayName}"></span>
                 </label>
             </div>
@@ -78,7 +91,9 @@
                 <label class="pill"
                        th:classappend="${search.ageRatings != null and search.ageRatings.contains(a)} ? 'selected' : ''"
                        th:each="a : ${T(com.elice.cinema.domain.movie.entity.AgeRating).values()}">
-                    <input th:field="*{ageRatings}" th:value="${a}" type="checkbox">
+                    <input type="checkbox"
+                           class="ageRating-chk"
+                           th:value="${a}">
                     <span th:text="${a.displayName}"></span>
                 </label>
             </div>
@@ -93,6 +108,10 @@
                 <input th:field="*{releaseEndDate}" type="date">
             </div>
         </div>
+
+        <input type="hidden" name="statuses" id="statuses">
+        <input type="hidden" name="genres" id="genres">
+        <input type="hidden" name="ageRatings" id="ageRatings">
     </form>
 
     <!-- ================= 영화 목록 ================= -->

@@ -1,6 +1,6 @@
 package com.elice.cinema.domain.movie.repository;
 
-import com.elice.cinema.domain.movie.dto.internal.AdminMovieJoinRow;
+import com.elice.cinema.domain.movie.dto.response.AdminMovieJoinRowResponse;
 import com.elice.cinema.domain.movie.entity.Genre;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.EnumPath;
@@ -21,13 +21,13 @@ public class AdminMovieJoinQueryRepositoryImpl implements AdminMovieJoinQueryRep
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<AdminMovieJoinRow> findAdminMovieJoinRows(List<Long> movieIds) {
+    public List<AdminMovieJoinRowResponse> findAdminMovieJoinRows(List<Long> movieIds) {
 
         EnumPath<Genre> genre = Expressions.enumPath(Genre.class, "genre");
 
         return queryFactory
                 .select(Projections.constructor(
-                        AdminMovieJoinRow.class,
+                        AdminMovieJoinRowResponse.class,
                         movie.id,
                         movieImage.imageUrl,
                         movie.title,
