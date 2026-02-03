@@ -28,6 +28,10 @@ public enum ErrorCode {
     MEMBER_NICKNAME_DUPLICATED(HttpStatus.BAD_REQUEST, "MB03", "이미 사용 중인 닉네임입니다."),
 
     SCREENING_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "SG10", "SCHEDULED 상태의 상영만 삭제 가능합니다."),
+
+    RESERVATION_NOT_CANCELABLE(HttpStatus.BAD_REQUEST, "RS02", "취소할 수 없는 예매 상태입니다."),
+
+    RESERVATION_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "RS03", "이미 취소된 예매입니다."),
     // 401 Unauthorized
 
 

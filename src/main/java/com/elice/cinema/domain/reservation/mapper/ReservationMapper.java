@@ -11,4 +11,6 @@ public interface ReservationMapper {
     public ReservationCheckoutResponse toReservationCheckoutResponse(Reservation reservation,
                                                                      String movieThumbnail,
                                                                      List<String> seatCodes);
+
+
 }

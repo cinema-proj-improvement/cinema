@@ -274,6 +274,60 @@ INSERT INTO screenings (
     '2026-01-10 00:00:00'
 );
 
+INSERT INTO members (
+    id,
+    email,
+    password,
+    name,
+    nickname,
+    age,
+    role,
+    created_at,
+    updated_at
+) VALUES
+      (
+          1,
+          'hong@test.com',
+          'password',
+          '홍길동',
+          'hong',
+          30,
+          'USER',
+          '2026-01-01 00:00:00',
+          '2026-01-01 00:00:00'
+      ),
+      (
+          2,
+          'kim@test.com',
+          'password',
+          '김영희',
+          'kim',
+          25,
+          'USER',
+          '2026-01-01 00:00:00',
+          '2026-01-01 00:00:00'
+      );
+
+
+INSERT INTO reservations ( id, reservation_code, member_id, member_name, movie_title, screen_name, screening_id, status, reserved_at, total_price, created_at, updated_at )
+VALUES
+    ( 1, 'R-20260201-001', 1, '홍길동', '인터스텔라', '1관', 2, 'CONFIRMED', '2026-01-31 10:00:00', 20000, NOW(), NOW() ),
+    ( 2, 'R-20260201-002', 2, '김영희', '인터스텔라', '1관', 2, 'CONFIRMED', '2026-01-31 10:05:00', 30000, NOW(), NOW() ),
+    ( 3, 'R-20260201-003', 1, '홍길동', '인터스텔라', '1관', 2, 'HOLD', '2026-01-31 10:10:00', 15000, NOW(), NOW() ),
+    ( 4, 'R-20260201-004', 2, '김영희', '인터스텔라', '1관', 2, 'CANCELED', '2026-01-31 10:15:00', 10000, NOW(), NOW() );
+
+INSERT INTO reserved_seats (
+    reservation_id,
+    screening_id,
+    seat_id,
+    seat_code,
+    status
+) VALUES
+      (1, 2, 1, 'A1', 'CONFIRMED'),
+      (1, 2, 2, 'A2', 'CONFIRMED'),
+      (2, 2, 3, 'A3', 'CONFIRMED'),
+      (3, 2, 4, 'A4', 'HOLD'),
+      (4, 2, 5, 'A5', 'CANCELED');
 
 INSERT INTO screenings (
     movie_id,

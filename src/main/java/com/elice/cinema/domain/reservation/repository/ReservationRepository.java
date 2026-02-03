@@ -6,8 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
-
-public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+public interface ReservationRepository extends JpaRepository<Reservation, Long>, ReservationQueryRepository {
     @Query("""
         select r
         from Reservation r
@@ -16,4 +15,5 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         where r.id = :reservationId
     """)
     Optional<Reservation> findByIdWithScreeningAndMovie(@Param("reservationId") Long reservationId);
+
 }
