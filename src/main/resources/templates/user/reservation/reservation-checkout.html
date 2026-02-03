@@ -45,6 +45,7 @@
                         <div class="movie-head">
                             <div class="movie-title-wrap">
                                 <h4 class="movie-title" th:text="${reservation.movieTitle}">영화 제목</h4>
+
                                 <!-- 상영타입(예: IMAX) - 있으면 보여주기 -->
                                 <span class="badge"
                                       th:if="${reservation.screening != null and reservation.screening.screeningType != null}"
@@ -108,24 +109,9 @@
                 </div>
 
                 <div class="pay-method-grid" id="payMethodGrid">
-                    <button type="button" class="pay-method" data-method="CARD">
-                        <div class="pm-icon">💳</div>
-                        <div class="pm-text">신용/체크카드</div>
-                    </button>
-
                     <button type="button" class="pay-method" data-method="EASY">
                         <div class="pm-icon">👛</div>
                         <div class="pm-text">간편결제</div>
-                    </button>
-
-                    <button type="button" class="pay-method" data-method="PHONE">
-                        <div class="pm-icon">📱</div>
-                        <div class="pm-text">휴대폰 결제</div>
-                    </button>
-
-                    <button type="button" class="pay-method" data-method="BANK">
-                        <div class="pm-icon">🏦</div>
-                        <div class="pm-text">계좌이체</div>
                     </button>
                 </div>
 
@@ -165,23 +151,15 @@
                 </div>
 
                 <div class="summary-actions">
-                    <a class="btn ghost"
-                       th:href="@{/reservations/select}">
+                    <a class="btn ghost" th:href="@{/reservations/select}">
                         ‹ 이전
                     </a>
 
-                    <!-- 결제하기(POST) -->
-                    <form class="pay-form"
-                          th:action="@{/reservations/{reservationId}/pay(reservationId=${reservation.id})}"
-                          method="post">
-                        <input type="hidden" name="paymentMethod" id="paymentMethodSubmit" value="CARD">
-                        <button class="btn primary" type="submit" id="payBtn">결제하기</button>
-                    </form>
+                    <a class="btn primary"
+                       th:href="@{/reservations/{reservationId}/payment(reservationId=${reservation.id})}">
+                        결제하기
+                    </a>
                 </div>
-
-                <p class="summary-hint">
-                    결제 버튼을 누르면 예매가 확정됩니다.
-                </p>
             </section>
         </aside>
 
@@ -191,6 +169,7 @@
 <!-- FOOTER -->
 <div th:replace="fragments/footer :: footer"></div>
 
+<!-- 기존 페이지 JS (필요하면 유지) -->
 <script src="/js/user/reservation/reservation-checkout.js"></script>
 </body>
 </html>

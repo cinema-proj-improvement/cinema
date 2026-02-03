@@ -1,5 +1,6 @@
 package com.elice.cinema.domain.reservation.mapper;
 
+import com.elice.cinema.domain.reservation.dto.response.TossPaymentReservationResponse;
 import com.elice.cinema.domain.reservation.dto.response.ReservationCheckoutResponse;
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import org.mapstruct.Mapper;
@@ -11,4 +12,7 @@ public interface ReservationMapper {
     public ReservationCheckoutResponse toReservationCheckoutResponse(Reservation reservation,
                                                                      String movieThumbnail,
                                                                      List<String> seatCodes);
+    public TossPaymentReservationResponse toPaymentReservationResponse(Reservation reservation,
+                                                                       String orderId,
+                                                                       String tossClientKey);
 }

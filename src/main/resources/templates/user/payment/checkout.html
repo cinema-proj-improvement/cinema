@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>결제하기</title>
+
+    <style>
+        /* ====== layout ====== */
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, sans-serif;
+            background: #f6f7fb;
+            color: #111;
+        }
+
+        .pay-page {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+
+        .pay-card {
+            background: #fff;
+            border: 1px solid #e8eaf0;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(17, 17, 17, 0.06);
+        }
+
+        .pay-title {
+            margin: 0 0 14px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .pay-section {
+            margin-top: 14px;
+        }
+
+        /* ====== actions ====== */
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 18px;
+        }
+
+        .btn {
+            appearance: none;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .06s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+            user-select: none;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn.primary {
+            background: #2f6bff;
+            color: #fff;
+            box-shadow: 0 10px 18px rgba(47, 107, 255, 0.18);
+        }
+
+        .btn.primary:hover {
+            background: #255ef0;
+        }
+
+        .btn.ghost {
+            background: #fff;
+            color: #111;
+            border-color: #d8dbe6;
+        }
+
+        .btn.ghost:hover {
+            background: #f2f4f8;
+        }
+
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            box-shadow: none;
+        }
+
+        /* ====== Toss 위젯 영역 여백 ====== */
+        #payment-method, #agreement {
+            margin-top: 12px;
+        }
+
+        .hint {
+            margin: 12px 0 0;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<main class="pay-page"
+      id="checkout-root"
+      th:data-client-key="${reservation.tossClientKey}"
+      th:data-order-id="${reservation.orderId}"
+      th:data-order-name="${reservation.movieTitle + ' 영화 예매'}"
+      th:data-amount="${reservation.totalPrice}"
+      th:data-customer-key="${reservation.member != null ? 'MEMBER-' + reservation.member.id : 'ANONYMOUS'}"
+      th:data-customer-email="${reservation.member != null ? reservation.member.email : ''}"
+      th:data-customer-name="${reservation.member != null ? reservation.member.name : ''}">
+    <section class="pay-card">
+        <h1 class="pay-title">결제 수단 선택</h1>
+
+        <div class="pay-section">
+            <!-- 결제 UI -->
+            <div id="payment-method"></div>
+
+            <!-- 이용약관 UI -->
+            <div id="agreement"></div>
+        </div>
+
+        <div class="actions">
+            <!-- ✅ 취소(1): 안전한 고정 경로로 이동 -->
+            <a class="btn ghost" th:href="@{/reservations/select}">취소</a>
+
+            <!-- ✅ 취소(2): 뒤로가기 방식이 더 좋으면 위 a태그 대신 이 버튼 사용
+            <button type="button" class="btn ghost" id="cancel-button">취소</button>
+            -->
+
+            <button type="button" class="btn primary" id="payment-button">확인</button>
+        </div>
+    </section>
+</main>
+<script src="https://js.tosspayments.com/v2/standard"></script>
+<script th:src="@{/js/user/payment/checkout.js}" defer></script>
+</body>
+</html>

@@ -5,6 +5,7 @@ import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
 import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
+import com.elice.cinema.domain.reservation.dto.response.TossPaymentReservationResponse;
 import com.elice.cinema.domain.reservation.dto.response.ReservationCheckoutResponse;
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import com.elice.cinema.domain.reservation.mapper.ReservationMapper;
@@ -17,6 +18,7 @@ import com.elice.cinema.domain.screening.repository.ScreeningRepository;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,9 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ReservationService {
     private static final int DAYS_RANGE_INCLUSIVE = 6; //TODO: 이것도 환경 변수 테이블에 넣을지 고민
+
+    @Value("${toss.payments.client-key}")
+    private String tossClientKey;
 
     private final MovieRepository movieRepository;
     private final ScreeningRepository screeningRepository;
@@ -84,6 +89,14 @@ public class ReservationService {
         List<String> seatCodes = reservedSeatRepository.findSeatCodesByReservationId(reservationId);
 
         return reservationMapper.toReservationCheckoutResponse(reservation, movieThumbnail, seatCodes);
+    }
+
+    //TODO: 나중에 내 예매만 가능하게 조건 걸어주기
+    public TossPaymentReservationResponse getTossPage(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+        String orderId = "RESERVATION-" + reservation.getId();
+        return reservationMapper.toPaymentReservationResponse(reservation, orderId, tossClientKey);
     }
 
     private Integer calculateRemainingSeats(Screening screening) {
