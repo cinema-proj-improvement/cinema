@@ -1,10 +1,10 @@
 package com.elice.cinema.domain.movie.repository;
 
-import com.elice.cinema.domain.movie.dto.internal.AdminMovieJoinRow;
+import com.elice.cinema.domain.movie.dto.response.AdminMovieJoinRowResponse;
 
 import java.util.List;
 
 public interface AdminMovieJoinQueryRepository {
 
-    List<AdminMovieJoinRow> findAdminMovieJoinRows(List<Long> movieIds);
+    List<AdminMovieJoinRowResponse> findAdminMovieJoinRows(List<Long> movieIds);
 }
