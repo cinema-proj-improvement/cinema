@@ -1,13 +1,14 @@
 package com.elice.cinema.domain.reservation.service;
 
+import com.elice.cinema.domain.member.entity.Member;
+import com.elice.cinema.domain.member.repository.MemberRepository;
 import com.elice.cinema.domain.movie.dto.response.ReservationMovieSelectResponse;
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
-import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
-import com.elice.cinema.domain.reservation.dto.response.TossPaymentReservationResponse;
 import com.elice.cinema.domain.reservation.dto.response.ReservationCheckoutResponse;
+import com.elice.cinema.domain.reservation.dto.response.TossPaymentReservationResponse;
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import com.elice.cinema.domain.reservation.entity.ReservedSeat;
 import com.elice.cinema.domain.reservation.mapper.ReservationMapper;
@@ -49,8 +50,6 @@ public class ReservationService {
     private final ReservedSeatRepository reservedSeatRepository;
     private final ReservationRepository reservationRepository;
     private final ReservationLockRepository reservationLockRepository;
-    private final MovieImageRepository movieImageRepository;
-    private final ScreeningRepository screeningRepository;
     private final MemberRepository memberRepository;
     private final SeatRepository seatRepository;
 

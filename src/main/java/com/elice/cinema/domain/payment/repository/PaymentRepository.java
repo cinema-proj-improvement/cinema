@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface PaymentRepository extends JpaRepository<Payment, Long> {
+public interface PaymentRepository extends JpaRepository<Payment, Long>, PaymentQueryRepository {
     boolean existsByPaymentKey(String paymentKey);
 
     Optional<Payment> findByPaymentKey(String paymentKey);
