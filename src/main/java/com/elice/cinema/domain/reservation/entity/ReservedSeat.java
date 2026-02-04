@@ -2,16 +2,35 @@ package com.elice.cinema.domain.reservation.entity;
 
 import com.elice.cinema.domain.screen.entity.Seat;
 import com.elice.cinema.domain.screening.entity.Screening;
+import com.elice.cinema.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "reserved_seats")  // UK_reserved_seat_unique(screening_id, seat_id) -> 하나의 상영 안에서 좌석 중복 X 제약조건 필수
+@Table(
+        name = "reserved_seats",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "UK_reserved_seat_screening_seat",
+                        columnNames = {"screening_id", "seat_id"}
+                )
+        },
+        indexes = {
+                @Index(
+                        name = "IX_reserved_seat_reservation_status",
+                        columnList = "reservation_id, status"
+                ),
+                @Index(
+                        name = "IX_reserved_seat_screening_status",
+                        columnList = "screening_id, status"
+                )
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class ReservedSeat {
+public class ReservedSeat extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
@@ -34,4 +53,25 @@ public class ReservedSeat {
 
     @Column(name = "seat_code", nullable = false)
     private String seatCode;
+
+    public static ReservedSeat createHoldReservedSeat(Reservation reservation,
+                                                      Screening screening,
+                                                      Seat seat) {
+        ReservedSeat reservedSeat = new ReservedSeat();
+        reservedSeat.status = ReservationStatus.HOLD;
+
+        reservedSeat.reservation = reservation;
+        reservedSeat.screening = screening;
+        reservedSeat.seat = seat;
+
+        reservedSeat.seatCode = seat.getSeatCode();
+
+        return reservedSeat;
+    }
+
+    public void expire() {
+        if(status == ReservationStatus.HOLD) {
+            status = ReservationStatus.EXPIRED;
+        }
+    }
 }

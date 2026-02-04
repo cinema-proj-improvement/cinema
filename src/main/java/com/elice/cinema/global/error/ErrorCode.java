@@ -26,8 +26,10 @@ public enum ErrorCode {
     MEMBER_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "MB01", "비밀번호 확인이 일치하지 않습니다."),
     MEMBER_EMAIL_DUPLICATED(HttpStatus.BAD_REQUEST, "MB02", "이미 사용 중인 이메일입니다."),
     MEMBER_NICKNAME_DUPLICATED(HttpStatus.BAD_REQUEST, "MB03", "이미 사용 중인 닉네임입니다."),
-
     SCREENING_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "SG10", "SCHEDULED 상태의 상영만 삭제 가능합니다."),
+    SEAT_INACTIVE(HttpStatus.BAD_REQUEST, "ST06", "사용 불가능한 좌석입니다."),
+    SEAT_ALREADY_HELD(HttpStatus.BAD_REQUEST, "ST07", "이미 다른 사람이 점유한 좌석입니다."),
+    RESERVATION_SEAT_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "RS04", "한 번에 예매할 수 있는 좌석 수를 초과했습니다."),
 
     RESERVATION_NOT_CANCELABLE(HttpStatus.BAD_REQUEST, "RS02", "취소할 수 없는 예매 상태입니다."),
 
@@ -42,6 +44,7 @@ public enum ErrorCode {
     SCREEN_NOT_FOUND(HttpStatus.NOT_FOUND, "SC05", "상영관을 찾을 수 없습니다."),
     SEAT_NOT_FOUND(HttpStatus.NOT_FOUND, "ST05", "좌석을 찾을 수 없습니다."),
     SCREENING_NOT_FOUND(HttpStatus.NOT_FOUND, "SG11", "상영을 찾을 수 없습니다."),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MB04", "사용자를 찾을 수 없습니다."),
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "RS01", "예약 정보를 찾을 수 없습니다."),
     MOVIE_THUMBNAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "MV05", "영화 썸네일 정보를 찾을 수 없습니다."),
 
