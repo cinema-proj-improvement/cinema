@@ -25,6 +25,7 @@ public class PaymentController {
         return "user/payment/success";
     }
 
+    //TODO: 추후 좌석 선택 화면으로 연결할지 고민
     @GetMapping("/fail")
     public String paymentFail(@RequestParam String message,
                               @RequestParam String code,
