@@ -2,6 +2,7 @@ package com.elice.cinema.domain.review.entity;
 
 import com.elice.cinema.domain.member.entity.Member;
 import com.elice.cinema.domain.movie.entity.Movie;
+import com.elice.cinema.domain.reservation.entity.Reservation;
 import com.elice.cinema.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -35,9 +36,9 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "movie_id", nullable = false)
     private Movie movie;
 
-    /*@OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "reservation_id", nullable = false)
-    private Reservation reservation;*/
+    private Reservation reservation;
 
     @Column(name = "score", nullable = false)
     private Integer score;
