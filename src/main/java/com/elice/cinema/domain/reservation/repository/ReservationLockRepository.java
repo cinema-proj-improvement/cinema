@@ -2,12 +2,12 @@ package com.elice.cinema.domain.reservation.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Repository
+@Component
 @RequiredArgsConstructor
 public class ReservationLockRepository {
     private final RedisTemplate<String, String> redisTemplate;

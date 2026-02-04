@@ -9,7 +9,25 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "reserved_seats")  // UK_reserved_seat_unique(screening_id, seat_id) -> 하나의 상영 안에서 좌석 중복 X 제약조건 필수
+@Table(
+        name = "reserved_seats",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "UK_reserved_seat_screening_seat",
+                        columnNames = {"screening_id", "seat_id"}
+                )
+        },
+        indexes = {
+                @Index(
+                        name = "IX_reserved_seat_reservation_status",
+                        columnList = "reservation_id, status"
+                ),
+                @Index(
+                        name = "IX_reserved_seat_screening_status",
+                        columnList = "screening_id, status"
+                )
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class ReservedSeat extends BaseEntity {
@@ -36,7 +54,6 @@ public class ReservedSeat extends BaseEntity {
     @Column(name = "seat_code", nullable = false)
     private String seatCode;
 
-    // TODO: HOLD 상태의 ReservedSeat 생성하는 static factory method 만들어야 함
     public static ReservedSeat createHoldReservedSeat(Reservation reservation,
                                                       Screening screening,
                                                       Seat seat) {

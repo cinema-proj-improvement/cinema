@@ -30,10 +30,6 @@ public class EnvironmentPolicyService {
         return getPolicy().getMaxReservationCount();
     }
 
-    public int getReservationTTL() {
-        return getPolicy().getReservationTTL();
-    }
-
     public int getDefaultPrice() {
         return getPolicy().getDafaultPrice();
     }

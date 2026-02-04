@@ -13,7 +13,19 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "reservations")  // TODO: (status, hold_expires_at) index 잡아서 나중에 만료 상태로 돌리는 Batch 성능 나오도록 해줘야 함
+@Table(
+        name = "reservations",
+        indexes = {
+                @Index(
+                        name = "IX_reservation_status_holdExpiresAt",
+                        columnList = "status, hold_expires_at"
+                ),
+                @Index(
+                        name = "IX_reservation_screening",
+                        columnList = "screening_id"
+                )
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Reservation extends BaseEntity {
@@ -34,7 +46,6 @@ public class Reservation extends BaseEntity {
     @Column(name = "hold_expires_at", nullable = false)
     private LocalDateTime holdExpiresAt;
 
-    // TODO: CANCELED 상태로 바뀔 때 시간 기록할 필드 필요 (soft delete 하는 객체들엔 전부 다 필요함)
     @Column(name = "canceled_at")
     private LocalDateTime canceledAt;
 
@@ -58,7 +69,6 @@ public class Reservation extends BaseEntity {
     @Column(name = "member_name", nullable = false)
     private String memberName;
 
-    // TODO: HOLD 상태의 Reservation 생성하는 static factory method 만들어야 함
     public static Reservation createHoldReservation(Screening screening,
                                                     Member member,
                                                     int totalPrice,
@@ -80,16 +90,6 @@ public class Reservation extends BaseEntity {
         reservation.memberName = member.getName();
 
         return reservation;
-    }
-
-    public boolean isExpired(LocalDateTime now) {
-        return status == ReservationStatus.HOLD && holdExpiresAt.isBefore(now);
-    }
-
-    public void expire() {
-        if(status == ReservationStatus.HOLD) {
-            status = ReservationStatus.EXPIRED;
-        }
     }
 
     private static String generateCode() {

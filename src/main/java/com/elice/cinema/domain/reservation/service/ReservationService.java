@@ -12,6 +12,7 @@ import com.elice.cinema.domain.screen.entity.Seat;
 import com.elice.cinema.domain.screen.repository.SeatRepository;
 import com.elice.cinema.domain.screening.entity.Screening;
 import com.elice.cinema.domain.screening.repository.ScreeningRepository;
+import com.elice.cinema.global.config.properties.SeatHoldProperties;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -35,33 +36,35 @@ public class ReservationService {
     private final SeatRepository seatRepository;
 
     private final EnvironmentPolicyService environmentPolicyService;
+    private final SeatHoldProperties seatHoldProperties;
 
     @Transactional
-    public Long holdSeats(Long screeningId, List<Long> seatIds, Long memberId) {
+    public Long holdSeats(Long screeningId, List<Long> seatIds, Long memberId) {  // TODO: 메서드 분리 고려하기
         validateSeatCount(seatIds);
+
+        final int holdMinutes = seatHoldProperties.getMinutes();
+        final int graceMinutes = seatHoldProperties.getRedisGraceMinutes();
 
         List<Seat> seats = getSeats(seatIds);
         Screening screening = getScreeningWithMovieAndScreen(screeningId);
         Member member = getMember(memberId);
 
-        int ttl = environmentPolicyService.getReservationTTL();
-
         // 선택한 좌석에 redis lock 처리
         List<Long> locked = new ArrayList<>();
         for(Long seatId : seatIds) {
-            boolean ok = reservationLockRepository.lock(screeningId, seatId, memberId, ttl, TimeUnit.MINUTES);
+            boolean ok = reservationLockRepository.lock(screeningId, seatId, memberId, holdMinutes + graceMinutes, TimeUnit.MINUTES);
             if(!ok) {  // 이미 lock이 걸린 좌석을 선택한 경우 이전에 lock 걸었던 좌석들의 lock을 풀어주고 예외를 던짐
                 for(Long lockedSeatId : locked) {
                     reservationLockRepository.unlock(screeningId, lockedSeatId);
                 }
-                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);  // FIXME: SEAT_ALREADY_HELD로 바꾸기
+                throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
             }
             locked.add(seatId);
         }
 
         int totalPrice = calculateTotalPrice(seats);
         try {
-            Reservation reservation = Reservation.createHoldReservation(screening, member, totalPrice, Duration.ofMinutes(ttl));
+            Reservation reservation = Reservation.createHoldReservation(screening, member, totalPrice, Duration.ofMinutes(holdMinutes));
             Reservation savedReservation = reservationRepository.save(reservation);
 
             List<ReservedSeat> reservedSeats = seats.stream()
@@ -78,7 +81,7 @@ public class ReservationService {
         }
     }
 
-    public int calculateTotalPrice(List<Seat> seats) {  // TODO: 이후 가격 계산에 대한 로직이 복잡해지면 클래스로 분리합니다. (현재도 위치가 적절하진 않음)
+    public int calculateTotalPrice(List<Seat> seats) {  // TODO: 이후 가격 계산에 대한 로직이 복잡해지면 클래스로 분리합니다. (현재도 위치 적절하지 않음)
         int totalPrice = 0;
         for(int i = 0; i < seats.size(); i++) {
             totalPrice += environmentPolicyService.getDefaultPrice();
@@ -90,7 +93,7 @@ public class ReservationService {
     private void validateSeatCount(List<Long> seatIds) {
         int max = environmentPolicyService.getMaxReservationCount();
         if (seatIds == null || seatIds.isEmpty() || seatIds.size() > max) {
-            throw new BusinessException(ErrorCode.INVALID_REQUEST);  // FIXME: 에러코드 추가해서 수정하기
+            throw new BusinessException(ErrorCode.RESERVATION_SEAT_LIMIT_EXCEEDED);
         }
     }
 
