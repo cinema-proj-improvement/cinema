@@ -43,6 +43,10 @@ public class EnvironmentPolicy {
     @Column(name = "cinema_open_hour", nullable = false)
     private Integer cinemaOpenHour;
 
+    // 영화표 기본 가격
+    @Column(name = "default_price", nullable = false)
+    private Integer dafaultPrice;
+
     // 테이블 생성일
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -71,7 +75,8 @@ public class EnvironmentPolicy {
             Integer maxReservationCount,
             Integer scheduledToOpenDays,
             Integer openToClosedMinutes,
-            Integer cinemaOpenHour
+            Integer cinemaOpenHour,
+            Integer defaultPrice
     ) {
         this.id = 1L;
         this.cleaningMinutes = cleaningMinutes;
@@ -81,6 +86,7 @@ public class EnvironmentPolicy {
         this.scheduledToOpenDays = scheduledToOpenDays;
         this.openToClosedMinutes = openToClosedMinutes;
         this.cinemaOpenHour = cinemaOpenHour;
+        this.dafaultPrice = defaultPrice;
     }
 
 
@@ -95,7 +101,8 @@ public class EnvironmentPolicy {
             Integer maxReservationCount,
             Integer scheduledToOpenDays,
             Integer openToClosedMinutes,
-            Integer cinemaOpenHour
+            Integer cinemaOpenHour,
+            Integer dafaultPrice
     ) {
         this.cleaningMinutes = cleaningMinutes;
         this.reservationDeadlineMinutes = reservationDeadlineMinutes;
@@ -104,5 +111,6 @@ public class EnvironmentPolicy {
         this.scheduledToOpenDays = scheduledToOpenDays;
         this.openToClosedMinutes = openToClosedMinutes;
         this.cinemaOpenHour = cinemaOpenHour;
+        this.dafaultPrice = dafaultPrice;
     }
 }

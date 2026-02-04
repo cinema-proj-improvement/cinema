@@ -309,25 +309,40 @@ INSERT INTO members (
       );
 
 
-INSERT INTO reservations ( id, reservation_code, member_id, member_name, movie_title, screen_name, screening_id, status, reserved_at, total_price, created_at, updated_at )
-VALUES
-    ( 1, 'R-20260201-001', 1, '홍길동', '인터스텔라', '1관', 2, 'CONFIRMED', '2026-01-31 10:00:00', 20000, NOW(), NOW() ),
-    ( 2, 'R-20260201-002', 2, '김영희', '인터스텔라', '1관', 2, 'CONFIRMED', '2026-01-31 10:05:00', 30000, NOW(), NOW() ),
-    ( 3, 'R-20260201-003', 1, '홍길동', '인터스텔라', '1관', 2, 'HOLD', '2026-01-31 10:10:00', 15000, NOW(), NOW() ),
-    ( 4, 'R-20260201-004', 2, '김영희', '인터스텔라', '1관', 2, 'CANCELED', '2026-01-31 10:15:00', 10000, NOW(), NOW() );
+INSERT INTO reservations (
+    reservation_code,
+    status,
+    reserved_at,
+    hold_expires_at,
+    canceled_at,
+    total_price,
+    screening_id,
+    member_id,
+    movie_title,
+    screen_name,
+    member_name,
+    created_at,
+    updated_at
+) VALUES
+    ('R-20260201-001', 'CONFIRMED', '2026-01-31 10:00:00', '2026-01-31 10:00:00', NULL, 20000, 2, 1, '인터스텔라', '1관', '홍길동', '2026-01-31 10:00:00', '2026-01-31 10:00:00'),
+    ('R-20260201-002', 'CONFIRMED', '2026-01-31 10:05:00', '2026-01-31 10:05:00', NULL, 30000, 2, 2, '인터스텔라', '1관', '김영희', '2026-01-31 10:05:00', '2026-01-31 10:05:00'),
+    ('R-20260201-003', 'HOLD', '2026-01-31 10:10:00', '2026-01-31 11:10:00', NULL, 15000, 2, 1, '인터스텔라', '1관', '홍길동', '2026-01-31 10:10:00', '2026-01-31 10:10:00'),
+    ('R-20260201-004', 'CANCELED', '2026-01-31 10:15:00', '2026-01-31 11:15:00', '2026-01-31 10:20:00', 10000, 2, 2, '인터스텔라', '1관', '김영희', '2026-01-31 10:15:00', '2026-01-31 10:20:00');
 
 INSERT INTO reserved_seats (
+    status,
     reservation_id,
     screening_id,
     seat_id,
     seat_code,
-    status
+    created_at,
+    updated_at
 ) VALUES
-      (1, 2, 1, 'A1', 'CONFIRMED'),
-      (1, 2, 2, 'A2', 'CONFIRMED'),
-      (2, 2, 3, 'A3', 'CONFIRMED'),
-      (3, 2, 4, 'A4', 'HOLD'),
-      (4, 2, 5, 'A5', 'CANCELED');
+    ('CONFIRMED', 1, 2, 1, 'A1', '2026-01-31 10:00:00', '2026-01-31 10:00:00'),
+    ('CONFIRMED', 1, 2, 2, 'A2', '2026-01-31 10:00:00', '2026-01-31 10:00:00'),
+    ('CONFIRMED', 2, 2, 3, 'A3', '2026-01-31 10:05:00', '2026-01-31 10:05:00'),
+    ('HOLD', 3, 2, 4, 'A4', '2026-01-31 10:10:00', '2026-01-31 10:10:00'),
+    ('CANCELED', 4, 2, 5, 'A5', '2026-01-31 10:15:00', '2026-01-31 10:20:00');
 
 INSERT INTO screenings (
     movie_id,
@@ -426,6 +441,8 @@ INSERT INTO reservations (
     reservation_code,
     status,
     reserved_at,
+    hold_expires_at,
+    canceled_at,
     total_price,
     screening_id,
     member_id,
@@ -435,46 +452,41 @@ INSERT INTO reservations (
     created_at,
     updated_at
 ) VALUES (
-             'RES-000009-01',          -- 유니크 코드 (원하는 규칙으로 바꿔도 됨)
-             'CONFIRMED',
-             '2026-02-02 13:10:00',
-             45000,                    -- 예: 15000 * 3좌석
-             9,
-             3,                        -- member_id=1 이 DB에 있어야 함
-             (SELECT m.title
-              FROM screenings sc
-                       JOIN movies m ON m.id = sc.movie_id
-              WHERE sc.id = 9),
-             (SELECT s.name
-              FROM screenings sc
-                       JOIN screens s ON s.id = sc.screen_id
-              WHERE sc.id = 9),
-             '테스트회원',               -- member_name 컬럼이 NOT NULL이라 임시값 필수
-             '2026-02-02 13:10:00',
-             '2026-02-02 13:10:00'
-         );
+    'RES-000009-01',
+    'CONFIRMED',
+    '2026-02-02 13:10:00',
+    '2026-02-02 14:10:00',
+    NULL,
+    45000,
+    9,
+    3,
+    (SELECT m.title FROM screenings sc JOIN movies m ON m.id = sc.movie_id WHERE sc.id = 9),
+    (SELECT s.name FROM screenings sc JOIN screens s ON s.id = sc.screen_id WHERE sc.id = 9),
+    '테스트회원',
+    '2026-02-02 13:10:00',
+    '2026-02-02 13:10:00'
+);
 
--- =========================================================
--- 3) 예약 좌석 3개 생성 (ReservedSeat 엔티티 컬럼 맞춤)
---    ReservedSeat.status 는 @Enumerated가 없어서 ORDINAL(TINYINT)로 저장됨
---    ※ ReservationStatus enum 순서 기준으로 CONFIRMED 값(보통 1) 넣기
--- =========================================================
 INSERT INTO reserved_seats (
     status,
     reservation_id,
     screening_id,
     seat_id,
-    seat_code
+    seat_code,
+    created_at,
+    updated_at
 )
 SELECT
-    1            AS status,          -- ✅ CONFIRMED (ORDINAL 가정: 0=HOLD, 1=CONFIRMED, 2=CANCELED)
-    r.id         AS reservation_id,
-    9            AS screening_id,
-    st.id        AS seat_id,
-    st.seat_code AS seat_code
+    'CONFIRMED' AS status,
+    r.id AS reservation_id,
+    9 AS screening_id,
+    st.id AS seat_id,
+    st.seat_code AS seat_code,
+    '2026-02-02 13:10:00' AS created_at,
+    '2026-02-02 13:10:00' AS updated_at
 FROM reservations r
-         JOIN screenings sc ON sc.id = 9
-         JOIN seats st ON st.screen_id = sc.screen_id
+JOIN screenings sc ON sc.id = 9
+JOIN seats st ON st.screen_id = sc.screen_id
 WHERE r.reservation_code = 'RES-000009-01'
   AND st.seat_code IN ('A1', 'A2', 'A3');
 

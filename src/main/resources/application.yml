@@ -25,6 +25,10 @@ file:
     base-path: ${FILE_UPLOAD_BASE_PATH:/tmp/cinema/uploads}  # 로컬 개발자 환경(Windows/Mac 혼합) 고려: 환경변수로 덮어쓰기
     url-prefix: /uploads
 
+seat-hold:
+  minutes: 5
+  redis-grace-minutes: 1
+
 logging:
   level:
     root: INFO
