@@ -17,7 +17,6 @@ public class AdminPaymentDetailResponse {
     private OffsetDateTime approvedAt;
     private String method;
     private String paymentKey;
-    private String failureCode;
     private String failureMessage;
 
     private AdminPaymentMemberDetailResponse member;

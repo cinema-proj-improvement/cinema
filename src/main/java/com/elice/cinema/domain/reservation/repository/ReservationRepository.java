@@ -2,9 +2,7 @@ package com.elice.cinema.domain.reservation.repository;
 
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +10,8 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-public interface ReservationRepository extends JpaRepository<Reservation, Long>, AdminReservationQueryRepositoryCustom {
+
+public interface ReservationRepository extends JpaRepository<Reservation, Long> ,AdminReservationQueryRepositoryCustom{
     @Query("""
         select r
         from Reservation r
@@ -21,6 +20,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
         where r.id = :reservationId
     """)
     Optional<Reservation> findByIdWithScreeningAndMovie(@Param("reservationId") Long reservationId);
+
+    Optional<Reservation> findByReservationCode(String reservationCode);
 
     // 넘어온 시간을 기준으로 만료된 reservation들에서 예매 id와 해당되는 상영 id를 가져오는 query
     @Query("""

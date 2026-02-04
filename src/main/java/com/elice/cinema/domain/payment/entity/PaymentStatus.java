@@ -1,9 +1,9 @@
 package com.elice.cinema.domain.payment.entity;
 
 public enum PaymentStatus {
-    PAID, // 결제 완료
-    CANCELED, // 결제 취소
-    CANCEL_FAILED;
+    PAID,               // 결제 완료
+    CANCELED,           // 결제 취소
+    CANCEL_FAILED;       // 승인 완료 후 취소 시도했으나 실패
 
     public boolean canChangeTo(PaymentStatus target) {
         // no-op 허용

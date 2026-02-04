@@ -10,6 +10,11 @@ spring:
       ddl-auto: create-drop # 운영은 validate 권장
     show-sql: true
 
+toss:
+  payments:
+    client-key: ${TOSS_CLIENT_KEY}
+    secret-key: ${TOSS_SECRET_KEY}
+
 file:
   storage:
     type: local

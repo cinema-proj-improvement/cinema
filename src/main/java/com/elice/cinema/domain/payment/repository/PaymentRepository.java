@@ -9,6 +9,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long>, PaymentQueryRepository {
+    boolean existsByPaymentKey(String paymentKey);
+
+    Optional<Payment> findByPaymentKey(String paymentKey);
 
     @Query("""
     select new com.elice.cinema.domain.payment.dto.response.AdminPaymentDetailResponse(
@@ -19,7 +22,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, Payment
         p.approvedAt,
         p.method,
         p.paymentKey,
-        p.failureCode,
         p.failureMessage,
         new com.elice.cinema.domain.payment.dto.response.AdminPaymentMemberDetailResponse(
             m.id,

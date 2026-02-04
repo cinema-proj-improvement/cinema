@@ -28,7 +28,7 @@ public class Payment {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column(name = "reservation_code",  unique = true, nullable = false)
+    @Column(name = "reservation_code", nullable=false, unique=true)
     private String reservationCode;
 
     @Column(name = "payment_key", nullable=false, unique=true)
@@ -41,24 +41,67 @@ public class Payment {
     @Column(name = "status", nullable=false)
     private PaymentStatus status;       // PAID, FAILED, CANCELED
 
-    @Column(name = "approved_at")
+    @Column(name = "approved_at", nullable=false)
     private OffsetDateTime approvedAt;   // 토스가 결제 승인한 시간
 
     @Column(name = "method", nullable = false)
     private String method;              // 사용하는 결제 수단
 
-    @Column(name = "failure_code")      // FIXME: 이력용 실패 코드 (필요한지 고민)
-    private String failureCode;
-
     @Column(name = "failure_message")
     private String failureMessage;
 
+    private Payment(Reservation reservation,
+                    Member member,
+                    String reservationCode,
+                    String paymentKey,
+                    Long amount,
+                    PaymentStatus status,
+                    OffsetDateTime approvedAt,
+                    String method) {
+        this.reservation = reservation;
+        this.member = member;
+        this.reservationCode = reservationCode;
+        this.paymentKey = paymentKey;
+        this.amount = amount;
+        this.status = status;
+        this.approvedAt = approvedAt;
+        this.method = method;
+    }
+
+    public static Payment of(Reservation reservation,
+                             Member member,
+                             String reservationCode,
+                             String paymentKey,
+                             Long amount,
+                             PaymentStatus status,
+                             OffsetDateTime approvedAt,
+                             String method) {
+        return new Payment(
+                reservation,
+                member,
+                reservationCode,
+                paymentKey,
+                amount,
+                status,
+                approvedAt,
+                method);
+    }
 
     public void markCanceled() {
         if (!this.status.canChangeTo(PaymentStatus.CANCELED)) {
             throw new BusinessException(ErrorCode.PAYMENT_CANCEL_NOT_ALLOWED);
         }
         this.status = PaymentStatus.CANCELED;
+    }
+
+    public void markCanceled(String reason) {
+        this.status = PaymentStatus.CANCELED;
+        this.failureMessage = reason;
+    }
+
+    public void markCancelFailed(String reason) {
+        this.status = PaymentStatus.CANCEL_FAILED;
+        this.failureMessage = reason;
     }
 
     public boolean isCanceled() {
