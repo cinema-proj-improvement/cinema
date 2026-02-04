@@ -16,4 +16,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         where r.id = :reservationId
     """)
     Optional<Reservation> findByIdWithScreeningAndMovie(@Param("reservationId") Long reservationId);
+
+    Optional<Reservation> findByReservationCode(String reservationCode);
 }

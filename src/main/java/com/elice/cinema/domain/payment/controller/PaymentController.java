@@ -1,5 +1,9 @@
 package com.elice.cinema.domain.payment.controller;
 
+import com.elice.cinema.domain.payment.service.PaymentService;
+import com.elice.cinema.global.security.CustomUserDetails;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,15 +11,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/payments")
 public class PaymentController {
+    private final PaymentService paymentService;
+
     @GetMapping("/success")
     public String paymentSuccess(@RequestParam String paymentKey,
                                  @RequestParam String orderId,
                                  @RequestParam Long amount,
-                                 Model model) {
-        // 👉 여기서 "결제 승인"을 서버에서 해야 함 (아직 안 함)
-        model.addAttribute("orderId", orderId);
+                                 @AuthenticationPrincipal CustomUserDetails userDetail) {
+        paymentService.handleSuccess(paymentKey, orderId, amount, userDetail.getMemberId());
         return "user/payment/success";
     }
 

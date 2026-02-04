@@ -381,7 +381,7 @@ INSERT INTO reservations (
     created_at,
     updated_at
 ) VALUES (
-             'RES-000009-01',          -- 유니크 코드 (원하는 규칙으로 바꿔도 됨)
+             'RES-000009-07',          -- 유니크 코드 (원하는 규칙으로 바꿔도 됨)
              'CONFIRMED',
              '2026-02-02 13:10:00',
              45000,                    -- 예: 15000 * 3좌석
@@ -421,6 +421,6 @@ SELECT
 FROM reservations r
          JOIN screenings sc ON sc.id = 9
          JOIN seats st ON st.screen_id = sc.screen_id
-WHERE r.reservation_code = 'RES-000009-01'
+WHERE r.reservation_code = 'RES-000009-07'
   AND st.seat_code IN ('A1', 'A2', 'A3');
 

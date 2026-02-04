@@ -18,6 +18,14 @@ public class GlobalExceptionHandler {
 
         model.addAttribute("message", ex.getErrorCode().getMessage());
         model.addAttribute("status", ex.getErrorCode().getStatus());
+        model.addAttribute("code", ex.getErrorCode().getCode());
+
+        ErrorCode errorCode = ex.getErrorCode();
+
+        // 결제 도메인 에러만 결제 실패 페이지로 분기
+        if (errorCode.name().startsWith("PAYMENT_")) {
+            return "user/payment/fail";
+        }
 
         return "error/custom-error"; // TODO: templates/error/custom-error.html 작성
     }

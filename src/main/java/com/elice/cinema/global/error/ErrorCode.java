@@ -26,12 +26,16 @@ public enum ErrorCode {
     MEMBER_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "MB01", "비밀번호 확인이 일치하지 않습니다."),
     MEMBER_EMAIL_DUPLICATED(HttpStatus.BAD_REQUEST, "MB02", "이미 사용 중인 이메일입니다."),
     MEMBER_NICKNAME_DUPLICATED(HttpStatus.BAD_REQUEST, "MB03", "이미 사용 중인 닉네임입니다."),
+    PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "PY01", "결제 금액이 일치하지 않습니다."),
+    PAYMENT_CONFIRM_FAILED(HttpStatus.BAD_REQUEST, "PY02", "결제 승인에 실패했습니다."),
+    PAYMENT_CANCEL_FAILED(HttpStatus.BAD_REQUEST, "PY05", "결제 취소에 실패했습니다."),
 
     SCREENING_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "SG10", "SCHEDULED 상태의 상영만 삭제 가능합니다."),
     // 401 Unauthorized
 
 
     // 403 Forbidden
+    PAYMENT_FORBIDDEN(HttpStatus.FORBIDDEN, "PY04", "결제 권한이 없습니다."),
 
     // 404 Not Found
     MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "MV01", "영화를 찾을 수 없습니다."),
@@ -40,6 +44,8 @@ public enum ErrorCode {
     SCREENING_NOT_FOUND(HttpStatus.NOT_FOUND, "SG11", "상영을 찾을 수 없습니다."),
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "RS01", "예약 정보를 찾을 수 없습니다."),
     MOVIE_THUMBNAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "MV05", "영화 썸네일 정보를 찾을 수 없습니다."),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MB04", "회원을 찾을 수 없습니다."),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "PY03", "결제 정보를 찾을 수 없습니다."),
 
     // 409 Conflict
     SCREEN_NAME_DUPLICATED(HttpStatus.CONFLICT, "SC06", "이미 존재하는 상영관 이름입니다."),

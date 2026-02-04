@@ -95,7 +95,7 @@ public class ReservationService {
     public TossPaymentReservationResponse getTossPage(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
-        String orderId = "RESERVATION-" + reservation.getId();
+        String orderId = reservation.getReservationCode();
         return reservationMapper.toPaymentReservationResponse(reservation, orderId, tossClientKey);
     }
 
