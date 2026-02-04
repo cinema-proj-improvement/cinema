@@ -1,9 +1,6 @@
 package com.elice.cinema.domain.screening.mapper;
 
-import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
-import com.elice.cinema.domain.screening.dto.response.ReservationScheduleResponse;
-import com.elice.cinema.domain.screening.dto.response.ScreeningDetailResponse;
-import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
+import com.elice.cinema.domain.screening.dto.response.*;
 import com.elice.cinema.domain.screening.entity.Screening;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

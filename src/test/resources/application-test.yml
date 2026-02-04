@@ -25,7 +25,7 @@ spring:
 
   sql:
     init:
-      mode: never
+      mode: always
 
   h2:
     console:
