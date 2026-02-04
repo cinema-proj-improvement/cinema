@@ -27,7 +27,7 @@ import static com.elice.cinema.domain.reservation.entity.QReservedSeat.reservedS
 
 @Repository
 @RequiredArgsConstructor
-public class ReservationQueryRepositoryImpl implements ReservationQueryRepository {
+public class AdminReservationQueryRepositoryCustomImpl implements AdminReservationQueryRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
@@ -55,7 +55,7 @@ public class ReservationQueryRepositoryImpl implements ReservationQueryRepositor
                                 reservation.member.name,
                                 reservation.status,
                                 Expressions.stringTemplate(
-                                        "group_concat({0})",
+                                        "group_concat({0})", // TODO: 실제 예약좌석 연동 시 해당 projection 제거 예정.
                                         reservedSeat.seat.seatCode
                                 ),
                                 Expressions.constant("PAID"),

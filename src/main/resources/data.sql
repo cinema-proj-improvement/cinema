@@ -490,3 +490,47 @@ JOIN seats st ON st.screen_id = sc.screen_id
 WHERE r.reservation_code = 'RES-000009-01'
   AND st.seat_code IN ('A1', 'A2', 'A3');
 
+
+-- =========================================================
+-- 테스트 결제 데이터 (Payment 엔티티 필수 컬럼 모두 포함)
+-- =========================================================
+INSERT INTO payments (
+    reservation_id,
+    member_id,
+    reservation_code,
+    payment_key,
+    amount,
+    status,
+    approved_at,
+    method
+) VALUES
+      (
+          1,
+          1,
+          'R-20260201-001',
+          'pay_test_0001',
+          20000,
+          'PAID',
+          '2026-02-01 10:30:00',
+          'CARD'
+      ),
+      (
+          2,
+          2,
+          'R-20260201-002',
+          'pay_test_0002',
+          30000,
+          'PAID',
+          '2026-02-01 11:00:00',
+          'CARD'
+      ),
+      (
+          4,
+          2,
+          'R-20260201-004',
+          'pay_test_0003',
+          10000,
+          'CANCELED',
+          '2026-02-01 11:30:00',
+          'CARD'
+      );

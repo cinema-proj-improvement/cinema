@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: layout(
+        '결제 관리', 'payments', ~{::pageCss}, ~{::content}
+      )}">
+
+<head>
+    <th:block th:fragment="pageCss">
+        <link rel="stylesheet" th:href="@{/css/admin/payment/payment-list.css}">
+    </th:block>
+</head>
+
+<body>
+<th:block th:fragment="content">
+
+    <section class="admin-page">
+        <h1 class="page-title">결제 관리</h1>
+
+        <!-- =========================
+             검색 / 필터
+        ========================= -->
+        <form class="filter-box" method="get">
+
+            <!-- 1줄 -->
+            <div class="filter-row">
+                <input type="text"
+                       class="search-input"
+                       name="keyword"
+                       th:value="${condition.keyword}"
+                       placeholder="예매번호 또는 결제자 이메일">
+
+                <!-- 상태 -->
+                <select name="status">
+                    <option value="">상태</option>
+                    <option th:each="status : ${paymentStatuses}"
+                            th:value="${status}"
+                            th:text="${status}">
+                    </option>
+                </select>
+
+                <!-- 정렬 -->
+                <select name="sort">
+                    <option value="">정렬</option>
+
+                    <option value="LATEST"
+                            th:selected="${condition.sort == null || condition.sort == ''}">
+                        최신순
+                    </option>
+
+                    <option value="AMOUNT_DESC"
+                            th:selected="${condition.sort == 'AMOUNT_DESC'}">
+                        금액 높은 순
+                    </option>
+
+                    <option value="AMOUNT_ASC"
+                            th:selected="${condition.sort == 'AMOUNT_ASC'}">
+                        금액 낮은 순
+                    </option>
+                </select>
+
+                <button type="submit" class="btn-search">검색</button>
+            </div>
+
+            <!-- 2줄 : 날짜 -->
+            <div class="date-row">
+                <input type="date"
+                       name="fromDate"
+                       th:value="${condition.fromDate}">
+                <span class="tilde">~</span>
+                <input type="date"
+                       name="toDate"
+                       th:value="${condition.toDate}">
+            </div>
+        </form>
+
+        <!-- =========================
+             리스트
+        ========================= -->
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>예매번호</th>
+                <th>결제자</th>
+                <th>결제금액</th>
+                <th>상태</th>
+                <th>승인일시</th>
+                <th>관리</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="p : ${page.content}">
+                <td th:text="${p.reservationCode}"></td>
+
+                <td th:text="${p.member.name + ' (' + p.member.email + ')'}"></td>
+
+                <td class="amount"
+                    th:text="${#numbers.formatInteger(p.amount, 0, 'COMMA') + '원'}"></td>
+
+                <td>
+                <span class="status-badge"
+                      th:text="${p.status}">
+                </span>
+                </td>
+
+                <td th:text="${p.approvedAt != null
+                    ? #temporals.format(p.approvedAt, 'yyyy-MM-dd HH:mm')
+                    : '-'}">
+                </td>
+
+                <td>
+                    <a th:href="@{/admin/payments/{id}(id=${p.id})}">
+                        >
+                    </a>
+                </td>
+            </tr>
+
+            <tr th:if="${page.content.isEmpty()}">
+                <td colspan="6" class="empty">
+                    조회된 결제 내역이 없습니다.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- =========================
+             페이지네이션
+        ========================= -->
+        <div class="pagination" th:if="${page.totalPages > 1}">
+            <a th:if="${!page.first}"
+               th:href="@{/admin/payments(page=${page.number - 1})}">‹</a>
+
+            <a th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+               th:href="@{/admin/payments(page=${i})}"
+               th:text="${i + 1}"
+               th:classappend="${i == page.number} ? 'active'">
+            </a>
+
+            <a th:if="${!page.last}"
+               th:href="@{/admin/payments(page=${page.number + 1})}">›</a>
+        </div>
+
+    </section>
+
+</th:block>
+</body>
+</html>

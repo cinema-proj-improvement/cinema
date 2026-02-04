@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-public interface ReservationRepository extends JpaRepository<Reservation, Long>, ReservationQueryRepository {
+public interface ReservationRepository extends JpaRepository<Reservation, Long>, AdminReservationQueryRepositoryCustom {
     @Query("""
         select r
         from Reservation r
