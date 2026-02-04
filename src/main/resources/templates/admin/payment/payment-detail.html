@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: layout(
+        '결제 관리', 'payments', ~{::pageCss}, ~{::content}
+      )}">
+
+<!-- =========================
+     Page CSS
+========================= -->
+<th:block th:fragment="pageCss">
+    <link rel="stylesheet" th:href="@{/css/admin/payment/payment-detail.css}">
+</th:block>
+
+<!-- =========================
+     Page Content
+========================= -->
+<th:block th:fragment="content">
+
+    <!-- 상단 헤더 -->
+    <div class="page-header"
+         th:data-payment-id="${payment.id}">
+        <a th:href="@{/admin/payments}" class="back-link">
+            ← 결제 관리로 돌아가기
+        </a>
+        <h1>결제 상세 정보</h1>
+    </div>
+
+    <!-- =========================
+         결제 정보
+    ========================= -->
+    <section class="info-box">
+        <h2>결제 정보</h2>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="label">결제 코드</span>
+                <span class="value" th:text="${payment.id}">PAY-0001</span>
+            </div>
+
+            <div class="info-item">
+                <span class="label">예매 코드</span>
+                <span class="value" th:text="${payment.reservationCode}">
+                    RES-0001
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="label">결제 계정</span>
+                <span class="value" th:text="${payment.member.email}">
+                    user@email.com
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="label">결제 금액</span>
+                <span class="value"
+                      th:text="|₩${#numbers.formatInteger(payment.amount, 0, 'COMMA')}|">
+                    ₩28,000
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="label">결제 상태</span>
+                <span class="value status"
+                      th:text="${payment.status}">
+                    PAID
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="label">결제 승인 시각</span>
+                <span class="value"
+                      th:text="${payment.approvedAt}">
+                    2026-01-22 16:20:10
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="label">결제 수단</span>
+                <span class="value" th:text="${payment.method}">
+                    카드
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================
+            결제 액션
+        ========================= -->
+    <div class="payment-actions">
+        <button
+                id="cancelPaymentBtn"
+                class="btn btn-danger"
+                th:disabled="${payment.status.name() == 'CANCELED'}">
+            결제 취소
+        </button>
+    </div>
+
+    <!-- =========================
+         예매 / 상영 정보 (좌석 제외)
+    ========================= -->
+    <section class="info-box">
+        <h2>예매 상세 정보</h2>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="label">영화 제목</span>
+                <span class="value"
+                      th:text="${payment.reservation.movieTitle}">
+                    영화 제목
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="label">상영관</span>
+                <span class="value"
+                      th:text="${payment.reservation.screenName}">
+                    3관
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="label">상영 시작</span>
+                <span th:text="${#temporals.format(
+                        payment.reservation.startAt,
+                        'yyyy-MM-dd HH:mm'
+                )}">
+                </span>
+
+            </div>
+
+            <div class="info-item">
+                <span class="label">예매 코드</span>
+                <span class="value"
+                      th:text="${payment.reservation.reservationCode}">
+                    RES-0001
+                </span>
+            </div>
+        </div>
+
+        <!-- 좌석 안내 -->
+        <p class="info-note">
+            좌석 정보는 예매 상세 화면에서 확인할 수 있습니다.
+        </p>
+
+        <a class="link-button"
+           th:href="@{/admin/screenings/{id}(id=${payment.reservation.screeningId})}">
+            상영 상세로 이동 <!--예약좌석 구현 완료시 교체 예정-->
+        </a>
+    </section>
+
+    <!-- =========================
+         정책 안내
+    ========================= -->
+    <section class="policy-box">
+        <h3>정책 안내</h3>
+        <ul>
+            <li>결제 내역은 삭제되지 않으며, 상태 변경만 가능합니다.</li>
+            <li>상태 변경 시 예매 및 결제 상태의 일관성을 반드시 확인하세요.</li>
+            <li>상태 변경은 신중하게 진행해야 하며, 필요 시 확인 절차를 거칩니다.</li>
+        </ul>
+    </section>
+    <script th:src="@{/js/admin/payment-detail.js}"></script>
+</th:block>
+</html>

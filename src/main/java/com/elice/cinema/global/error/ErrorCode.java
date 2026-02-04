@@ -44,6 +44,8 @@ public enum ErrorCode {
     SCREENING_NOT_FOUND(HttpStatus.NOT_FOUND, "SG11", "상영을 찾을 수 없습니다."),
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "RS01", "예약 정보를 찾을 수 없습니다."),
     MOVIE_THUMBNAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "MV05", "영화 썸네일 정보를 찾을 수 없습니다."),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "PM01", "결제 정보를 찾을 수 없습니다."),
+    PAYMENT_CANCEL_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "PM02", "현재 결제 상태에서는 취소할 수 없습니다."),
 
     // 409 Conflict
     SCREEN_NAME_DUPLICATED(HttpStatus.CONFLICT, "SC06", "이미 존재하는 상영관 이름입니다."),

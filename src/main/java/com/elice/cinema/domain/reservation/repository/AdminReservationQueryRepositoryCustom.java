@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
-public interface ReservationQueryRepository {
+public interface AdminReservationQueryRepositoryCustom {
     Page<AdminReservationPageResponse> findAdminReservationPage(
             Long screeningId,
             ReservationStatus status,
@@ -21,5 +21,5 @@ public interface ReservationQueryRepository {
             Long screeningId
     );
 
-    Optional<AdminReservationDetailResponse> findAdminDetailById(Long reservationId);
+    Optional<AdminReservationDetailResponse> findAdminDetailById(Long id);
 }
