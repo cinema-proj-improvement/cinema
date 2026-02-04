@@ -1,22 +1,59 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="utf-8" />
-</head>
+    <meta charset="utf-8"/>
+    <title>결제 실패</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            padding-top: 80px;
+        }
 
+        .error-box {
+            display: inline-block;
+            padding: 24px 32px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 32px;
+        }
+
+        .error-code {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .btn-home {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #222;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+
+        .btn-home:hover {
+            background-color: #444;
+        }
+    </style>
+</head>
 <body>
-<h2> 결제 실패 </h2>
-<p id="code"></p>
-<p id="message"></p>
+
+<h2>결제 실패</h2>
+
+<div class="error-box">
+    <div class="error-code">
+        에러 코드:
+        <span th:text="${code != null ? code : param.code}">CODE</span>
+    </div>
+    <div>
+        실패 사유:
+        <span th:text="${message != null ? message : param.message}">MESSAGE</span>
+    </div>
+</div>
+
+<!-- ✅ 홈으로 이동 -->
+<a th:href="@{/}" class="btn-home">홈으로 돌아가기</a>
+
 </body>
 </html>
-
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-
-    const codeElement = document.getElementById("code");
-    const messageElement = document.getElementById("message");
-
-    codeElement.textContent = "에러코드: " + urlParams.get("code");
-    messageElement.textContent = "실패 사유: " + urlParams.get("message");
-</script>
