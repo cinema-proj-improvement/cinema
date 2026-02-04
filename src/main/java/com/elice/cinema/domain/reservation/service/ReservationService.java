@@ -2,6 +2,7 @@ package com.elice.cinema.domain.reservation.service;
 
 import com.elice.cinema.domain.member.entity.Member;
 import com.elice.cinema.domain.member.repository.MemberRepository;
+import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import com.elice.cinema.domain.reservation.entity.ReservedSeat;
@@ -20,23 +21,32 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ReservationService {
-    private final ReservationRepository reservationRepository;
-    private final ReservedSeatRepository reservedSeatRepository;
-    private final ReservationLockRepository reservationLockRepository;
+    private static final int DAYS_RANGE_INCLUSIVE = 6; //TODO: 이것도 환경 변수 테이블에 넣을지 고민
 
+    private final MovieRepository movieRepository;
+    private final ReservedSeatRepository reservedSeatRepository;
+    private final ReservationRepository reservationRepository;
+    private final ReservationLockRepository reservationLockRepository;
+    private final MovieImageRepository movieImageRepository;
     private final ScreeningRepository screeningRepository;
     private final MemberRepository memberRepository;
     private final SeatRepository seatRepository;
 
     private final EnvironmentPolicyService environmentPolicyService;
     private final SeatHoldProperties seatHoldProperties;
+    private final MovieMapper movieMapper;
+    private final ScreeningMapper screeningMapper;
+    private final ReservationMapper reservationMapper;
 
     @Transactional
     public Long holdSeats(Long screeningId, List<Long> seatIds, Long memberId) {  // TODO: 메서드 분리 고려하기
@@ -97,6 +107,52 @@ public class ReservationService {
         }
     }
 
+    public List<ReservationMovieSelectResponse> getMoviesWithScreeningsWithin() {
+        LocalDate today = LocalDate.now();
+
+        LocalDateTime from = today.atStartOfDay();
+        LocalDateTime toExclusive = today.plusDays(DAYS_RANGE_INCLUSIVE + 1).atStartOfDay();
+
+        List<Movie> movies = movieRepository.findDistinctMoviesHavingScreeningsBetween(from, toExclusive);
+
+        return movies.stream()
+                .map(movieMapper::toReservationMovieSelectResponse)
+                .toList();
+    }
+
+    public List<ReservationScheduleResponse> getSchedulesByDate(LocalDate date, Long movieId) {
+        LocalDateTime from = date.atStartOfDay();
+        LocalDateTime toExclusive = date.plusDays(1).atStartOfDay();
+
+        List<Screening> screenings = screeningRepository.findSchedulesByDate(
+                from,
+                toExclusive,
+                movieId
+        );
+
+        return screenings.stream()
+                .map(screening -> {
+                    Integer remainingSeats = calculateRemainingSeats(screening);
+                    return screeningMapper
+                            .toReservationScheduleResponse(screening, remainingSeats);
+                })
+                .toList();
+    }
+
+    public ReservationCheckoutResponse getCheckoutPage(Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdWithScreeningAndMovie(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        Movie movie = reservation.getScreening().getMovie();
+
+        String movieThumbnail = /*movieImageRepository.findThumbnailUrlByMovieId(movie.getId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_THUMBNAIL_NOT_FOUND));*/ null;
+        // TODO: 데이터로 영화 썸네일 넣고 다시 시도하기, 예매 생성 생기면 다시 시도
+        List<String> seatCodes = reservedSeatRepository.findSeatCodesByReservationId(reservationId);
+
+        return reservationMapper.toReservationCheckoutResponse(reservation, movieThumbnail, seatCodes);
+    }
+
     private Screening getScreeningWithMovieAndScreen(Long screeningId) {
         return screeningRepository.findByIdWithMovieAndScreen(screeningId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SCREENING_NOT_FOUND));
@@ -123,5 +179,12 @@ public class ReservationService {
         if(seats.stream().anyMatch(seat -> !seat.isActive())) {
             throw new BusinessException(ErrorCode.SEAT_INACTIVE);
         }
+    }
+
+    private Integer calculateRemainingSeats(Screening screening) {
+        int totalSeats = screening.getScreen().getTotalSeats();
+        int reservedCount = reservedSeatRepository.countAllByScreening_Id(screening.getId());
+
+        return totalSeats - reservedCount;
     }
 }

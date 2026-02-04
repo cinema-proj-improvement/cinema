@@ -1,0 +1,259 @@
+<th:block th:fragment="reservations">
+
+    <!-- =========================
+         Reservation Summary
+    ========================= -->
+    <section class="reservation-summary">
+        <div class="summary-card total">
+            <span class="label">총 예매</span>
+            <strong th:text="${reservationSummary.total}"></strong>
+        </div>
+
+        <div class="summary-card confirmed">
+            <span class="label">확정</span>
+            <strong th:text="${reservationSummary.confirmed}"></strong>
+        </div>
+
+        <div class="summary-card hold">
+            <span class="label">대기</span>
+            <strong th:text="${reservationSummary.hold}"></strong>
+        </div>
+
+        <div class="summary-card canceled">
+            <span class="label">취소</span>
+            <strong th:text="${reservationSummary.canceled}"></strong>
+        </div>
+    </section>
+
+    <!-- =========================
+         Reservation Filter
+    ========================= -->
+    <div class="reservation-filter">
+        <a th:href="@{|/admin/screenings/${screening.id}|}"
+           th:classappend="${selectedStatus == null} ? 'active'">
+            전체
+        </a>
+
+        <a th:href="@{|/admin/screenings/${screening.id}?status=CONFIRMED|}"
+           th:classappend="${selectedStatus == T(com.elice.cinema.domain.reservation.entity.ReservationStatus).CONFIRMED} ? 'active'">
+            예매 확정
+        </a>
+
+        <a th:href="@{|/admin/screenings/${screening.id}?status=HOLD|}"
+           th:classappend="${selectedStatus == T(com.elice.cinema.domain.reservation.entity.ReservationStatus).HOLD} ? 'active'">
+            예매 대기
+        </a>
+
+        <a th:href="@{|/admin/screenings/${screening.id}?status=CANCELED|}"
+           th:classappend="${selectedStatus == T(com.elice.cinema.domain.reservation.entity.ReservationStatus).CANCELED} ? 'active'">
+            예매 취소
+        </a>
+    </div>
+
+    <!-- =========================
+         Reservation Table
+    ========================= -->
+    <section class="card">
+        <div class="card-head">
+            <h2 class="card-title">예매 관리</h2>
+
+            <!-- 좌석 현황 보기 -->
+            <button
+                    type="button"
+                    class="btn-seat-status"
+                    th:attr="data-screening-id=${screening.id}"
+                    onclick="openSeatModal(this.dataset.screeningId, '좌석 현황')">
+                좌석 현황 보기
+            </button>
+        </div>
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>예매코드</th>
+                <th>회원정보</th>
+                <th>좌석</th>
+                <th>예매상태</th>
+                <th>결제상태</th>
+                <th>예매일시</th>
+                <th>금액</th>
+                <th>상세</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <!-- empty -->
+            <tr th:if="${reservationsPage.isEmpty()}">
+                <td colspan="8">예매 내역이 없습니다.</td>
+            </tr>
+
+            <!-- rows -->
+            <tr th:each="r : ${reservationsPage.content}">
+                <!-- 예매 코드 -->
+                <td th:text="${r.reservationCode}"></td>
+
+                <!-- 회원 정보 -->
+                <td>
+                    <div class="member-cell">
+                        <div class="member-name" th:text="${r.memberName}"></div>
+                    </div>
+                </td>
+
+                <!-- 좌석 -->
+                <td th:text="${r.seatSummary}"></td>
+
+                <!-- 예매 상태 -->
+                <td>
+                    <span class="badge"
+                          th:classappend="| status-${r.status.name().toLowerCase()}|"
+                          th:text="${r.status.displayName}">
+                    </span>
+                </td>
+
+                <!-- 결제 상태 수정해야함-->
+                <td>
+                    <span class="badge"
+                          th:classappend="| payment-${#strings.toLowerCase(r.paymentStatus)}|"
+                          th:text="${r.paymentStatus}">
+                    </span>
+                </td>
+
+                <!-- 예매 일시 -->
+                <td th:text="${#temporals.format(r.reservedAt, 'yyyy-MM-dd HH:mm')}"></td>
+
+                <!-- 금액 -->
+                <td th:text="${#numbers.formatInteger(r.totalPrice, 3, 'COMMA')} + '원'"></td>
+
+                <!-- 상세 -->
+                <td>
+                    <button type="button"
+                            class="btn-detail"
+                            th:attr="data-reservation-id=${r.id}"
+                            onclick="openReservationDetail(this)">
+                        상세
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- =========================
+             Pagination
+        ========================= -->
+        <div class="pagination" th:if="${reservationsPage.totalPages > 1}">
+            <a th:if="${reservationsPage.hasPrevious()}"
+               th:href="@{|/admin/screenings/${screening.id}?status=${selectedStatus}&page=${reservationsPage.number - 1}|}">
+                이전
+            </a>
+
+            <span class="page-info">
+                <strong th:text="${reservationsPage.number + 1}"></strong>
+                /
+                <span th:text="${reservationsPage.totalPages}"></span>
+            </span>
+
+            <a th:if="${reservationsPage.hasNext()}"
+               th:href="@{|/admin/screenings/${screening.id}?status=${selectedStatus}&page=${reservationsPage.number + 1}|}">
+                다음
+            </a>
+        </div>
+    </section>
+
+    <!-- =========================
+         Reservation Detail Modal
+    ========================= -->
+    <div id="reservationDetailModal" class="modal hidden">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header">
+                <h3>예매 상세 정보</h3>
+                <button onclick="closeReservationDetail()">✕</button>
+            </div>
+
+            <!-- Reservation Code -->
+            <div class="section highlight">
+                <span class="label">예매 코드</span>
+                <strong id="detailReservationCode"></strong>
+            </div>
+
+            <!-- Member -->
+            <div class="section">
+                <h4>예매자 정보</h4>
+                <div class="row">
+                    <span>닉네임</span>
+                    <span id="detailMemberName"></span>
+                </div>
+                <div class="row">
+                    <span>사용자 ID</span>
+                    <span id="detailMemberLoginId"></span>
+                </div>
+            </div>
+
+            <!-- Screening -->
+            <div class="section">
+                <h4>상영 정보</h4>
+                <div class="row">
+                    <span>영화</span>
+                    <span id="detailMovieTitle"></span>
+                </div>
+                <div class="row">
+                    <span>상영관</span>
+                    <span id="detailScreenName"></span>
+                </div>
+                <div class="row">
+                    <span>상영 시간</span>
+                    <span id="detailScreeningTime"></span>
+                </div>
+            </div>
+
+            <!-- Seats -->
+            <div class="section">
+                <h4>좌석 정보</h4>
+                <div id="detailSeats" class="seat-badges"></div>
+                <div class="row">
+                    <span>총 좌석 수</span>
+                    <span id="detailSeatCount"></span>
+                </div>
+            </div>
+
+            <!-- Payment -->
+            <div class="section">
+                <h4>결제 정보</h4>
+                <div class="row">
+                    <span>총 결제 금액</span>
+                    <span id="detailTotalPrice"></span>
+                </div>
+                <div class="row">
+                    <span>결제 상태</span>
+                    <span id="detailPaymentStatus"></span>
+                </div>
+                <div class="row">
+                    <span>예매 일시</span>
+                    <span id="detailReservedAt"></span>
+                </div>
+            </div>
+
+            <!-- Reservation Status -->
+            <div class="section">
+                <h4>예매 상태</h4>
+                <span id="detailReservationStatus" class="status-badge"></span>
+            </div>
+
+            <!-- Cancel -->
+            <div class="section">
+                <button id="cancelReservationBtn" class="hidden">
+                    예매 취소
+                </button>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button onclick="closeReservationDetail()">닫기</button>
+            </div>
+        </div>
+    </div>
+
+</th:block>
+
+<th:block th:replace="admin/reservation/_reservation-detail-modal :: *"/>

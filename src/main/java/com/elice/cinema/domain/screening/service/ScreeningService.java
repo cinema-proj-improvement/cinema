@@ -8,10 +8,7 @@ import com.elice.cinema.domain.screen.repository.ScreenRepository;
 import com.elice.cinema.domain.screening.dto.request.AdminScreeningSearchRequest;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
 import com.elice.cinema.domain.screening.dto.request.ScreeningUpdateRequest;
-import com.elice.cinema.domain.screening.dto.response.AdminScreeningFilterOptionResponse;
-import com.elice.cinema.domain.screening.dto.response.AdminScreeningResponse;
-import com.elice.cinema.domain.screening.dto.response.ScreeningDetailResponse;
-import com.elice.cinema.domain.screening.dto.response.ScreeningTimetableResponse;
+import com.elice.cinema.domain.screening.dto.response.*;
 import com.elice.cinema.domain.screening.entity.Screening;
 import com.elice.cinema.domain.screening.entity.ScreeningStatus;
 import com.elice.cinema.domain.screening.mapper.ScreeningMapper;
@@ -106,6 +103,16 @@ public class ScreeningService {
 
     public List<AdminScreeningFilterOptionResponse> getScreenFilterOptions() {
         return screeningRepository.findAdminScreeningScreenFilterOptions();
+    }
+
+    // 상영별 좌석 목록 조회
+    public List<AdminScreeningSeatResponse> getSeats(Long screeningId) {
+        return screeningRepository.findAdminSeatsByScreeningId(screeningId);
+    }
+
+    // 상영 좌석 요약 조회
+    public AdminScreeningSeatSummaryResponse getSeatSummary(Long screeningId) {
+        return screeningRepository.findAdminSeatSummaryByScreeningId(screeningId);
     }
 
     @Transactional

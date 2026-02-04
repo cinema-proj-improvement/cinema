@@ -1,4 +1,4 @@
-package com.elice.cinema.domain.movie.dto.internal;
+package com.elice.cinema.domain.movie.dto.response;
 
 import com.elice.cinema.domain.movie.entity.AgeRating;
 import com.elice.cinema.domain.movie.entity.Genre;
@@ -17,7 +17,7 @@ import java.time.LocalDate;
 
 @Getter
 @AllArgsConstructor
-public class AdminMovieJoinRow {
+public class AdminMovieJoinRowResponse {
     // QueryDSL constructor projection 전용 row DTO
     private final Long movieId;
     private final String thumbnail;

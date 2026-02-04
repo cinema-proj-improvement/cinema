@@ -2,15 +2,26 @@ package com.elice.cinema.domain.reservation.repository;
 
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+public interface ReservationRepository extends JpaRepository<Reservation, Long>, ReservationQueryRepository {
+    @Query("""
+        select r
+        from Reservation r
+        join fetch r.screening s
+        join fetch s.movie m
+        where r.id = :reservationId
+    """)
+    Optional<Reservation> findByIdWithScreeningAndMovie(@Param("reservationId") Long reservationId);
 
-public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     // 넘어온 시간을 기준으로 만료된 reservation들에서 예매 id와 해당되는 상영 id를 가져오는 query
     @Query("""
         select r.id
@@ -19,7 +30,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             and r.holdExpiresAt < :now
         order by r.id
 """)
-    List<Long> findExpiredHoldReservationIds(@Param("now")LocalDateTime now, Pageable pageable);
+    List<Long> findExpiredHoldReservationIds(@Param("now") LocalDateTime now, Pageable pageable);
 
     // 넘어온 id들에 해당하는 reservation들 중 HOLD 상태인 것들을 EXPIRED 상태로 수정해주는 bulk update query
     @Modifying(clearAutomatically = true, flushAutomatically = true)

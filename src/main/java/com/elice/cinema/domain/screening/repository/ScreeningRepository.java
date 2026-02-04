@@ -1,6 +1,7 @@
 package com.elice.cinema.domain.screening.repository;
 
 import com.elice.cinema.domain.screening.entity.Screening;
+import com.elice.cinema.domain.screening.entity.ScreeningStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -39,6 +40,27 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long>, Scr
                                LocalDateTime newStartAt,
                                LocalDateTime newEndAtWithCleaning);
 
+    @Query("""
+        select s
+        from Screening s
+        join fetch s.movie m
+        join fetch s.screen sc
+        where s.startAt >= :startOfDay
+          and s.startAt < :endOfDay
+          and s.screeningStatus = :status
+          and (:movieId is null or m.id = :movieId)
+        order by s.startAt asc
+    """)
+    List<Screening> findSchedulesByDate(
+            @Param("startOfDay") LocalDateTime from,
+            @Param("endOfDay") LocalDateTime toExclusive,
+            @Param("status") ScreeningStatus status,
+            @Param("movieId") Long movieId
+    );
+
+    default List<Screening> findSchedulesByDate(LocalDateTime from, LocalDateTime toExclusive, Long movieId) {
+        return findSchedulesByDate(from, toExclusive, ScreeningStatus.OPEN, movieId);
+    }
 
     // flushAutomatically = true - 실행 전에 영속성 컨텍스트의 변경 사항을 DB에 반영
     // clearAutomatically = true - 1차 캐시를 비워버림, 같은 트랜잭션 안 1차 캐시에 들고 있는 엔티티와 DB와 불일치를 없애기 위함

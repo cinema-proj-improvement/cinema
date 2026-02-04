@@ -1,6 +1,6 @@
 package com.elice.cinema.domain.movie.service;
 
-import com.elice.cinema.domain.movie.dto.internal.AdminMovieJoinRow;
+import com.elice.cinema.domain.movie.dto.response.AdminMovieJoinRowResponse;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
 import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
 import com.elice.cinema.domain.movie.dto.request.MovieUpdateRequest;
@@ -56,7 +56,7 @@ public class MovieService {
         return movie.getId();
     }
 
-    // 관리자 영화 목록 조회 (검색조건 + 페이지네이션 + 정렬)
+    // 관리자 영화 목록 조회 (검색조건 + 페이지네이션 + 정렬) //todo : 예매 및 리뷰 기능 구현 후 평점, 예매율 추가하기
     public Page<AdminMovieListResponse> getAdminMovieListPage(AdminMovieSearchRequest request, Pageable pageable) {
         List<Long> movieIds =
                 movieRepository.findAdminMovieIds(request, pageable);
@@ -64,32 +64,15 @@ public class MovieService {
         if (movieIds.isEmpty()) {
             return Page.empty(pageable);
         }
+
         long totalCount =
                 movieRepository.countAdminMovies(request);
-        List<AdminMovieJoinRow> rows =
+
+        List<AdminMovieJoinRowResponse> rows =
                 adminMovieJoinQueryRepository.findAdminMovieJoinRows(movieIds);
 
-        Map<Long, AdminMovieListResponse> map = new LinkedHashMap<>();
-
-        for (AdminMovieJoinRow row : rows) {
-            map.computeIfAbsent(row.getMovieId(), id ->
-                    new AdminMovieListResponse(
-                            row.getMovieId(),
-                            row.getThumbnail(),
-                            row.getTitle(),
-                            new ArrayList<>(),
-                            row.getStatus(),
-                            row.getAgeRating(),
-                            row.getReleaseDate(),
-                            row.getEndDate(),
-                            row.getAvgScore(),
-                            row.getAdvanceReservationRate()
-                    )
-            ).getGenres().add(row.getGenre());
-        }
-
         List<AdminMovieListResponse> contents =
-                new ArrayList<>(map.values());
+                AdminMovieListResponse.fromRows(rows);
 
         return new PageImpl<>(contents, pageable, totalCount);
     }

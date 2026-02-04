@@ -3,6 +3,9 @@ package com.elice.cinema.domain.reservation.entity;
 import com.elice.cinema.domain.member.entity.Member;
 import com.elice.cinema.domain.screening.entity.Screening;
 import com.elice.cinema.global.common.entity.BaseEntity;
+import com.elice.cinema.global.common.entity.BaseEntity;
+import com.elice.cinema.global.error.ErrorCode;
+import com.elice.cinema.global.error.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -94,5 +97,28 @@ public class Reservation extends BaseEntity {
 
     private static String generateCode() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
+    }
+
+    //예매가 확정(CONFIRMED) 상태인지 여부
+    public boolean isCancelableStatus() {
+        return this.status == ReservationStatus.CONFIRMED;
+    }
+
+    //현재 시점 기준으로 상영 시작 전인지 여부
+    public boolean isBeforeScreening() {
+        return this.screening.getStartAt().isAfter(LocalDateTime.now());
+    }
+
+    // 예매 취소 가능 여부 (화면 / API 공통 판단)
+    public boolean isCancelable() {
+        return isCancelableStatus() && isBeforeScreening();
+    }
+
+    // 예매 취소
+    public void cancel() {
+        if (!isCancelable()) {
+            throw new BusinessException(ErrorCode.RESERVATION_NOT_CANCELABLE);
+        }
+        this.status = ReservationStatus.CANCELED;
     }
 }

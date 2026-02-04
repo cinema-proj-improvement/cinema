@@ -1,0 +1,81 @@
+/* ===== Seat Modal ===== */
+.seat-modal {
+    width: 1024px;
+    border-radius: 16px;
+}
+
+/* SCREEN */
+.screen-area {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.screen-bar {
+    height: 16px;
+    background: linear-gradient(180deg, #1E2939 0%, #4A5565 100%);
+    border-radius: 24px 24px 0 0;
+    margin-bottom: 4px;
+}
+
+/* Seat Grid */
+.seat-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.seat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.row-label {
+    width: 24px;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* Seat */
+.seat {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.seat.available { background: #E5E7EB; }
+.seat.confirmed { background: #E9F7EF;      /* 연한 초록 배경 */
+    color: #1E7F4D;           /* 초록 텍스트 */ }
+.seat.hold { background: #FDC700; }
+.seat.inactive { background: #1E2939; color: #fff; }
+
+/* Legend */
+.seat-legend {
+    display: flex;
+    gap: 24px;
+    margin-top: 24px;
+}
+
+/* Summary */
+.seat-summary {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+}
+.summary-card {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+}
+/* Summary - confirmed */
+.summary-card.confirmed {
+    background: #E9F7EF;      /* 연한 초록 배경 */
+    color: #1E7F4D;           /* 초록 텍스트 */
+    border: 1px solid #6FCF97;
+}

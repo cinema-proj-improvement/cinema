@@ -4,6 +4,10 @@ import com.elice.cinema.domain.common.ScreeningType;
 import com.elice.cinema.domain.movie.dto.response.MovieSelectResponse;
 import com.elice.cinema.domain.movie.service.MovieService;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
+import com.elice.cinema.domain.reservation.dto.response.AdminReservationPageResponse;
+import com.elice.cinema.domain.reservation.dto.response.AdminReservationSummaryResponse;
+import com.elice.cinema.domain.reservation.entity.ReservationStatus;
+import com.elice.cinema.domain.reservation.service.AdminReservationService;
 import com.elice.cinema.domain.screening.dto.request.AdminScreeningSearchRequest;
 import com.elice.cinema.domain.screening.dto.request.ScreeningCreateRequest;
 import com.elice.cinema.domain.screening.dto.request.ScreeningUpdateRequest;
@@ -35,9 +39,12 @@ public class AdminScreeningController {
     private final MovieService movieService;
     private final EnvironmentPolicyService environmentPolicyService;
     private final ScreeningOptionService screeningOptionService;
+    private final AdminReservationService adminReservationService;
 
     @GetMapping("/{screeningId}")
     public String getScreeningDetail(@PathVariable Long screeningId,
+                                     @RequestParam(required = false) ReservationStatus status,
+                                     @PageableDefault(size = 20) Pageable pageable,
                                      Model model) {
         ScreeningDetailResponse screening = screeningService.getScreeningDetail(screeningId);
         model.addAttribute("screening", screening);
@@ -46,6 +53,20 @@ public class AdminScreeningController {
         ScreeningUpdateRequest form = new ScreeningUpdateRequest();
         form.setScreeningStatus(screening.getScreeningStatus()); // 현재값 세팅
         model.addAttribute("form", form);
+
+        Page<AdminReservationPageResponse> reservationsPage =
+                adminReservationService.getAdminReservationListByScreening(
+                        screeningId,
+                        status,
+                        pageable
+                );
+
+        AdminReservationSummaryResponse reservationSummary =
+                adminReservationService.getReservationSummaryByScreening(screeningId);
+
+        model.addAttribute("reservationsPage", reservationsPage);
+        model.addAttribute("reservationSummary", reservationSummary);
+        model.addAttribute("selectedStatus", status);
         return "admin/screening/screening-detail";
     }
 
@@ -71,6 +92,8 @@ public class AdminScreeningController {
         return screeningOptionService.getScreeningTypesByMovie(movieId);
     }
 
+
+    // TODO: 비동기 방식 통일하기
     /**
      * 2) (영화 + 상영 타입) 선택 → 상영 타입을 지원하는 상영관 목록 반환
      */
