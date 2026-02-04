@@ -1,19 +1,58 @@
+server:
+  port: 8080
+
+  servlet:
+    session:
+      timeout: 24h
+
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:mem:cinema;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:
 
-  sql:
-    init:
-      mode: never
-
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+    open-in-view: false
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  thymeleaf:
+    cache: false
+
+  session:
+    store-type: redis
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 3s
+
+file:
+  storage:
+    type: local
+  upload: # 각자 인텔리제이 FILE_UPLOAD_BASE_PATH 환경 변수 등록하기 or OS별로 알아서 하드코딩으로 바꿔도 됨 (git에 올라가도 무방한 값)
+    base-path: ${FILE_UPLOAD_BASE_PATH:/tmp/cinema/uploads} # [Windows 예시: C:/cinema/uploads] [macOS/Linux 예시: /tmp/cinema/uploads]
+    url-prefix: /uploads
 
 logging:
   level:
-    root: WARN
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.hibernate.orm.jdbc.extract: trace
