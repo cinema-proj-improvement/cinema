@@ -1,0 +1,252 @@
+/* mypage-home.css 구조/톤에 맞춘 예매내역 페이지 */
+
+.mypage-container {
+    width: min(1100px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 40px 0 80px;
+}
+
+.mypage-section {
+    margin-top: 28px;
+}
+
+/* 섹션 박스 */
+.mypage-section-box {
+    background: #fff;
+    border: 1px solid #eef1f5;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+}
+
+/* 헤더(제목 + 필터) */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f1f3f7;
+    margin-bottom: 18px;
+}
+
+.section-header h2 {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0;
+}
+
+/* 기간 필터 */
+.period-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-label {
+    font-weight: 800;
+    color: #111827;
+}
+
+.filter-input {
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    font-size: 14px;
+}
+
+.filter-tilde {
+    color: #6b7280;
+    font-weight: 700;
+}
+
+.btn-filter {
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 10px;
+    border: 1px solid #2b2e6f;
+    background: #2b2e6f;
+    color: #fff;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.btn-filter:hover { opacity: 0.92; }
+
+/* 빈 상태 */
+.empty-box {
+    background: #fff;
+    border: 1px dashed #e5e7eb;
+    border-radius: 16px;
+    padding: 22px;
+    text-align: center;
+    color: #6b7280;
+    font-weight: 800;
+}
+
+/* 카드 리스트 */
+.reservation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.reservation-card {
+    background: #fff;
+    border: 1px solid #eef1f5;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.reservation-info h3 {
+    font-size: 22px;
+    font-weight: 900;
+    margin: 0;
+}
+
+/* 영화제목 + 상태 */
+.card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+/* 상태 배지 */
+.status-badge {
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 900;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+/* enum 값에 맞춰 필요시 추가/수정 */
+.status-CONFIRMED, .status-OPEN {
+    background: #ecfdf5;
+    color: #047857;
+    border-color: #a7f3d0;
+}
+
+.status-CANCELED, .status-CANCELLED {
+    background: #fef2f2;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+
+.status-HOLD, .status-PENDING {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+.status-UNKNOWN {
+    background: #f3f4f6;
+    color: #374151;
+    border-color: #e5e7eb;
+}
+
+.reservation-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.reservation-row {
+    display: flex;
+    gap: 14px;
+}
+
+.label {
+    width: 90px;
+    color: #6b7280;
+    font-weight: 800;
+}
+
+.value {
+    color: #111827;
+    font-weight: 700;
+}
+
+/* 액션 */
+.reservation-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.btn-cancel {
+    border: 2px solid #ff3b30;
+    color: #ff3b30;
+    background: #fff;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.btn-cancel:hover { opacity: 0.9; }
+
+/* 더보기 */
+.more-area {
+    display: flex;
+    justify-content: center;
+    margin-top: 18px;
+}
+
+.more-btn {
+    height: 44px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    font-weight: 900;
+    cursor: pointer;
+    text-decoration: none;
+    color: #111827;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.more-btn:hover { background: #f9fafb; }
+
+/* 반응형 */
+@media (max-width: 720px) {
+    .section-header { align-items: flex-start; flex-direction: column; }
+    .reservation-card { flex-direction: column; align-items: stretch; }
+    .reservation-actions { justify-content: flex-start; }
+}
+
+.title-area {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #6b7280;
+    font-weight: 800;
+    text-decoration: none;
+    width: fit-content;
+}
+
+.back-link:hover {
+    color: #111827;
+    text-decoration: underline;
+}

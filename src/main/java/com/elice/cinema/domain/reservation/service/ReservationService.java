@@ -72,10 +72,10 @@ public class ReservationService {
 
         // 선택한 좌석에 redis lock 처리
         List<Long> locked = new ArrayList<>();
-        for(Long seatId : seatIds) {
+        for (Long seatId : seatIds) {
             boolean ok = reservationLockRepository.lock(screeningId, seatId, memberId, holdMinutes + graceMinutes, TimeUnit.MINUTES);
-            if(!ok) {  // 이미 lock이 걸린 좌석을 선택한 경우 이전에 lock 걸었던 좌석들의 lock을 풀어주고 예외를 던짐
-                for(Long lockedSeatId : locked) {
+            if (!ok) {  // 이미 lock이 걸린 좌석을 선택한 경우 이전에 lock 걸었던 좌석들의 lock을 풀어주고 예외를 던짐
+                for (Long lockedSeatId : locked) {
                     reservationLockRepository.unlock(screeningId, lockedSeatId);
                 }
                 throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
@@ -89,8 +89,10 @@ public class ReservationService {
             Reservation savedReservation = reservationRepository.save(reservation);
 
             List<ReservedSeat> reservedSeats = seats.stream()
-                    .map(seat -> ReservedSeat.createHoldReservedSeat(reservation, screening, seat))
+                    .map(seat -> ReservedSeat.createHoldReservedSeat(screening, seat))
+                    .peek(reservation::addReservedSeat)  // 양방향 세팅
                     .toList();
+
             reservedSeatRepository.saveAll(reservedSeats);
 
             return savedReservation.getId();
@@ -104,7 +106,7 @@ public class ReservationService {
 
     public int calculateTotalPrice(List<Seat> seats) {  // TODO: 이후 가격 계산에 대한 로직이 복잡해지면 클래스로 분리합니다. (현재도 위치 적절하지 않음)
         int totalPrice = 0;
-        for(int i = 0; i < seats.size(); i++) {
+        for (int i = 0; i < seats.size(); i++) {
             totalPrice += environmentPolicyService.getDefaultPrice();
         }
         return totalPrice;
@@ -118,6 +120,7 @@ public class ReservationService {
         }
     }
 
+    // TODO: 메서드 이름 수정
     public List<ReservationMovieSelectResponse> getMoviesWithScreeningsWithin() {
         LocalDate today = LocalDate.now();
 
@@ -158,7 +161,7 @@ public class ReservationService {
 
         String movieThumbnail = /*movieImageRepository.findThumbnailUrlByMovieId(movie.getId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_THUMBNAIL_NOT_FOUND));*/ null;
-                // TODO: 데이터로 영화 썸네일 넣고 다시 시도하기, 예매 생성 생기면 다시 시도
+        // TODO: 데이터로 영화 썸네일 넣고 다시 시도하기, 예매 생성 생기면 다시 시도
         List<String> seatCodes = reservedSeatRepository.findSeatCodesByReservationId(reservationId);
 
         return reservationMapper.toReservationCheckoutResponse(reservation, movieThumbnail, seatCodes);
@@ -180,7 +183,7 @@ public class ReservationService {
     private List<Seat> getSeats(List<Long> seatIds) {
         List<Seat> seats = seatRepository.findAllById(seatIds);
 
-        if(seats.size() != seatIds.size()) {
+        if (seats.size() != seatIds.size()) {
             throw new BusinessException(ErrorCode.SEAT_NOT_FOUND);
         }
 
@@ -195,11 +198,12 @@ public class ReservationService {
     }
 
     private void validateSeatsAreValid(List<Seat> seats) {
-        if(seats.stream().anyMatch(seat -> !seat.isActive())) {
+        if (seats.stream().anyMatch(seat -> !seat.isActive())) {
             throw new BusinessException(ErrorCode.SEAT_INACTIVE);
         }
     }
 
+    //TODO: 수정 고려 매번 날림
     private Integer calculateRemainingSeats(Screening screening) {
         int totalSeats = screening.getScreen().getTotalSeats();
         int reservedCount = reservedSeatRepository.countAllByScreening_Id(screening.getId());
