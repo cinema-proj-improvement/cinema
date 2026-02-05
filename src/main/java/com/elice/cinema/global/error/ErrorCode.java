@@ -40,6 +40,8 @@ public enum ErrorCode {
     RESERVATION_NOT_CANCELABLE(HttpStatus.BAD_REQUEST, "RS02", "취소할 수 없는 예매 상태입니다."),
 
     RESERVATION_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "RS03", "이미 취소된 예매입니다."),
+    MOVIE_SORT_NOT_SUPPORTED(HttpStatus.BAD_REQUEST,"MV06", "해당 정렬 기능은 현재 지원되지 않습니다."),
+
     // 401 Unauthorized
 
 

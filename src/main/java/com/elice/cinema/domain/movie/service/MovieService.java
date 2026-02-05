@@ -1,7 +1,7 @@
 package com.elice.cinema.domain.movie.service;
 
-import com.elice.cinema.domain.movie.dto.response.AdminMovieJoinRowResponse;
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
+import com.elice.cinema.domain.movie.dto.request.AdminMovieSortType;
 import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
 import com.elice.cinema.domain.movie.dto.request.MovieUpdateRequest;
 import com.elice.cinema.domain.movie.dto.response.*;
@@ -25,7 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +59,15 @@ public class MovieService {
     }
 
     // 관리자 영화 목록 조회 (검색조건 + 페이지네이션 + 정렬) //todo : 예매 및 리뷰 기능 구현 후 평점, 예매율 추가하기
-    public Page<AdminMovieListResponse> getAdminMovieListPage(AdminMovieSearchRequest request, Pageable pageable) {
+    public Page<AdminMovieListResponse> getAdminMovieListPage(
+            AdminMovieSearchRequest request,
+            Pageable pageable
+    ) { // TODO: 예매 및 리뷰 기능 구현 후 평점, 예매율 추가하기
+        if (request.getSortType() == AdminMovieSortType.AVG_SCORE_DESC ||
+                request.getSortType() == AdminMovieSortType.RESERVATION_RATE_DESC) {
+
+            throw new BusinessException(ErrorCode.MOVIE_SORT_NOT_SUPPORTED);
+        }
         List<Long> movieIds =
                 movieRepository.findAdminMovieIds(request, pageable);
 
@@ -69,7 +79,10 @@ public class MovieService {
                 movieRepository.countAdminMovies(request);
 
         List<AdminMovieJoinRowResponse> rows =
-                adminMovieJoinQueryRepository.findAdminMovieJoinRows(movieIds);
+                adminMovieJoinQueryRepository.findAdminMovieJoinRows(
+                        movieIds,
+                        request.getSortType()
+                );
 
         List<AdminMovieListResponse> contents =
                 AdminMovieListResponse.fromRows(rows);

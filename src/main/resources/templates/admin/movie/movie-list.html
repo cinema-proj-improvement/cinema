@@ -45,8 +45,9 @@
             <select name="sortType">
                 <option
                         th:each="s : ${T(com.elice.cinema.domain.movie.dto.request.AdminMovieSortType).values()}"
+                        th:value="${s.name()}"
                         th:text="${s.displayName}"
-                        th:value="${s}">
+                        th:selected="${s.name() == selectedSortType}">
                 </option>
             </select>
 
@@ -103,9 +104,13 @@
         <div class="filter-group">
             <label>기간</label>
             <div>
-                <input th:field="*{releaseStartDate}" type="date">
+                <input type="date"
+                       name="releaseStartDate"
+                       th:value="${search.releaseStartDate}">
                 <span>~</span>
-                <input th:field="*{releaseEndDate}" type="date">
+                <input type="date"
+                       name="releaseEndDate"
+                       th:value="${search.releaseEndDate}">
             </div>
         </div>
 
@@ -170,9 +175,18 @@
             이전
         </a>
 
-        <a th:classappend="${moviesPage.number == i} ? 'active' : ''"
-           th:each="i : ${#numbers.sequence(0, moviesPage.totalPages - 1)}"
-           th:href="@{/admin/movies(page=${i})}"
+        <a th:each="i : ${#numbers.sequence(0, moviesPage.totalPages - 1)}"
+           th:classappend="${moviesPage.number == i} ? 'active' : ''"
+           th:href="@{/admin/movies(
+        page=${i},
+        keyword=${search.keyword},
+        sortType=${search.sortType},
+        releaseStartDate=${search.releaseStartDate},
+        releaseEndDate=${search.releaseEndDate},
+        statuses=${search.statuses},
+        genres=${search.genres},
+        ageRatings=${search.ageRatings}
+   )}"
            th:text="${i + 1}">
         </a>
 

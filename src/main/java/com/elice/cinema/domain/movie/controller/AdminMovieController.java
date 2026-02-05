@@ -1,15 +1,14 @@
 package com.elice.cinema.domain.movie.controller;
 
 import com.elice.cinema.domain.movie.dto.request.AdminMovieSearchRequest;
+import com.elice.cinema.domain.movie.dto.request.AdminMovieSortType;
 import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
 import com.elice.cinema.domain.movie.dto.request.MovieUpdateRequest;
-import com.elice.cinema.domain.movie.dto.response.AdminMovieListResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieDetailResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
 import com.elice.cinema.domain.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -52,10 +51,15 @@ public class AdminMovieController {
             Model model
 
     ) {
-        Page<AdminMovieListResponse> moviesPage = movieService.getAdminMovieListPage(request, pageable);
+        if (request.getSortType() == null) {
+            request.setSortType(AdminMovieSortType.RELEASE_DATE_DESC);
+        }
 
-        model.addAttribute("moviesPage", moviesPage);
+        model.addAttribute("moviesPage",
+                movieService.getAdminMovieListPage(request, pageable));
+
         model.addAttribute("search", request);
+        model.addAttribute("selectedSortType", request.getSortType().name());
 
         return "admin/movie/movie-list";
     }
