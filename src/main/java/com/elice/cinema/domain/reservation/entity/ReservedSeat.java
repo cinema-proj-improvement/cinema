@@ -54,13 +54,11 @@ public class ReservedSeat extends BaseEntity {
     @Column(name = "seat_code", nullable = false)
     private String seatCode;
 
-    public static ReservedSeat createHoldReservedSeat(Reservation reservation,
-                                                      Screening screening,
+    public static ReservedSeat createHoldReservedSeat(Screening screening,
                                                       Seat seat) {
         ReservedSeat reservedSeat = new ReservedSeat();
         reservedSeat.status = ReservationStatus.HOLD;
 
-        reservedSeat.reservation = reservation;
         reservedSeat.screening = screening;
         reservedSeat.seat = seat;
 
@@ -73,5 +71,17 @@ public class ReservedSeat extends BaseEntity {
         if(status == ReservationStatus.HOLD) {
             status = ReservationStatus.EXPIRED;
         }
+    }
+
+    // 예매 취소
+    public void cancel() {
+        if(status == ReservationStatus.HOLD || status == ReservationStatus.CONFIRMED) {
+            status = ReservationStatus.CANCELED;
+        }
+    }
+
+    // 양방향 편의 메서드: Reservation 설정
+    public void setReservation(Reservation reservation) {
+        this.reservation = reservation;
     }
 }

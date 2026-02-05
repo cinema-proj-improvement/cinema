@@ -1,7 +1,9 @@
 package com.elice.cinema.domain.reservation.repository;
 
 import com.elice.cinema.domain.reservation.entity.Reservation;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -22,6 +24,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     Optional<Reservation> findByIdWithScreeningAndMovie(@Param("reservationId") Long reservationId);
 
     Optional<Reservation> findByReservationCode(String reservationCode);
+
+    @EntityGraph(attributePaths = "reservedSeats")
+    Page<Reservation> findByMemberId(
+            Long memberId,
+            Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = "reservedSeats")
+    List<Reservation> findTop3ByMemberIdOrderByReservedAtDesc(Long memberId);
 
     // 넘어온 시간을 기준으로 만료된 reservation들에서 예매 id와 해당되는 상영 id를 가져오는 query
     @Query("""
