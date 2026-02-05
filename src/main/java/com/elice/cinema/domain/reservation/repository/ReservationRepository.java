@@ -3,6 +3,7 @@ package com.elice.cinema.domain.reservation.repository;
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -33,6 +34,21 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @EntityGraph(attributePaths = "reservedSeats")
     List<Reservation> findTop3ByMemberIdOrderByReservedAtDesc(Long memberId);
+
+    @EntityGraph(attributePaths = "reservedSeats")
+    @Query("""
+        select r
+        from Reservation r
+        where r.member.id = :memberId
+          and r.reservedAt between :from and :to
+        order by r.reservedAt desc
+    """)
+    Slice<Reservation> findMyReservationsByPeriod(
+            @Param("memberId") Long memberId,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to,
+            Pageable pageable
+    );
 
     // 넘어온 시간을 기준으로 만료된 reservation들에서 예매 id와 해당되는 상영 id를 가져오는 query
     @Query("""

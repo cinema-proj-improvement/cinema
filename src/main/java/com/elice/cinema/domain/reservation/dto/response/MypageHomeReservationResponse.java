@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class MypageReservationResponse {
+public class MypageHomeReservationResponse {
     private String reservationCode;
     private String movieTitle;
     private String screenName;

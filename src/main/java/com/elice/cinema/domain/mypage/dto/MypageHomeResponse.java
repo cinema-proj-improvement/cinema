@@ -1,6 +1,6 @@
 package com.elice.cinema.domain.mypage.dto;
 
-import com.elice.cinema.domain.reservation.dto.response.MypageReservationResponse;
+import com.elice.cinema.domain.reservation.dto.response.MypageHomeReservationResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,5 +11,5 @@ import java.util.List;
 public class MypageHomeResponse {
     private String nickname;
 
-    private List<MypageReservationResponse> reservations;
+    private List<MypageHomeReservationResponse> reservations;
 }
