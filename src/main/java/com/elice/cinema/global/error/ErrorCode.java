@@ -14,6 +14,8 @@ public enum ErrorCode {
     SCREEN_SEAT_COUNT_MISMATCH(HttpStatus.BAD_REQUEST, "SC02", "총 좌석 수와 좌석 정보 수가 일치하지 않습니다."),
     SCREEN_DUPLICATE_SEAT_POSITION(HttpStatus.BAD_REQUEST, "SC03", "중복된 좌석 위치(row/col)가 존재합니다."),
     SCREEN_DUPLICATE_SEAT_CODE(HttpStatus.BAD_REQUEST, "SC04", "중복된 좌석 코드가 존재합니다."),
+    SCREEN_UPDATE_NOT_ALLOWED_WHEN_SCREENING_ACTIVE(HttpStatus.BAD_REQUEST, "SC07", "활성 상영이 있는 상영관은 수정할 수 없습니다."),
+    SEAT_UPDATE_NOT_ALLOWED_WHEN_SCREENING_NOT_FINISHED(HttpStatus.BAD_REQUEST, "SC08", "종료되지 않은 상영이 있는 상영관의 좌석은 수정할 수 없습니다."),
     SCREENING_START_AT_REQUIRED(HttpStatus.BAD_REQUEST, "SG01", "상영 시작 시간은 필수입니다."),
     SCREENING_BEFORE_RELEASE_DATE(HttpStatus.BAD_REQUEST, "SG02", "상영 시작일은 영화 개봉일 이후여야 합니다."),
     SCREENING_AFTER_END_DATE(HttpStatus.BAD_REQUEST, "SG03", "상영 시작일은 영화 상영 종료일 이전이어야 합니다."),

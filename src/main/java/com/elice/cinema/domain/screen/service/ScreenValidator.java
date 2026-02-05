@@ -5,6 +5,8 @@ import com.elice.cinema.domain.screen.dto.request.ScreenUpdateRequest;
 import com.elice.cinema.domain.screen.dto.request.SeatCreateRequest;
 import com.elice.cinema.domain.screen.entity.Screen;
 import com.elice.cinema.domain.screen.repository.ScreenRepository;
+import com.elice.cinema.domain.screening.entity.ScreeningStatus;
+import com.elice.cinema.domain.screening.repository.ScreeningRepository;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class ScreenValidator {
     private final ScreenRepository screenRepository;
+    private final ScreeningRepository screeningRepository;
+
     //TODO: 2팀 Validator 형식 확인하고 수정 및 공부하기
     /* 상영관 생성 공통 검증 */
     public void validateCreate(ScreenCreateRequest request) {
@@ -30,8 +34,17 @@ public class ScreenValidator {
 
     /* 상영관 수정 공통 검증 */
     public void validateUpdate(Screen screen, ScreenUpdateRequest request) {
+        validateNoActiveScreenings(screen.getId());
         validateScreenNameUniqueOnUpdate(screen.getName(), request.getName());
-        // TODO: 상영 객체 만든 후 "해당 상영관과 연관된 상영이 존재하지 않을 때에만 수정 가능" 조건 추가 하기
+    }
+
+    /* 운영중인 상영(SCHEDULED 포함) 여부 검증*/
+    private void validateNoActiveScreenings(Long screenId) {
+        if (screeningRepository.existsByScreenIdAndScreeningStatusNot(screenId, ScreeningStatus.FINISHED)) {
+            throw new BusinessException(
+                    ErrorCode.SCREEN_UPDATE_NOT_ALLOWED_WHEN_SCREENING_ACTIVE
+            );
+        }
     }
 
     /* 상영관 이름 중복 검증 */
