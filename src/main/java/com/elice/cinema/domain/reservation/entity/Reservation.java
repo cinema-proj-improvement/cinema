@@ -126,12 +126,17 @@ public class Reservation extends BaseEntity {
         return isCancelableStatus() && isBeforeScreening();
     }
 
+    public void confirm() {
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
     // 예매 취소
     public void cancel() {
         if (!isCancelable()) {
             throw new BusinessException(ErrorCode.RESERVATION_NOT_CANCELABLE);
         }
         this.status = ReservationStatus.CANCELED;
+        this.canceledAt = LocalDateTime.now();
         reservedSeats.forEach(ReservedSeat::cancel);
     }
 

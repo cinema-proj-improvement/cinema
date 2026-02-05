@@ -4,6 +4,9 @@ import com.elice.cinema.domain.member.entity.Member;
 import com.elice.cinema.domain.member.repository.MemberRepository;
 import com.elice.cinema.domain.mypage.dto.MypageHomeResponse;
 import com.elice.cinema.domain.mypage.mapper.MypageMapper;
+import com.elice.cinema.domain.payment.entity.Payment;
+import com.elice.cinema.domain.payment.repository.PaymentRepository;
+import com.elice.cinema.domain.payment.service.PaymentCancelService;
 import com.elice.cinema.domain.reservation.dto.response.MypageDetailReservationResponse;
 import com.elice.cinema.domain.reservation.dto.response.MypageHomeReservationResponse;
 import com.elice.cinema.domain.reservation.entity.Reservation;
@@ -24,13 +27,15 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class MypageService {
+    private final PaymentCancelService paymentCancelService;
+    private final PaymentRepository paymentRepository;
     private final MemberRepository memberRepository;
     private final ReservationRepository reservationRepository;
     private final MypageMapper mypageMapper;
     private final ReservationMapper reservationMapper;
 
+    @Transactional(readOnly = true)
     public MypageHomeResponse getMypageHome(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
@@ -45,6 +50,7 @@ public class MypageService {
         return mypageMapper.toMypageHomeResponse(member, reservationResponses);
     }
 
+    @Transactional(readOnly = true)
     public Slice<MypageDetailReservationResponse> getMyReservations(Long memberId, LocalDate from, LocalDate to, Pageable pageable) {
         LocalDateTime start = (from != null)
                 ? from.atStartOfDay()
@@ -62,6 +68,13 @@ public class MypageService {
         return slice.map(r ->
                 reservationMapper.toMypageDetailReservationResponse(r, extractSeatCodes(r))
         );
+    }
+
+    public void cancelReservation(Long reservationId) {
+        Payment payment = paymentRepository.findByReservationId(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        paymentCancelService.cancel(payment.getId());
     }
 
     private List<String> extractSeatCodes(Reservation reservation) {

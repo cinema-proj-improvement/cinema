@@ -1,7 +1,6 @@
 package com.elice.cinema.domain.refund.service;
 
 import com.elice.cinema.domain.payment.entity.Payment;
-import com.elice.cinema.domain.policy.entity.RefundPolicy;
 import com.elice.cinema.domain.policy.repository.EnvironmentPolicyRepository;
 import com.elice.cinema.domain.policy.repository.RefundPolicyRepository;
 import com.elice.cinema.domain.refund.entity.Refund;
@@ -38,7 +37,7 @@ public class RefundService {
      * - beforeStartMinutes >= 남은 시간
      * - 조건 만족 정책 중 가장 작은 beforeStartMinutes
      */
-    private RefundPolicy selectRefundPolicy(int minutesBeforeStart) {
+    /*private RefundPolicy selectRefundPolicy(int minutesBeforeStart) {
         RefundPolicy policy = refundPolicyRepository
                 .findFirstByBeforeStartMinutesLessThanEqualOrderByBeforeStartMinutesDesc(
                         minutesBeforeStart
@@ -48,7 +47,7 @@ public class RefundService {
                 );
 
         return policy;
-    }
+    }*/
 
     /**
      * 환불 금액 계산

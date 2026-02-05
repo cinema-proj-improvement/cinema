@@ -53,6 +53,6 @@ public class PaymentCancelService {
         );
 
         // 3️⃣ DB 기록 (트랜잭션 ⭕)
-        paymentTxService.recordCancel(paymentId, result);
+        paymentTxService.recordCancel(paymentId, payment.getReservation().getId(),result);
     }
 }

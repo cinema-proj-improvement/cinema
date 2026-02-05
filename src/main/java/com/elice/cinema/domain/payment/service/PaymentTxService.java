@@ -45,6 +45,8 @@ public class PaymentTxService {
             throw new BusinessException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
         }
 
+        reservation.confirm();
+
         Payment payment = paymentMapper.toEntity(res, reservation, member);
         paymentRepository.save(payment);
     }
@@ -82,10 +84,16 @@ public class PaymentTxService {
     @Transactional
     public void recordCancel(
             Long paymentId,
+            Long reservationId,
             RefundCalculationResult result
     ) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        reservation.cancel();
 
         payment.markCanceled(result.getReason());
 

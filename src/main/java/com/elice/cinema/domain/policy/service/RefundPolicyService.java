@@ -74,12 +74,9 @@ public class RefundPolicyService {
             return RefundCalculationResult.notRefundable("환불 데드라인 초과");
         }
 
-        RefundPolicy policy =
-                refundPolicyRepository
-                        .findFirstByBeforeStartMinutesLessThanEqualOrderByBeforeStartMinutesDesc(
-                                minutesBeforeStart
-                        )
-                        .orElseThrow();
+        RefundPolicy policy = refundPolicyRepository.
+                findFirstByBeforeStartMinutesLessThanEqualOrderByBeforeStartMinutesDesc(minutesBeforeStart)
+                .orElseThrow(() -> new BusinessException(ErrorCode.REFUND_POLICY_NOT_FOUND));
 
         long cancelAmount =
                 payment.getAmount() * policy.getRefundRate() / 100;

@@ -123,7 +123,15 @@
 
                     <!-- (선택) 취소 버튼: 상태에 따라 숨기고 싶으면 if 조건 걸면 됨 -->
                     <div class="reservation-actions">
-                        <button class="btn-cancel" type="button">예매 취소</button>
+                        <form th:action="@{/mypage/reservations/{id}/cancel(id=${reservation.id})}"
+                              method="post"
+                              th:if="${reservation.status != null and reservation.status.name() == 'CONFIRMED'}"
+                              onsubmit="return confirm('정말 예매를 취소하시겠습니까?');">
+
+                            <button class="btn-cancel" type="submit">
+                                예매 취소
+                            </button>
+                        </form>
                     </div>
 
                 </div>

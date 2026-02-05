@@ -10,6 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 public class MypageDetailReservationResponse {
+    private Long id;
     private String reservationCode;
     private ReservationStatus status;
     private String movieTitle;

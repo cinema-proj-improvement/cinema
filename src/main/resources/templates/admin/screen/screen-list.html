@@ -1,110 +1,144 @@
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/admin-layout :: layout(
-        '환불 이력 관리',
-        'refunds',
-        ~{::pageCss},
-        ~{::content}
+        '상영관 관리', 'screens', ~{::pageCss}, ~{::content}
       )}">
 
-<!-- ================= pageCss ================= -->
+<!-- 페이지 전용 CSS -->
 <th:block th:fragment="pageCss">
-    <!-- 필요 시 환불 전용 CSS -->
-    <!-- <link rel="stylesheet" th:href="@{/css/admin/refund.css}"> -->
+    <link rel="stylesheet" th:href="@{/css/admin/screen/screen-list.css}">
 </th:block>
 
-<!-- ================= content ================= -->
+<!-- 페이지 콘텐츠 -->
 <th:block th:fragment="content">
 
-    <section class="admin-content">
+    <!-- 헤더 -->
+    <div class="scr-head">
+        <a class="scr-back" th:href="@{/admin}" aria-label="뒤로">‹</a>
 
-        <h1 class="admin-title">환불 이력</h1>
+        <div class="scr-title-wrap">
+            <h1 class="scr-title">상영관 관리</h1>
+            <p class="scr-sub">상영관 운영 상태와 상영 타입을 관리합니다.</p>
+        </div>
 
-        <!-- 검색 영역 -->
-        <form class="admin-filter" method="get" th:action="@{/admin/refunds/history}">
-            <div class="filter-row">
-                <label for="from">시작일</label>
-                <input type="date" id="from" name="from" th:value="${from}"/>
+        <a class="scr-btn scr-btn--primary" th:href="@{/admin/screens/new}">
+            + 상영관 등록
+        </a>
+    </div>
 
-                <label for="to">종료일</label>
-                <input type="date" id="to" name="to" th:value="${to}"/>
+    <!-- 필터 -->
+    <section class="scr-card scr-filter">
+        <div class="scr-seg">
+            <a class="scr-seg__btn"
+               th:href="@{/admin/screens}"
+               th:classappend="${operating == null} ? ' is-active' : ''">
+                전체
+            </a>
 
-                <input type="text"
-                       name="keyword"
-                       placeholder="회원 이메일 / 예매코드"
-                       th:value="${keyword}"/>
+            <a class="scr-seg__btn"
+               th:href="@{/admin/screens(operating=true)}"
+               th:classappend="${operating == true} ? ' is-active' : ''">
+                운영중
+            </a>
 
-                <button type="submit" class="btn btn-primary">조회</button>
-            </div>
-        </form>
+            <a class="scr-seg__btn"
+               th:href="@{/admin/screens(operating=false)}"
+               th:classappend="${operating == false} ? ' is-active' : ''">
+                미운영
+            </a>
+        </div>
+    </section>
 
-        <!-- 테이블 -->
-        <div class="table-wrap">
-            <table class="admin-table">
+    <!-- 테이블 -->
+    <section class="scr-card">
+        <div class="scr-table-wrap">
+            <table class="scr-table">
                 <thead>
                 <tr>
-                    <th>환불 ID</th>
-                    <th>결제 ID</th>
-                    <th>예매코드</th>
-                    <th>회원 이메일</th>
-                    <th>정책명</th>
-                    <th>환불률</th>
-                    <th>환불 금액</th>
-                    <th>환불 일시</th>
+                    <th>상영관명</th>
+                    <th>좌석 수</th>
+                    <th>운영 상태</th>
+                    <th>지원 상영 타입</th>
+                    <th class="is-right">관리</th>
                 </tr>
                 </thead>
 
                 <tbody>
-                <tr th:if="${page == null or #lists.isEmpty(page.content)}">
-                    <td colspan="8" class="empty-row">조회 결과가 없습니다.</td>
+                <tr th:if="${screens.totalElements == 0}">
+                    <td class="scr-empty" colspan="5">등록된 상영관이 없습니다.</td>
                 </tr>
 
-                <tr th:each="row : ${page.content}">
-                    <td th:text="${row.refund.refundId}">1</td>
-                    <td th:text="${row.payment.paymentId}">10</td>
-                    <td th:text="${row.payment.reservationCode}">R0001</td>
-                    <td th:text="${row.member.email}">user@test.com</td>
-                    <td th:text="${row.refund.policyName}">정책명</td>
-                    <td th:text="${row.refund.refundRate + '%'}">100%</td>
-                    <td th:text="${row.refund.refundAmount + '원'}">8000원</td>
-                    <td th:text="${#temporals.format(row.refund.refundedAt, 'yyyy-MM-dd HH:mm')}">
-                        2026-02-05 12:00
+                <tr th:each="s : ${screens.content}"
+                    class="scr-row"
+                    th:attr="data-href=@{/admin/screens/{id}(id=${s.id}, page=${screens.number}, operating=${operating})}">
+                    <td class="scr-name" th:text="${s.name}">1관</td>
+
+                    <td>
+                        <span class="scr-muted" th:text="${s.totalSeats}">120</span>석
+                    </td>
+
+                    <td>
+                        <span class="scr-badge scr-badge--on" th:if="${s.operating}">운영중</span>
+                        <span class="scr-badge scr-badge--off" th:if="${!s.operating}">미운영</span>
+                    </td>
+
+                    <td>
+                        <span class="scr-chip" th:text="${s.screeningType.displayName}">IMAX</span>
+                    </td>
+
+                    <!-- ✅ 가운데 정렬용 클래스로 변경 -->
+                    <td class="scr-manage">
+                        <a class="scr-arrow"
+                           th:href="@{/admin/screens/{id}(id=${s.id}, page=${screens.number}, operating=${operating})}"
+                           title="상세/관리"
+                           aria-label="상영관 상세로 이동">
+                            ›
+                        </a>
                     </td>
                 </tr>
+
                 </tbody>
             </table>
         </div>
 
-        <!-- 페이징 -->
-        <div class="pagination" th:if="${page != null and page.totalPages > 1}">
-            <a th:if="${page.hasPrevious()}"
-               th:href="@{/admin/refunds/history(
-                    page=${page.number - 1},
-                    size=${page.size},
-                    from=${from},
-                    to=${to},
-                    keyword=${keyword}
-               )}">
+        <!-- 페이지네이션 -->
+        <div class="scr-pager" th:if="${screens.totalPages > 1}">
+            <a class="scr-pager__btn"
+               th:classappend="${!screens.hasPrevious()} ? ' is-disabled' : ''"
+               th:href="@{/admin/screens(page=${screens.number - 1}, operating=${operating})}">
                 이전
             </a>
 
-            <span th:text="${page.number + 1}"></span>
-            /
-            <span th:text="${page.totalPages}"></span>
+            <span class="scr-pager__current" th:text="${screens.number + 1}">1</span>
 
-            <a th:if="${page.hasNext()}"
-               th:href="@{/admin/refunds/history(
-                    page=${page.number + 1},
-                    size=${page.size},
-                    from=${from},
-                    to=${to},
-                    keyword=${keyword}
-               )}">
+            <a class="scr-pager__btn"
+               th:classappend="${!screens.hasNext()} ? ' is-disabled' : ''"
+               th:href="@{/admin/screens(page=${screens.number + 1}, operating=${operating})}">
                 다음
             </a>
         </div>
-
     </section>
 
+    <script>
+        document.addEventListener('click', (e) => {
+            const arrow = e.target.closest('a.scr-arrow');
+            if (arrow) return; // 화살표 클릭은 원래 링크로 이동
+
+            const row = e.target.closest('tr.scr-row');
+            if (!row) return;
+
+            const href = row.dataset.href;
+            if (href) window.location.href = href;
+        });
+
+        // 키보드 접근성(엔터로 이동)도 같이
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter') return;
+            const row = document.activeElement?.closest?.('tr.scr-row');
+            if (!row) return;
+            const href = row.dataset.href;
+            if (href) window.location.href = href;
+        });
+    </script>
 </th:block>
 </html>

@@ -11,9 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
@@ -43,5 +41,11 @@ public class MypageController {
         model.addAttribute("from", from);
         model.addAttribute("to", to);
         return "user/mypage/mypage-reservations";
+    }
+
+    @PostMapping("/reservations/{reservationId}/cancel")
+    public String cancelReservation(@PathVariable Long reservationId) {
+        mypageService.cancelReservation(reservationId);
+        return "redirect:/mypage/reservations";
     }
 }

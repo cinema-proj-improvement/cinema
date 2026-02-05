@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface PaymentRepository extends JpaRepository<Payment, Long>, PaymentQueryRepository {
     boolean existsByPaymentKey(String paymentKey);
 
+    Optional<Payment> findByReservationId(Long reservationId);
     Optional<Payment> findByPaymentKey(String paymentKey);
 
     @Query("""
