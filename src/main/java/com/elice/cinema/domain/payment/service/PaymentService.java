@@ -98,7 +98,7 @@ public class PaymentService {
         return response.getBody();
     }
 
-    public TossCancelResponse cancel(String paymentKey, String reason) {
+    public TossCancelResponse cancelFully(String paymentKey, String reason) {
         URI uri = UriComponentsBuilder
                 .fromUriString("https://api.tosspayments.com")
                 .path("/v1/payments/{paymentKey}/cancel")
@@ -108,6 +108,32 @@ public class PaymentService {
         HttpHeaders headers = tossHeaders();
 
         Map<String, Object> body = Map.of(
+                "cancelReason", (reason == null || reason.isBlank()) ? "결제 검증 실패" : reason
+        );
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<TossCancelResponse> response =
+                restTemplate.postForEntity(uri, entity, TossCancelResponse.class);
+
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            throw new BusinessException(ErrorCode.PAYMENT_CANCEL_FAILED);
+        }
+
+        return response.getBody();
+    }
+
+    public TossCancelResponse cancelPartially(String paymentKey, long cancelAmount,  String reason) {
+        URI uri = UriComponentsBuilder
+                .fromUriString("https://api.tosspayments.com")
+                .path("/v1/payments/{paymentKey}/cancel")
+                .buildAndExpand(paymentKey)
+                .toUri();
+
+        HttpHeaders headers = tossHeaders();
+
+        Map<String, Object> body = Map.of(
+                "cancelAmount", cancelAmount,
                 "cancelReason", (reason == null || reason.isBlank()) ? "결제 검증 실패" : reason
         );
 
@@ -152,7 +178,7 @@ public class PaymentService {
     // 결제 취소 실패가 취소 이유를 덮는 것을 방지
     private boolean safeCancel(String paymentKey, String reason) {
         try {
-            TossCancelResponse res = cancel(paymentKey, reason);
+            TossCancelResponse res = cancelFully(paymentKey, reason);
             return "CANCELED".equals(res.getStatus()) || "PARTIAL_CANCELED".equals(res.getStatus());
         } catch (RuntimeException ex) {
             log.error("cancel failed paymentKey={}, reason={}", paymentKey, reason, ex);

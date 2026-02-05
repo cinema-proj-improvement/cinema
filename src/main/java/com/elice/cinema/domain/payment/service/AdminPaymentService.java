@@ -5,6 +5,7 @@ import com.elice.cinema.domain.payment.dto.response.AdminPaymentDetailResponse;
 import com.elice.cinema.domain.payment.dto.response.AdminPaymentListResponse;
 import com.elice.cinema.domain.payment.entity.Payment;
 import com.elice.cinema.domain.payment.repository.PaymentRepository;
+import com.elice.cinema.domain.refund.service.RefundService;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminPaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final RefundService refundService;
+    private final PaymentCancelService paymentCancelService;
 
     // 결제 목록 조회
     public Page<AdminPaymentListResponse> getAdminPaymentList(
@@ -38,21 +41,12 @@ public class AdminPaymentService {
                 );
     }
 
-    @Transactional
     public void cancelByAdmin(Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        System.out.println("🔥 cancel paymentId=" + payment.getId()
-                + ", status=" + payment.getStatus());
-
-        // 이미 취소된 경우: 그냥 종료 (idempotent)
-        if (payment.isCanceled()) {
-            return;
-        }
-
-        // ❗ 지금은 PG / 환불 안 함
-        payment.markCanceled();
+        paymentCancelService.cancel(payment);
     }
+
 }
 

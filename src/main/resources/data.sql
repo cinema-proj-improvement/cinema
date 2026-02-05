@@ -534,3 +534,9 @@ INSERT INTO payments (
           '2026-02-01 11:30:00',
           'CARD'
       );
+
+INSERT INTO refund_policies (name, before_start_minutes, refund_rate, created_at, updated_at)
+VALUES
+    ('상영 1일 전', 1440, 100, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('상영 1시간 전', 60, 50, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('상영 10분 전', 20, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

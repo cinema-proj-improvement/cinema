@@ -7,6 +7,7 @@ import com.elice.cinema.domain.payment.entity.Payment;
 import com.elice.cinema.domain.payment.entity.PaymentStatus;
 import com.elice.cinema.domain.payment.mapper.PaymentMapper;
 import com.elice.cinema.domain.payment.repository.PaymentRepository;
+import com.elice.cinema.domain.refund.repository.RefundRepository;
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import com.elice.cinema.domain.reservation.repository.ReservationRepository;
 import com.elice.cinema.global.error.ErrorCode;
@@ -23,6 +24,7 @@ public class PaymentTxService {
     private final ReservationRepository reservationRepository;
     private final MemberRepository memberRepository;
     private final PaymentMapper paymentMapper;
+    private final RefundRepository refundRepository;
 
     @Transactional
     public void persistPaymentSuccess(TossConfirmResponse res, Long reservationId, Long memberId) {

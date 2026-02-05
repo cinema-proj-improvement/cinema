@@ -87,7 +87,7 @@ public class Payment {
                 method);
     }
 
-    public void markCanceled() {
+    public void cancelPayment() {
         if (!this.status.canChangeTo(PaymentStatus.CANCELED)) {
             throw new BusinessException(ErrorCode.PAYMENT_CANCEL_NOT_ALLOWED);
         }

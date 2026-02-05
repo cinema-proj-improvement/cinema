@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -38,5 +39,14 @@ public class AdminPaymentController {
 
         model.addAttribute("payment", adminPaymentService.getAdminPaymentDetail(paymentId));
         return "admin/payment/payment-detail";
+    }
+
+    // 관리자 결제 취소
+    @PostMapping("/{paymentId}/cancel")
+    public String cancelPaymentByAdmin(
+            @PathVariable Long paymentId
+    ) {
+        adminPaymentService.cancelByAdmin(paymentId);
+        return "redirect:/admin/payments/" + paymentId;
     }
 }
