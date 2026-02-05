@@ -95,6 +95,10 @@ public class Payment {
     }
 
     public void markCanceled(String reason) {
+        if (!this.status.canChangeTo(PaymentStatus.CANCELED)) {
+            throw new BusinessException(ErrorCode.PAYMENT_CANCEL_NOT_ALLOWED);
+        }
+
         this.status = PaymentStatus.CANCELED;
         this.failureMessage = reason;
     }

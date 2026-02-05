@@ -7,7 +7,8 @@ import com.elice.cinema.domain.payment.entity.Payment;
 import com.elice.cinema.domain.payment.entity.PaymentStatus;
 import com.elice.cinema.domain.payment.mapper.PaymentMapper;
 import com.elice.cinema.domain.payment.repository.PaymentRepository;
-import com.elice.cinema.domain.refund.repository.RefundRepository;
+import com.elice.cinema.domain.policy.dto.response.RefundCalculationResult;
+import com.elice.cinema.domain.refund.service.RefundService;
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import com.elice.cinema.domain.reservation.repository.ReservationRepository;
 import com.elice.cinema.global.error.ErrorCode;
@@ -24,7 +25,7 @@ public class PaymentTxService {
     private final ReservationRepository reservationRepository;
     private final MemberRepository memberRepository;
     private final PaymentMapper paymentMapper;
-    private final RefundRepository refundRepository;
+    private final RefundService refundService;
 
     @Transactional
     public void persistPaymentSuccess(TossConfirmResponse res, Long reservationId, Long memberId) {
@@ -76,6 +77,19 @@ public class PaymentTxService {
 
         payment.markCancelFailed(failureMessage);
         paymentRepository.save(payment);
+    }
+
+    @Transactional
+    public void recordCancel(
+            Long paymentId,
+            RefundCalculationResult result
+    ) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        payment.markCanceled(result.getReason());
+
+        refundService.createRefund(payment, result.getCancelAmount());
     }
 
     private Payment getOrCreatePayment(TossConfirmResponse res, Long reservationId, Long memberId) {

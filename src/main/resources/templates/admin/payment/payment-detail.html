@@ -161,6 +161,23 @@
             <li>상태 변경은 신중하게 진행해야 하며, 필요 시 확인 절차를 거칩니다.</li>
         </ul>
     </section>
+
+    <div class="payment-actions">
+
+        <!-- ✅ 관리자 결제 취소 (POST) -->
+        <form
+                th:action="@{/admin/payments/{paymentId}/cancel(paymentId=${payment.id})}"
+                method="post"
+                onsubmit="return confirm('정말 결제를 취소하시겠습니까?');">
+            <button
+                    type="submit"
+                    class="btn btn-danger"
+                    th:disabled="${payment.status.name() == 'CANCELED'}">
+                결제 취소
+            </button>
+        </form>
+
+    </div>
     <script th:src="@{/js/admin/payment-detail.js}"></script>
 </th:block>
 </html>

@@ -1,16 +1,14 @@
 package com.elice.cinema.domain.payment.service;
 
-import com.elice.cinema.domain.member.entity.Role;
 import com.elice.cinema.domain.payment.entity.Payment;
+import com.elice.cinema.domain.payment.repository.PaymentRepository;
 import com.elice.cinema.domain.policy.dto.response.RefundCalculationResult;
 import com.elice.cinema.domain.policy.service.RefundPolicyService;
-import com.elice.cinema.domain.refund.service.RefundService;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -30,18 +28,20 @@ import java.time.LocalDateTime;
 public class PaymentCancelService {
 
     private final PaymentService paymentService;
-    private final RefundService refundService;
+    private final PaymentTxService paymentTxService;
     private final RefundPolicyService refundPolicyService;
+    private final PaymentRepository paymentRepository;
 
-    public void cancel(Payment payment) {
+    public void cancel(Long paymentId) {
+        Payment payment = paymentRepository.findByIdWithReservationAndScreening(paymentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
         // 1️⃣ 환불 정책 계산 (트랜잭션 ❌)
         RefundCalculationResult result =
                 refundPolicyService.calculate(payment, LocalDateTime.now());
 
         if (!result.isRefundable()) {
-            throw new BusinessException(
-                    ErrorCode.REFUND_NOT_ALLOWED
+            throw new BusinessException(ErrorCode.REFUND_NOT_ALLOWED
             );
         }
 
@@ -53,32 +53,6 @@ public class PaymentCancelService {
         );
 
         // 3️⃣ DB 기록 (트랜잭션 ⭕)
-        recordCancel(payment, result);
+        paymentTxService.recordCancel(paymentId, result);
     }
-
-    @Transactional
-    protected void recordCancel(
-            Payment payment,
-            RefundCalculationResult result
-    ) {
-        payment.markCanceled(result.getReason());
-
-        refundService.createRefund(payment, result.getCancelAmount());
-    }
-
-
-    private String resolveCancelReason(Role role, String inputReason) {
-        return role == Role.ADMIN
-                ? "관리자 취소"
-                : (inputReason == null || inputReason.isBlank()
-                ? "사용자 취소"
-                : inputReason);
-    }
-
-    private String resolveFailureMessage(Role role) {
-        return role == Role.ADMIN
-                ? "PG 결제 취소 실패"
-                : "결제 취소 처리 중 오류가 발생했습니다";
-    }
-
 }
