@@ -65,7 +65,13 @@ public enum ErrorCode {
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE01", "서버 내부 오류가 발생했습니다."),
-    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "IO01", "파일 업로드에 실패했습니다.");
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "IO01", "파일 업로드에 실패했습니다."),
+
+    // 501 Not Implemented
+    ADMIN_FEATURE_NOT_IMPLEMENTED(HttpStatus.NOT_IMPLEMENTED, "SE02", "해당 관리자 기능은 아직 구현되지 않았습니다."),
+    FEATURE_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "SE03", "해당 기능은 현재 지원되지 않습니다.");
+
+
 
     private final HttpStatus status;
     private final String code;

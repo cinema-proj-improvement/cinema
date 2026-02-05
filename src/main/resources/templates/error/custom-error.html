@@ -1,13 +1,24 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>안내</title>
+    <link rel="stylesheet" href="/css/common/reset.css">
 </head>
 <body>
-<h2>요청을 처리할 수 없습니다</h2>
-<p th:text="${message}"></p>
 
-<a href="/admin/movies">영화 관리로 돌아가기</a>
+<main style="padding: 40px; text-align: center;">
+    <h2>요청을 처리할 수 없습니다</h2>
+
+    <p th:text="${message}">
+        오류가 발생했습니다.
+    </p>
+
+    <div style="margin-top: 24px;">
+        <!-- 🔥 공용 최적해 -->
+        <a href="javascript:history.back()">이전 페이지로 돌아가기</a>
+    </div>
+</main>
+
 </body>
 </html>
