@@ -210,7 +210,7 @@
 
             li.querySelector(".schedule-btn").addEventListener("click", () => {
                 if (!screeningId) return;
-                window.location.href = `/reservations/seats?screeningId=${screeningId}`;
+                window.location.href = `/reservations/screenings/${screeningId}/seat-selection`;
             });
 
             scheduleListEl.appendChild(li);

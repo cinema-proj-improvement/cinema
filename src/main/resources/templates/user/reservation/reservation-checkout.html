@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>결제하기</title>
@@ -151,9 +153,8 @@
                 </div>
 
                 <div class="summary-actions">
-                    <a class="btn ghost" th:href="@{/reservations/select}">
-                        ‹ 이전
-                    </a>
+                    <button type="button" class="btn ghost" id="backBtn">‹ 이전</button>
+                    <input type="hidden" id="reservationId" th:value="${reservation.id}">
 
                     <a class="btn primary"
                        th:href="@{/reservations/{reservationId}/payment(reservationId=${reservation.id})}">

@@ -1,7 +1,7 @@
 package com.elice.cinema.domain.refund.entity;
 
 import com.elice.cinema.domain.payment.entity.Payment;
-import com.elice.cinema.global.common.entity.BaseEntity;
+import com.elice.cinema.global.common.audit.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

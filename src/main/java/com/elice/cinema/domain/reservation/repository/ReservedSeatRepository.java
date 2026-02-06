@@ -1,6 +1,7 @@
 package com.elice.cinema.domain.reservation.repository;
 
 import com.elice.cinema.domain.reservation.dto.SeatLockInfoDto;
+import com.elice.cinema.domain.reservation.entity.ReservationStatus;
 import com.elice.cinema.domain.reservation.entity.ReservedSeat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -42,4 +43,27 @@ public interface ReservedSeatRepository extends JpaRepository<ReservedSeat, Long
         where rs.reservation.id = :reservationId
     """)
     List<String> findSeatCodesByReservationId(@Param("reservationId") Long reservationId);
+
+    // 특정 상영 회차에서 선택 불가능한 좌석들의 id 목록을 반환
+    @Query("""
+        select rs.seat.id
+        from ReservedSeat rs
+        where rs.screening.id = :screeningId
+            and rs.status in :blockedCondition
+""")
+    List<Long> findBlockedSeatIds(@Param("screeningId") Long screeningId, List<ReservationStatus> blockedCondition);
+
+    // 좌석 선택 후 들어오는 예매/예매좌석 생성 요청에서 이미 HOLD,CONFIRMED 상태로 있는 좌석 id들을 찾아서 반환 (유효성 검사용)
+    @Query("""
+    select rs.seat.id
+    from ReservedSeat rs
+    where rs.screening.id = :screeningId
+      and rs.seat.id in :seatIds
+      and rs.status in :blockedCondition
+""")
+    List<Long> findBlockedSeatIdsIn(
+            @Param("screeningId") Long screeningId,
+            @Param("seatIds") List<Long> seatIds,
+            @Param("blockedCondition") List<ReservationStatus> blockedCondition
+    );
 }

@@ -1,5 +1,6 @@
 package com.elice.cinema.domain.screen.mapper;
 
+import com.elice.cinema.domain.reservation.dto.response.seatselection.ScreenInfo;
 import com.elice.cinema.domain.screen.dto.request.ScreenCreateRequest;
 import com.elice.cinema.domain.screen.dto.request.ScreenUpdateRequest;
 import com.elice.cinema.domain.screen.dto.response.ScreenDetailResponse;
@@ -17,6 +18,17 @@ public interface ScreenMapper {
                 req.getTotalSeats(),
                 req.getOperating()
         );
+    }
+
+    // 죄석 선택 페이지에서 필요로 하는 상영관 관련 정보 반환
+    default ScreenInfo toScreenInfo(Screen screen) {
+        ScreenInfo res = new ScreenInfo();
+
+        res.setScreenId(screen.getId());
+        res.setScreenName(screen.getName());
+        res.setScreeningType(screen.getScreeningType().getDisplayName());
+
+        return res;
     }
 
     public abstract ScreenUpdateRequest toScreenUpdateRequest(Screen screen);
