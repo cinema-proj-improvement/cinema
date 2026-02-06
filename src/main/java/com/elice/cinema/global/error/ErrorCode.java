@@ -35,11 +35,11 @@ public enum ErrorCode {
     SCREENING_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "SG10", "SCHEDULED 상태의 상영만 삭제 가능합니다."),
     SEAT_INACTIVE(HttpStatus.BAD_REQUEST, "ST06", "사용 불가능한 좌석입니다."),
     SEAT_ALREADY_HELD(HttpStatus.BAD_REQUEST, "ST07", "이미 다른 사람이 점유한 좌석입니다."),
+
     RESERVATION_SEAT_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "RS04", "한 번에 예매할 수 있는 좌석 수를 초과했습니다."),
-
     RESERVATION_NOT_CANCELABLE(HttpStatus.BAD_REQUEST, "RS02", "취소할 수 없는 예매 상태입니다."),
-
     RESERVATION_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "RS03", "이미 취소된 예매입니다."),
+    RESERVATION_ALREADY_CONFIRMED(HttpStatus.BAD_REQUEST, "RS06", "이미 확정된 예매입니다."),
 
     REFUND_POLICY_INVALID_RATE(HttpStatus.BAD_REQUEST, "PL01", "환불 퍼센트는 0~100 사이여야 합니다."),
     REFUND_POLICY_INVALID_BEFORE_TIME(HttpStatus.BAD_REQUEST, "PL02", "상영 시작 전 시간은 0 이상이어야 합니다."),
@@ -57,6 +57,7 @@ public enum ErrorCode {
 
     // 403 Forbidden
     PAYMENT_FORBIDDEN(HttpStatus.FORBIDDEN, "PY04", "결제 권한이 없습니다."),
+    RESERVATION_FORBIDDEN(HttpStatus.FORBIDDEN, "RS05", "해당 예매 권한이 없습니다."),
 
     // 404 Not Found
     MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "MV01", "영화를 찾을 수 없습니다."),

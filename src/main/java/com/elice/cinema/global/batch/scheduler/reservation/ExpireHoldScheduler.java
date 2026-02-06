@@ -15,7 +15,7 @@ public class ExpireHoldScheduler {
      * - fixedDelay: 이전 실행이 끝난 시점 기준으로 대기
      * - 배치 누락/중첩 실행 방지에 유리
      */
-    @Scheduled(fixedDelay = 60_000)  // 1분
+    @Scheduled(fixedDelay = 60_000, zone = "Asia/Seoul")  // 1분
     public void expireHolds() {
         expireHoldBatchService.expireHolds();
     }

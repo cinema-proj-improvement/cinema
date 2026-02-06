@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -37,6 +39,10 @@ public class SeatService {
         seat.setActive(active);
 
         return seatMapper.toSeatDetailResponse(seat);
+    }
+
+    public List<Seat> getSeatsByScreenId(Long screenId) {
+        return seatRepository.findAllByScreenId(screenId);
     }
 
     // === Helper Methods ===
