@@ -222,3 +222,23 @@ INSERT INTO refund_policies (name, before_start_minutes, refund_rate, created_at
 VALUES
     ('상영 1시간까지',   60,  100, '2026-01-01 00:00:00', '2026-01-01 00:00:00'),
     ('상영 20분까지',    20,   50, '2026-01-01 00:00:00', '2026-01-01 00:00:00');
+
+-- =========================================================
+-- REFUNDS
+--  - 결제 3번(pay_test_2502, CANCELED) 환불 1건 생성
+--  - refunds.payment_id 는 UNIQUE (결제 1건당 환불 1건)
+-- =========================================================
+INSERT INTO refunds (
+    payment_id,
+    refund_amount,
+    refunded_at,
+    created_at,
+    updated_at
+) VALUES
+    (
+        3,
+        15000,
+        '2026-02-05 10:07:00',
+        '2026-02-05 10:07:00',
+        '2026-02-05 10:07:00'
+    );

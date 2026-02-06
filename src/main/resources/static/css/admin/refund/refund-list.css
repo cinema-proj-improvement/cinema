@@ -1,0 +1,203 @@
+/* =========================
+   Layout
+========================= */
+.admin-page {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 0 80px;
+}
+
+.page-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 16px;
+}
+
+/* =========================
+   Filter Box
+========================= */
+.filter-box {
+    background: #fff;
+    border: 1px solid #eef1f5;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 18px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ✅ 1줄: 검색 input + 버튼 (한 줄 고정) */
+.filter-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search-input {
+    flex: 1;
+    height: 44px;                 /* ✅ 결제관리처럼 살짝 더 높게 */
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 14px;
+    min-width: 0;                 /* ✅ flex item overflow 방지 */
+}
+
+.btn-search {
+    height: 44px;
+    padding: 0 18px;
+    border-radius: 10px;
+    border: 0;
+    background: #2b2e6f;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+.btn-search:hover {
+    opacity: 0.92;
+}
+
+/* ✅ 2줄: 날짜 from ~ to (한 줄 고정) */
+.date-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    flex-wrap: nowrap;            /* ✅ 여기 핵심: 줄바꿈 금지 */
+}
+
+.date-row input[type="date"] {
+    width: 180px;                 /* ✅ 결제관리처럼 일정 폭 */
+    height: 44px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 14px;
+    background: #fff;
+}
+
+.tilde {
+    color: #667085;
+    font-size: 14px;
+}
+
+/* =========================
+   Table
+========================= */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid #eef1f5;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.admin-table thead th {
+    background: #f8fafc;
+    font-weight: 700;
+    color: #111827;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 14px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    text-align: left;
+    color: #111827;
+}
+
+.admin-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.admin-table td.amount {
+    text-align: right;
+    font-weight: 700;
+}
+
+.admin-table td.empty {
+    text-align: center;
+    color: #6b7280;
+    padding: 28px 0;
+}
+
+/* =========================
+   Pagination
+========================= */
+.pagination {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 18px;
+    align-items: center;
+}
+
+.pagination a {
+    text-decoration: none;
+    color: #2b2e6f;
+    font-weight: 700;
+
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #eef1f5;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.pagination a:hover {
+    background: #f8fafc;
+}
+
+.pagination a.active {
+    background: #2b2e6f;
+    color: #fff;
+    border-color: #2b2e6f;
+}
+
+/* ✅ 모바일에서는 날짜 줄바꿈 허용 (깨짐 방지) */
+@media (max-width: 640px) {
+    .filter-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .date-row {
+        flex-wrap: wrap;          /* 모바일은 줄바꿈 허용 */
+    }
+
+    .date-row input[type="date"] {
+        width: 100%;
+    }
+}
+
+/* 초기화 버튼 */
+.btn-reset {
+    height: 44px;
+    padding: 0 18px;
+    border-radius: 10px;
+    border: 1px solid #eef1f5;
+    background: #f8fafc;
+    color: #374151;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.btn-reset:hover {
+    background: #eef1f5;
+}
