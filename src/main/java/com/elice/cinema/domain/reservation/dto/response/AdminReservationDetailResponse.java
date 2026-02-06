@@ -1,5 +1,6 @@
 package com.elice.cinema.domain.reservation.dto.response;
 
+import com.elice.cinema.domain.payment.entity.PaymentStatus;
 import com.elice.cinema.domain.reservation.entity.ReservationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,7 +36,7 @@ public class AdminReservationDetailResponse {
 
     // ===== 결제 정보 =====
     private Integer totalPrice;
-    private String paymentStatus; // todo : 결제 기능 완료 후 수정
+    private PaymentStatus paymentStatus;
 
     // ===== 화면 제어용 =====
     private boolean cancelable;

@@ -18,12 +18,18 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import static com.elice.cinema.domain.reservation.entity.QReservation.reservation;
 import static com.elice.cinema.domain.reservation.entity.QReservedSeat.reservedSeat;
+import static com.elice.cinema.domain.member.entity.QMember.member;
+import static com.elice.cinema.domain.screening.entity.QScreening.screening;
+import static com.elice.cinema.domain.payment.entity.QPayment.payment;
+
+
 
 @Repository
 @RequiredArgsConstructor
@@ -58,7 +64,7 @@ public class AdminReservationQueryRepositoryCustomImpl implements AdminReservati
                                         "group_concat({0})", // TODO: 실제 예약좌석 연동 시 해당 projection 제거 예정.
                                         reservedSeat.seat.seatCode
                                 ),
-                                Expressions.constant("PAID"),
+                                payment.status,
                                 reservation.reservedAt,
                                 reservation.totalPrice
                         ))
@@ -66,6 +72,8 @@ public class AdminReservationQueryRepositoryCustomImpl implements AdminReservati
                         .leftJoin(reservedSeat)
                         .on(reservedSeat.reservation.id.eq(reservation.id))
                         .leftJoin(reservedSeat.seat)
+                        .leftJoin(payment)
+                        .on(payment.reservation.id.eq(reservation.id))
                         .where(condition)
                         .groupBy(reservation.id)
                         .orderBy(reservation.reservedAt.desc())
@@ -141,26 +149,34 @@ public class AdminReservationQueryRepositoryCustomImpl implements AdminReservati
                                 reservation.reservationCode,
                                 reservation.status,
                                 reservation.reservedAt,
+
                                 reservation.memberName,
+                                member.email,
+
                                 reservation.movieTitle,
                                 reservation.screenName,
+                                screening.startAt,
+
                                 seat.seatCode,
                                 reservation.totalPrice,
-                                reservation.status.stringValue(),
-                                reservation.status.eq(ReservationStatus.CONFIRMED)
+                                payment.status
                         )
                         .from(reservation)
+                        .join(reservation.member, member)
+                        .join(reservation.screening, screening)
                         .leftJoin(reservedSeat)
                         .on(reservedSeat.reservation.id.eq(reservation.id))
                         .leftJoin(reservedSeat.seat, seat)
+                        .leftJoin(payment)
+                        .on(payment.reservation.id.eq(reservation.id))
                         .where(reservation.id.eq(reservationId))
+                        .orderBy(reservedSeat.id.asc())
                         .fetch();
 
         if (rows.isEmpty()) {
             return Optional.empty();
         }
 
-        // 첫 row = 공통 데이터
         Tuple first = rows.get(0);
 
         List<String> seatCodes = rows.stream()
@@ -168,23 +184,29 @@ public class AdminReservationQueryRepositoryCustomImpl implements AdminReservati
                 .filter(Objects::nonNull)
                 .toList();
 
+        LocalDateTime startAt = first.get(screening.startAt);
+
         return Optional.of(
                 new AdminReservationDetailResponse(
                         first.get(reservation.id),
                         first.get(reservation.reservationCode),
                         first.get(reservation.status),
                         first.get(reservation.reservedAt),
+
                         first.get(reservation.memberName),
-                        "", // memberLoginId (임시)
+                        first.get(member.email),
+
                         first.get(reservation.movieTitle),
                         first.get(reservation.screenName),
-                        null,
-                        null,
+                        startAt.toLocalDate(),
+                        startAt.toLocalTime(),
+
                         seatCodes,
-                        0, // seatCount → Mapper에서 채움
+                        seatCodes.size(),
+
                         first.get(reservation.totalPrice),
-                        first.get(reservation.status.stringValue()),
-                        first.get(reservation.status.eq(ReservationStatus.CONFIRMED))
+                        first.get(payment.status),
+                        false   // cancelable → 서비스에서 설정
                 )
         );
     }
