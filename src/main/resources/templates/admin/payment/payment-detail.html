@@ -84,19 +84,6 @@
             </div>
         </div>
     </section>
-
-    <!-- =========================
-            결제 액션
-        ========================= -->
-    <div class="payment-actions">
-        <button
-                id="cancelPaymentBtn"
-                class="btn btn-danger"
-                th:disabled="${payment.status.name() == 'CANCELED'}">
-            결제 취소
-        </button>
-    </div>
-
     <!-- =========================
          예매 / 상영 정보 (좌석 제외)
     ========================= -->
