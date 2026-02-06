@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>환불 정책 관리</title>
+    <link rel="stylesheet" th:href="@{/css/admin/admin-common.css}">
+</head>
+<body>
+
+<h1>환불 정책 관리</h1>
+
+<button id="openCreateModal">+ 환불 정책 생성</button>
+
+<table>
+    <thead>
+    <tr>
+        <th>정책명</th>
+        <th>상영 시작 전 시간(분)</th>
+        <th>환불 퍼센트(%)</th>
+        <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="p : ${policies}" th:data-id="${p.id}">
+        <td th:text="${p.name}"></td>
+
+        <td>
+            <input type="number"
+                   class="before-input"
+                   th:value="${p.beforeStartMinutes}"
+                   disabled>
+        </td>
+
+        <td>
+            <input type="number"
+                   class="rate-input"
+                   th:value="${p.refundRate}"
+                   disabled>
+        </td>
+
+        <td>
+            <button class="edit-btn">수정</button>
+            <button class="save-btn" style="display:none;">저장</button>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- 생성 모달 -->
+<div id="createModal" style="display:none;">
+    <h3>환불 정책 생성</h3>
+
+    <input id="nameInput" placeholder="정책명">
+    <input id="beforeInput" type="number" placeholder="상영 시작 전 시간(분)">
+    <input id="rateInput" type="number" placeholder="환불 퍼센트(%)">
+
+    <button id="createBtn">생성</button>
+    <button id="closeCreateModal">닫기</button>
+</div>
+
+<script src="/js/admin/refund-policy.js"></script>
+</body>
+</html>

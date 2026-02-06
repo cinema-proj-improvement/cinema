@@ -1,5 +1,8 @@
 package com.elice.cinema.domain.reservation.service;
 
+import com.elice.cinema.domain.payment.entity.Payment;
+import com.elice.cinema.domain.payment.repository.PaymentRepository;
+import com.elice.cinema.domain.payment.service.PaymentCancelService;
 import com.elice.cinema.domain.reservation.dto.response.AdminReservationDetailResponse;
 import com.elice.cinema.domain.reservation.dto.response.AdminReservationPageResponse;
 import com.elice.cinema.domain.reservation.dto.response.AdminReservationSummaryResponse;
@@ -19,12 +22,14 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AdminReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final PaymentRepository paymentRepository;
+    private final PaymentCancelService paymentCancelService;
 
     // 관리자 상영별 예매 목록 조회 (페이지 + 좌석 정렬)
+    @Transactional(readOnly = true)
     public Page<AdminReservationPageResponse> getAdminReservationListByScreening(
             Long screeningId,
             ReservationStatus status,
@@ -50,6 +55,7 @@ public class AdminReservationService {
     }
 
     // 관리자 상영별 예매 요약 조회
+    @Transactional(readOnly = true)
     public AdminReservationSummaryResponse getReservationSummaryByScreening(
             Long screeningId
     ) {
@@ -58,6 +64,7 @@ public class AdminReservationService {
     }
 
     // 관리자 예매 상세 조회
+    @Transactional(readOnly = true)
     public AdminReservationDetailResponse getAdminReservationDetail(Long reservationId) {
 
         Reservation reservation = reservationRepository
@@ -98,15 +105,15 @@ public class AdminReservationService {
                 .collect(Collectors.joining(", "));
     }
 
-    @Transactional
     public void cancelReservation(Long reservationId) {
+        if (!reservationRepository.existsById(reservationId)) {
+            throw new BusinessException(ErrorCode.RESERVATION_NOT_FOUND);
+        }
 
-        Reservation reservation = reservationRepository
-                .findByIdWithScreeningAndMovie(reservationId)
-                .orElseThrow(() ->
-                        new BusinessException(ErrorCode.RESERVATION_NOT_FOUND)
-                );
-        reservation.cancel();
+        Payment payment = paymentRepository.findByReservationId(reservationId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        paymentCancelService.cancel(payment.getId());
     }
 
 }

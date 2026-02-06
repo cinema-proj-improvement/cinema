@@ -40,6 +40,18 @@ public enum ErrorCode {
     RESERVATION_NOT_CANCELABLE(HttpStatus.BAD_REQUEST, "RS02", "취소할 수 없는 예매 상태입니다."),
 
     RESERVATION_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "RS03", "이미 취소된 예매입니다."),
+
+    REFUND_POLICY_INVALID_RATE(HttpStatus.BAD_REQUEST, "PL01", "환불 퍼센트는 0~100 사이여야 합니다."),
+    REFUND_POLICY_INVALID_BEFORE_TIME(HttpStatus.BAD_REQUEST, "PL02", "상영 시작 전 시간은 0 이상이어야 합니다."),
+    REFUND_POLICY_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "PL03", "환불 정책명은 필수입니다."),
+
+
+
+    REFUND_POLICY_NOT_FOUND(HttpStatus.BAD_REQUEST, "RF01", "적용 가능한 환불 정책이 없습니다."),
+    REFUND_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "RF03", "현재 시점에서는 환불이 불가능합니다."),
+    INVALID_REFUND_RATE(HttpStatus.BAD_REQUEST, "RF04", "환불 비율이 올바르지 않습니다."),
+    INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, "RF05", "결제 금액이 올바르지 않습니다."),
+
     // 401 Unauthorized
 
 
@@ -60,10 +72,13 @@ public enum ErrorCode {
     // 409 Conflict
     SCREEN_NAME_DUPLICATED(HttpStatus.CONFLICT, "SC06", "이미 존재하는 상영관 이름입니다."),
     SCREENING_TIME_CONFLICT(HttpStatus.CONFLICT, "SG12", "해당 시간에 이미 등록된 상영이 있어 상영을 생성할 수 없습니다."),
+    REFUND_POLICY_DUPLICATED_BEFORE_TIME(HttpStatus.CONFLICT, "PL04", "이미 동일한 기준 시간의 환불 정책이 존재합니다."),
+    REFUND_ALREADY_EXISTS(HttpStatus.CONFLICT, "RF02", "이미 환불이 처리된 결제입니다."),
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE01", "서버 내부 오류가 발생했습니다."),
-    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "IO01", "파일 업로드에 실패했습니다.");
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "IO01", "파일 업로드에 실패했습니다."),
+    ENVIRONMENT_POLICY_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "PL05", "시스템 환경 정책이 설정되지 않았습니다.");
 
     private final HttpStatus status;
     private final String code;

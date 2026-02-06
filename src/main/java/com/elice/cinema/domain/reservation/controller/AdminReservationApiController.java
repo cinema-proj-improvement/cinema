@@ -22,7 +22,7 @@ public class AdminReservationApiController {
     }
 
     // 관리자 예매 취소
-    @PatchMapping("/{reservationId}/cancel")
+    @PostMapping("/{reservationId}/cancel")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void cancelReservation(
             @PathVariable Long reservationId
