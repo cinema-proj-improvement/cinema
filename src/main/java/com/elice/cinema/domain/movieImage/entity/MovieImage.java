@@ -1,6 +1,8 @@
 package com.elice.cinema.domain.movieImage.entity;
 
 import com.elice.cinema.domain.movie.entity.Movie;
+import com.elice.cinema.global.error.ErrorCode;
+import com.elice.cinema.global.error.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -54,7 +56,7 @@ public class MovieImage {  // TODO: Movie에 양방향 연관관계 맺어주지
 
     public static MovieImage extra(Movie movie, String imageUrl, int displayOrder) {
         if (displayOrder <= 0) {
-            throw new IllegalArgumentException("추가 이미지 displayOrder는 1 이상이어야 합니다.");  // FIXME: 여긴 이렇게 예외 던져서 서버 내려가게 하는 게 맞나?
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
         return new MovieImage(movie, imageUrl, displayOrder);
     }

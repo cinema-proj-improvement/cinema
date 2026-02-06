@@ -1,14 +1,18 @@
 package com.elice.cinema.domain.reservation.controller;
 
 import com.elice.cinema.domain.movie.dto.response.ReservationMovieSelectResponse;
+import com.elice.cinema.domain.reservation.dto.request.HoldReservationRequest;
 import com.elice.cinema.domain.reservation.dto.response.ReservationCheckoutResponse;
+import com.elice.cinema.domain.reservation.dto.response.seatselection.SeatSelectionResponse;
 import com.elice.cinema.domain.reservation.service.ReservationService;
+import com.elice.cinema.domain.reservation.service.SeatSelectionFacade;
+import com.elice.cinema.global.security.CustomUserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,6 +21,7 @@ import java.util.List;
 @RequestMapping("/reservations")
 public class ReservationPageController {
     private final ReservationService reservationService;
+    private final SeatSelectionFacade seatSelectionFacade;
 
     @GetMapping
     public String getReservationPage(Model model) {
@@ -33,5 +38,32 @@ public class ReservationPageController {
         model.addAttribute("reservation", reservation);
 
         return "user/reservation/reservation-checkout";
+    }
+
+    @GetMapping("/screenings/{screeningId}/seat-selection")
+    public String getSeatSelectionPage(@PathVariable Long screeningId, Model model) {
+        model.addAttribute("screeningId", screeningId);
+        return "user/reservation/seat-selection";  // TODO: 좌석 선택 페이지 html 코드 개발해야 함
+    }
+
+    @GetMapping("/screenings/{screeningId}/seat-selection/info")
+    @ResponseBody
+    public SeatSelectionResponse getSeatSelectionPageInfo(@PathVariable Long screeningId) {
+        return seatSelectionFacade.getSeatSelectionPageInfo(screeningId);
+    }
+
+    @PostMapping("/holds")
+    public String createHoldReservation(@AuthenticationPrincipal CustomUserDetails principal,
+                                        @ModelAttribute @Valid HoldReservationRequest req) {
+        Long reservationId = reservationService.holdSeats(
+                req.getScreeningId(), req.getSeatIds(), principal.getMemberId()
+        );
+        return "redirect:/reservations/" + reservationId;
+    }
+
+    @PostMapping("/{reservationId}/cancel-hold")
+    @ResponseBody
+    public void cancelHold(@PathVariable Long reservationId, @AuthenticationPrincipal CustomUserDetails principal) {
+        reservationService.cancelHoldReservation(reservationId, principal.getMemberId());
     }
 }

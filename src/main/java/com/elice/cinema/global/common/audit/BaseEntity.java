@@ -1,4 +1,4 @@
-package com.elice.cinema.global.common.entity;
+package com.elice.cinema.global.common.audit;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

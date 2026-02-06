@@ -1,7 +1,7 @@
 package com.elice.cinema.domain.movie.entity;
 
 import com.elice.cinema.domain.common.ScreeningType;
-import com.elice.cinema.global.common.entity.BaseEntity;
+import com.elice.cinema.global.common.audit.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

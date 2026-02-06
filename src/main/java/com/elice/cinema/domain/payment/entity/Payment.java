@@ -87,7 +87,7 @@ public class Payment {
                 method);
     }
 
-    public void markCanceled() {
+    public void cancelPayment() {
         if (!this.status.canChangeTo(PaymentStatus.CANCELED)) {
             throw new BusinessException(ErrorCode.PAYMENT_CANCEL_NOT_ALLOWED);
         }
@@ -95,11 +95,16 @@ public class Payment {
     }
 
     public void markCanceled(String reason) {
+        if (!this.status.canChangeTo(PaymentStatus.CANCELED)) {
+            throw new BusinessException(ErrorCode.PAYMENT_CANCEL_NOT_ALLOWED);
+        }
+
         this.status = PaymentStatus.CANCELED;
         this.failureMessage = reason;
     }
 
     public void markCancelFailed(String reason) {
+        // TODO: canChangeTo 사용해야하나 고민해보기
         this.status = PaymentStatus.CANCEL_FAILED;
         this.failureMessage = reason;
     }

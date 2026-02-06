@@ -11,7 +11,15 @@ import java.util.Optional;
 public interface PaymentRepository extends JpaRepository<Payment, Long>, PaymentQueryRepository {
     boolean existsByPaymentKey(String paymentKey);
 
+    Optional<Payment> findByReservationId(Long reservationId);
     Optional<Payment> findByPaymentKey(String paymentKey);
+
+    @Query("""
+    select p from Payment p
+    join fetch p.reservation r
+    where p.id = :paymentId
+""")
+    Optional<Payment> findByIdWithReservation(@Param("paymentId") Long paymentId);
 
     @Query("""
     select new com.elice.cinema.domain.payment.dto.response.AdminPaymentDetailResponse(
@@ -48,4 +56,14 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, Payment
     Optional<AdminPaymentDetailResponse> findAdminPaymentDetailById(
             @Param("paymentId") Long paymentId
     );
+
+    @Query("""
+        select p
+        from Payment p
+        join fetch p.reservation r
+        left join fetch r.member m
+        left join fetch r.screening sc
+        where p.id = :paymentId
+    """)
+    Optional<Payment> findByIdWithReservationAndScreening(@Param("paymentId") Long paymentId);
 }

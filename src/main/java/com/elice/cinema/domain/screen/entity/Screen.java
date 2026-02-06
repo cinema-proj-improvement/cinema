@@ -4,7 +4,7 @@ import com.elice.cinema.domain.common.ScreeningType;
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.screening.entity.Screening;
 import com.elice.cinema.domain.screening.entity.ScreeningStatus;
-import com.elice.cinema.global.common.entity.BaseEntity;
+import com.elice.cinema.global.common.audit.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

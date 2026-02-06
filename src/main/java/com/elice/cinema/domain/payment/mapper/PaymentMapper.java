@@ -1,6 +1,7 @@
 package com.elice.cinema.domain.payment.mapper;
 
 import com.elice.cinema.domain.member.entity.Member;
+import com.elice.cinema.domain.payment.dto.response.MypagePaymentResponse;
 import com.elice.cinema.domain.payment.dto.response.TossConfirmResponse;
 import com.elice.cinema.domain.payment.entity.Payment;
 import com.elice.cinema.domain.payment.entity.PaymentStatus;
@@ -25,4 +26,6 @@ public interface PaymentMapper {
                 res.getMethod()
         );
     }
+
+    MypagePaymentResponse toMypagePaymentResponse(Payment payment);
 }

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>나의 예매내역</title>
+
+    <link rel="stylesheet" href="/css/common/reset.css">
+    <link rel="stylesheet" href="/css/common/header.css">
+    <link rel="stylesheet" href="/css/common/footer.css">
+    <link rel="stylesheet" th:href="@{/css/user/mypage/mypage-reservations.css}">
+</head>
+<body>
+
+<!-- ✅ 우리 팀 공통 헤더 -->
+<header th:replace="~{fragments/header :: header}"></header>
+
+<main class="mypage-container">
+
+    <!-- ✅ 페이지 타이틀 + 기간 필터 -->
+    <section class="mypage-section">
+        <div class="mypage-section-box">
+
+            <div class="section-header">
+                <div class="title-area">
+                    <a class="back-link" th:href="@{/mypage}">
+                        ← 뒤로가기
+                    </a>
+                    <h2>나의 예매내역</h2>
+                </div>
+
+                <!-- 기간 필터 (GET으로 다시 렌더링) -->
+                <form class="period-filter" th:action="@{/mypage/reservations}" method="get">
+                    <span class="filter-label">기간</span>
+
+                    <input class="filter-input" type="date" name="from"
+                           th:value="${from != null ? #temporals.format(from, 'yyyy-MM-dd') : ''}"/>
+
+                    <span class="filter-tilde">~</span>
+
+                    <input class="filter-input" type="date" name="to"
+                           th:value="${to != null ? #temporals.format(to, 'yyyy-MM-dd') : ''}"/>
+
+                    <!-- 조회 시 첫 페이지로 -->
+                    <input type="hidden" name="page" value="0"/>
+                    <input type="hidden" name="size" th:value="${reservations != null ? reservations.size : 10}"/>
+
+                    <button class="btn-filter" type="submit">조회</button>
+                </form>
+            </div>
+
+            <!-- 예매 없음 -->
+            <div class="empty-box" th:if="${reservations == null or #lists.isEmpty(reservations.content)}">
+                예매 내역이 없습니다.
+            </div>
+
+            <!-- 예매 카드 리스트 -->
+            <div class="reservation-list" th:if="${reservations != null and !#lists.isEmpty(reservations.content)}">
+                <div class="reservation-card" th:each="reservation : ${reservations.content}">
+
+                    <div class="reservation-info">
+
+                        <!-- ✅ 영화 제목 + 상태 배지 -->
+                        <div class="card-top">
+                            <h3 th:text="${reservation.movieTitle}">영화 제목</h3>
+
+                            <span class="status-badge"
+                                  th:classappend="' status-' + (${reservation.status} != null ? ${reservation.status} : 'UNKNOWN')"
+                                  th:text="${reservation.status != null ? reservation.status : 'UNKNOWN'}">
+                                CONFIRMED
+                            </span>
+                        </div>
+
+                        <div class="reservation-rows">
+
+                            <!-- ✅ 추가: 예매일시 -->
+                            <div class="reservation-row">
+                                <span class="label">예매일시</span>
+                                <span class="value"
+                                      th:text="${reservation.reservedAt != null ? #temporals.format(reservation.reservedAt, 'yyyy.MM.dd HH:mm') : '-'}">
+                                    2026.02.01 12:30
+                                </span>
+                            </div>
+
+                            <div class="reservation-row">
+                                <span class="label">상영일</span>
+                                <span class="value"
+                                      th:text="${reservation.startAt != null ? #temporals.format(reservation.startAt, 'yyyy.MM.dd') : '-'}">
+                                    2026.02.01
+                                </span>
+                            </div>
+
+                            <div class="reservation-row">
+                                <span class="label">상영시간</span>
+                                <span class="value"
+                                      th:text="${reservation.startAt != null ? #temporals.format(reservation.startAt, 'HH:mm') : '-'}">
+                                    13:00
+                                </span>
+                            </div>
+
+                            <div class="reservation-row">
+                                <span class="label">상영관</span>
+                                <span class="value" th:text="${reservation.screenName != null ? reservation.screenName : '-'}">
+                                    1관
+                                </span>
+                            </div>
+
+                            <div class="reservation-row">
+                                <span class="label">좌석</span>
+                                <span class="value"
+                                      th:text="${(reservation.seatCodes != null and !#lists.isEmpty(reservation.seatCodes)) ? #strings.listJoin(reservation.seatCodes, ', ') : '-'}">
+                                    A1, A2
+                                </span>
+                            </div>
+
+                            <div class="reservation-row">
+                                <span class="label">예매번호</span>
+                                <span class="value" th:text="${reservation.reservationCode}">
+                                    R-20260201-001
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- (선택) 취소 버튼: 상태에 따라 숨기고 싶으면 if 조건 걸면 됨 -->
+                    <div class="reservation-actions">
+                        <form th:action="@{/mypage/reservations/{id}/cancel(id=${reservation.id})}"
+                              method="post"
+                              th:if="${reservation.status != null and reservation.status.name() == 'CONFIRMED'}"
+                              onsubmit="return confirm('정말 예매를 취소하시겠습니까?');">
+
+                            <button class="btn-cancel" type="submit">
+                                예매 취소
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ✅ 더보기: Slice 다음 페이지 링크 -->
+            <div class="more-area" th:if="${reservations != null and reservations.hasNext()}">
+                <a class="more-btn"
+                   th:href="@{/mypage/reservations(
+                        from=${from},
+                        to=${to},
+                        page=${reservations.number + 1},
+                        size=${reservations.size}
+                   )}">
+                    더보기
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<!-- ✅ 우리 팀 공통 푸터 (쓰고 있으면 추가) -->
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>
