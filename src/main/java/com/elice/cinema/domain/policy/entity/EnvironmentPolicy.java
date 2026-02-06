@@ -45,7 +45,7 @@ public class EnvironmentPolicy {
 
     // 영화표 기본 가격
     @Column(name = "default_price", nullable = false)
-    private Integer dafaultPrice;
+    private Integer defaultPrice;
 
     // 테이블 생성일
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -86,7 +86,7 @@ public class EnvironmentPolicy {
         this.scheduledToOpenDays = scheduledToOpenDays;
         this.openToClosedMinutes = openToClosedMinutes;
         this.cinemaOpenHour = cinemaOpenHour;
-        this.dafaultPrice = defaultPrice;
+        this.defaultPrice = defaultPrice;
     }
 
 
@@ -111,6 +111,6 @@ public class EnvironmentPolicy {
         this.scheduledToOpenDays = scheduledToOpenDays;
         this.openToClosedMinutes = openToClosedMinutes;
         this.cinemaOpenHour = cinemaOpenHour;
-        this.dafaultPrice = dafaultPrice;
+        this.defaultPrice = dafaultPrice;
     }
 }

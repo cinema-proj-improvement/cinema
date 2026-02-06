@@ -1,5 +1,6 @@
 package com.elice.cinema.domain.screening.mapper;
 
+import com.elice.cinema.domain.reservation.dto.response.seatselection.ScreeningInfo;
 import com.elice.cinema.domain.screening.dto.response.*;
 import com.elice.cinema.domain.screening.entity.Screening;
 import org.mapstruct.Mapper;
@@ -40,5 +41,17 @@ public interface ScreeningMapper {
     @Named("toEndTime")
     default LocalTime mapEndTime(LocalDateTime dateTime) {
         return dateTime == null ? null : dateTime.toLocalTime();
+    }
+
+    // 좌석 선택 페이지에서 필요로 하는 상영 관련 정보 반환
+    default ScreeningInfo toScreeningInfo(Screening screening) {
+        ScreeningInfo res = new ScreeningInfo();
+
+        res.setScreeningId(screening.getId());
+        res.setStartAt(screening.getStartAt());
+        res.setEndAt(screening.getEndAt());
+        res.setMovieTitle(screening.getMovie().getTitle());  // 호출 usecase 위치에서 fetch join으로 가져옴
+
+        return res;
     }
 }

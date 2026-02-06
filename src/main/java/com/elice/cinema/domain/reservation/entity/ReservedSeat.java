@@ -2,7 +2,7 @@ package com.elice.cinema.domain.reservation.entity;
 
 import com.elice.cinema.domain.screen.entity.Seat;
 import com.elice.cinema.domain.screening.entity.Screening;
-import com.elice.cinema.global.common.entity.BaseEntity;
+import com.elice.cinema.global.common.audit.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -67,11 +67,5 @@ public class ReservedSeat extends BaseEntity {
         reservedSeat.seatCode = seat.getSeatCode();
 
         return reservedSeat;
-    }
-
-    public void expire() {
-        if(status == ReservationStatus.HOLD) {
-            status = ReservationStatus.EXPIRED;
-        }
     }
 }

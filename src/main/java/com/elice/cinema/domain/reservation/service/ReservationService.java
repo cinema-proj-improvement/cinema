@@ -10,6 +10,7 @@ import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.reservation.dto.response.ReservationCheckoutResponse;
 import com.elice.cinema.domain.reservation.dto.response.TossPaymentReservationResponse;
 import com.elice.cinema.domain.reservation.entity.Reservation;
+import com.elice.cinema.domain.reservation.entity.ReservationStatus;
 import com.elice.cinema.domain.reservation.entity.ReservedSeat;
 import com.elice.cinema.domain.reservation.mapper.ReservationMapper;
 import com.elice.cinema.domain.reservation.repository.ReservationLockRepository;
@@ -62,6 +63,7 @@ public class ReservationService {
     @Transactional
     public Long holdSeats(Long screeningId, List<Long> seatIds, Long memberId) {  // TODO: 메서드 분리 고려하기
         validateSeatCount(seatIds);
+        validateBookable(screeningId, seatIds);
 
         final int holdMinutes = seatHoldProperties.getMinutes();
         final int graceMinutes = seatHoldProperties.getRedisGraceMinutes();
@@ -72,39 +74,60 @@ public class ReservationService {
 
         // 선택한 좌석에 redis lock 처리
         List<Long> locked = new ArrayList<>();
-        for(Long seatId : seatIds) {
-            boolean ok = reservationLockRepository.lock(screeningId, seatId, memberId, holdMinutes + graceMinutes, TimeUnit.MINUTES);
-            if(!ok) {  // 이미 lock이 걸린 좌석을 선택한 경우 이전에 lock 걸었던 좌석들의 lock을 풀어주고 예외를 던짐
-                for(Long lockedSeatId : locked) {
-                    reservationLockRepository.unlock(screeningId, lockedSeatId);
-                }
-                throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
-            }
-            locked.add(seatId);
-        }
-
-        int totalPrice = calculateTotalPrice(seats);
         try {
+            for (Long seatId : seatIds) {
+                boolean ok = reservationLockRepository.lock(
+                        screeningId,
+                        seatId,
+                        memberId,
+                        holdMinutes + graceMinutes,
+                        TimeUnit.MINUTES
+                );
+                if (!ok) {  // 이미 lock이 걸린 좌석을 선택한 경우 이전에 lock 걸었던 좌석들의 lock을 풀어주고 예외를 던짐
+                    throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
+                }
+                locked.add(seatId);  // 성공한 것만 기록
+            }
+
+            int totalPrice = calculateTotalPrice(seats);
             Reservation reservation = Reservation.createHoldReservation(screening, member, totalPrice, Duration.ofMinutes(holdMinutes));
             Reservation savedReservation = reservationRepository.save(reservation);
 
             List<ReservedSeat> reservedSeats = seats.stream()
-                    .map(seat -> ReservedSeat.createHoldReservedSeat(reservation, screening, seat))
+                    .map(seat -> ReservedSeat.createHoldReservedSeat(savedReservation, screening, seat))
                     .toList();
             reservedSeatRepository.saveAll(reservedSeats);
 
             return savedReservation.getId();
-
-        } catch (RuntimeException e) {
-            // DB 실패 시 redis lock도 해제
-            reservationLockRepository.unlockAll(screeningId, seatIds);
-            throw e;
+        } finally {  // 성공하든 실패하든 lock은 반드시 반환해줘야 함
+            // 내가 잡은 redis lock만 해제
+            reservationLockRepository.unlockAll(screeningId, locked);
         }
+    }
+
+    @Transactional
+    public void cancelHoldReservation(Long reservationId, Long memberId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        if(!reservation.getMember().getId().equals(memberId)) {  // 본인 예매만 취소 가능
+            throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
+        }
+
+        if(reservation.getStatus() == ReservationStatus.CONFIRMED) {  // 이미 확정된 예매는 삭제 불가
+            throw new BusinessException(ErrorCode.RESERVATION_ALREADY_CONFIRMED);
+        }
+
+        if(reservation.getStatus() != ReservationStatus.HOLD) {  // EXPIRED나 CANCELED면 처리해줄 것이 없는 상태
+            return;
+        }
+
+        reservationRepository.delete(reservation);  // HOLD라면 삭제 - 연관된 reservedSeat들은 delete cascade로 삭제됨
     }
 
     public int calculateTotalPrice(List<Seat> seats) {  // TODO: 이후 가격 계산에 대한 로직이 복잡해지면 클래스로 분리합니다. (현재도 위치 적절하지 않음)
         int totalPrice = 0;
-        for(int i = 0; i < seats.size(); i++) {
+        for (int i = 0; i < seats.size(); i++) {
             totalPrice += environmentPolicyService.getDefaultPrice();
         }
         return totalPrice;
@@ -115,6 +138,15 @@ public class ReservationService {
         int max = environmentPolicyService.getMaxReservationCount();
         if (seatIds == null || seatIds.isEmpty() || seatIds.size() > max) {
             throw new BusinessException(ErrorCode.RESERVATION_SEAT_LIMIT_EXCEEDED);
+        }
+    }
+
+    // 요청으로 들어온 좌석들이 실제로 예매 가능한지 검사 (이미 선점되거나 예매된 좌석인지 검사)
+    private void validateBookable(Long screeningId, List<Long> seatIds) {
+        List<Long> blocked = reservedSeatRepository.findBlockedSeatIdsIn(screeningId, seatIds, ReservationStatus.blocked());
+
+        if (!blocked.isEmpty()) {  // 이미 선점되었거나 예매된 좌석이 포함된 요청임을 의미
+            throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
         }
     }
 
@@ -158,7 +190,7 @@ public class ReservationService {
 
         String movieThumbnail = /*movieImageRepository.findThumbnailUrlByMovieId(movie.getId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_THUMBNAIL_NOT_FOUND));*/ null;
-                // TODO: 데이터로 영화 썸네일 넣고 다시 시도하기, 예매 생성 생기면 다시 시도
+        // TODO: 데이터로 영화 썸네일 넣고 다시 시도하기, 예매 생성 생기면 다시 시도
         List<String> seatCodes = reservedSeatRepository.findSeatCodesByReservationId(reservationId);
 
         return reservationMapper.toReservationCheckoutResponse(reservation, movieThumbnail, seatCodes);
@@ -172,7 +204,7 @@ public class ReservationService {
         return reservationMapper.toPaymentReservationResponse(reservation, orderId, tossClientKey);
     }
 
-    private Screening getScreeningWithMovieAndScreen(Long screeningId) {
+    private Screening getScreeningWithMovieAndScreen(Long screeningId) {  // FIXME: ScreeningService로 메서드 위치 이동해뒀습니다.
         return screeningRepository.findByIdWithMovieAndScreen(screeningId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SCREENING_NOT_FOUND));
     }
@@ -180,7 +212,7 @@ public class ReservationService {
     private List<Seat> getSeats(List<Long> seatIds) {
         List<Seat> seats = seatRepository.findAllById(seatIds);
 
-        if(seats.size() != seatIds.size()) {
+        if (seats.size() != seatIds.size()) {
             throw new BusinessException(ErrorCode.SEAT_NOT_FOUND);
         }
 
@@ -195,7 +227,7 @@ public class ReservationService {
     }
 
     private void validateSeatsAreValid(List<Seat> seats) {
-        if(seats.stream().anyMatch(seat -> !seat.isActive())) {
+        if (seats.stream().anyMatch(seat -> !seat.isActive())) {
             throw new BusinessException(ErrorCode.SEAT_INACTIVE);
         }
     }
@@ -206,4 +238,5 @@ public class ReservationService {
 
         return totalSeats - reservedCount;
     }
+
 }

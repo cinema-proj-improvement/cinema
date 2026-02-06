@@ -27,7 +27,7 @@ public class ExpireHoldBatchService {
         LocalDateTime now = LocalDateTime.now();
         int batchSize = 500;
 
-        while(true) {
+        while(true) {  // FIXME: 만약 반복문 안 코드에서 어떤 문제가 생겼는데 예외를 던지지 않고 탈출조건에도 안 걸리게 된다면? -> 무한 반복이 아니라 시간 단위로 돌아가도록
             // 1) 만료 대상 reservation id들 조회
             List<Long> reservationIds = reservationRepository
                     .findExpiredHoldReservationIds(now, PageRequest.of(0, batchSize));

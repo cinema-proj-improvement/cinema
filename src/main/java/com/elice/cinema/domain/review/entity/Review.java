@@ -3,7 +3,7 @@ package com.elice.cinema.domain.review.entity;
 import com.elice.cinema.domain.member.entity.Member;
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.reservation.entity.Reservation;
-import com.elice.cinema.global.common.entity.BaseEntity;
+import com.elice.cinema.global.common.audit.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

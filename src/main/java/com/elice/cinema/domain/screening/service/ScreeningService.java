@@ -122,6 +122,11 @@ public class ScreeningService {
         screeningRepository.delete(screening);
     }
 
+    public Screening getScreeningWithMovieAndScreen(Long screeningId) {  // ReservationService에 위치했던 Helper method를 이 위치로 옮겼습니다.
+        return screeningRepository.findByIdWithMovieAndScreen(screeningId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SCREENING_NOT_FOUND));
+    }
+
 
     // 헬퍼 메서드
     private void applyDefaultDateRange(AdminScreeningSearchRequest request) {

@@ -2,8 +2,7 @@ package com.elice.cinema.domain.reservation.entity;
 
 import com.elice.cinema.domain.member.entity.Member;
 import com.elice.cinema.domain.screening.entity.Screening;
-import com.elice.cinema.global.common.entity.BaseEntity;
-import com.elice.cinema.global.common.entity.BaseEntity;
+import com.elice.cinema.global.common.audit.BaseEntity;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import jakarta.persistence.*;
@@ -13,6 +12,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -58,6 +59,9 @@ public class Reservation extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "screening_id", nullable = false)
     private Screening screening;
+
+    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReservedSeat> reservedSeats = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)

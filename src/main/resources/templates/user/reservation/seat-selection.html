@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <title>좌석 선택</title>
+
+    <link rel="stylesheet" href="/css/common/reset.css">
+    <link rel="stylesheet" href="/css/common/header.css">
+    <link rel="stylesheet" href="/css/common/footer.css">
+    <link rel="stylesheet" th:href="@{/css/user/reservation/seat-selection.css}">
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main class="seat-page"
+      th:attr="data-screening-id=${screeningId}">
+    <section class="seat-title">
+        <h2>빠른예매</h2>
+        <p>좌석을 선택해주세요.</p>
+    </section>
+
+    <section class="seat-layout">
+
+        <!-- 좌측: 좌석 영역 -->
+        <section class="seat-stage">
+            <div class="stage-head">
+                <h3 class="panel-title">좌석 선택</h3>
+                <button type="button" class="btn-reset" id="btnReset">
+                    ↻ 초기화
+                </button>
+            </div>
+
+            <div class="screen-wrap" aria-label="screen">
+                <div class="screen-curve"></div>
+                <div class="screen-text">SCREEN</div>
+            </div>
+
+            <!-- 좌석 그리드 -->
+            <div class="seat-grid-wrap">
+                <div class="seat-grid" id="seatGrid" aria-label="seat-grid">
+                    <!-- JS로 렌더 -->
+                </div>
+            </div>
+
+            <div class="seat-hint">
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="swatch swatch-selected"></span>
+                        <span>선택</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="swatch swatch-unavailable"></span>
+                        <span>선택불가</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="swatch swatch-available"></span>
+                        <span>선택가능</span>
+                    </div>
+                </div>
+                <div class="hint-text" id="seatHintText"></div>
+            </div>
+        </section>
+
+        <!-- 우측: 요약 패널 -->
+        <aside class="seat-summary">
+            <div class="summary-top">
+                <div class="summary-badge" id="badgeAll">ALL</div>
+                <div class="summary-title" id="movieTitle">영화 제목</div>
+            </div>
+
+            <div class="summary-info">
+                <div class="info-row">
+                    <span class="info-label">상영관</span>
+                    <span class="info-value" id="screenName">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">상영 타입</span>
+                    <span class="info-value" id="screeningType">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">일시</span>
+                    <span class="info-value" id="screeningTime">-</span>
+                </div>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="selected-box">
+                <div class="selected-head">
+                    <h4>선택좌석</h4>
+                    <span class="selected-count" id="selectedCount">0</span>
+                </div>
+                <div class="selected-seats" id="selectedSeats">
+                    <!-- 선택 좌석 chip -->
+                </div>
+
+                <div class="price-box">
+                    <div class="price-row">
+                        <span class="price-label">기본가격</span>
+                        <span class="price-value" id="defaultPrice">0원</span>
+                    </div>
+                    <div class="price-row total">
+                        <span class="price-label">최종결제금액</span>
+                        <span class="price-value" id="totalPrice">0원</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- hold 생성 폼 -->
+            <form id="holdForm" class="hold-form" method="post" th:action="@{/reservations/holds}">
+                <!-- CSRF (Spring Security 사용 시) -->
+                <input type="hidden" th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <input type="hidden" name="screeningId" th:value="${screeningId}"/>
+
+                <!-- seatIds는 JS가 hidden input 여러 개로 주입 -->
+                <div id="seatIdInputs"></div>
+
+                <div class="summary-actions">
+                    <a class="btn-secondary" th:href="@{/reservations}">이전</a>
+                    <button type="submit" class="btn-primary" id="btnNext" disabled>다음</button>
+                </div>
+            </form>
+        </aside>
+
+    </section>
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<script src="/js/user/reservation/seat-selection.js"></script>
+</body>
+</html>

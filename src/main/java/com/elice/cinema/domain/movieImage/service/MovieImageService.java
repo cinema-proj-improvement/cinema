@@ -40,7 +40,7 @@ public class MovieImageService {
         // movieImageRepository.findByMovieIdAndDisplayOrder(movieId, 0)
         //        .ifPresent(x -> { throw new BusinessException(ErrorCode.MOVIE_THUMBNAIL_ALREADY_EXISTS); });
 
-        String thumbnailUrl = fileService.upload(thumbnailImage, FileCategory.MOVIE_THUMBNAIL);
+        String thumbnailUrl = fileService.upload(thumbnailImage, FileCategory.MOVIE_THUMBNAIL);  // FIXME: 파일 처리가 Transaction 안에 묶여있음. 분리 필요
         movieImageRepository.save(MovieImage.thumbnail(movie, thumbnailUrl));
 
         // 2) 추가 이미지: 1..n
