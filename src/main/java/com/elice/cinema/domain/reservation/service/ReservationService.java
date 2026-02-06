@@ -127,11 +127,7 @@ public class ReservationService {
     }
 
     public int calculateTotalPrice(List<Seat> seats) {  // TODO: 이후 가격 계산에 대한 로직이 복잡해지면 클래스로 분리합니다. (현재도 위치 적절하지 않음)
-        int totalPrice = 0;
-        for (int i = 0; i < seats.size(); i++) {
-            totalPrice += environmentPolicyService.getDefaultPrice();
-        }
-        return totalPrice;
+        return environmentPolicyService.getDefaultPrice() * seats.size();
     }
 
     // 좌석 개수 검증 (선택한 좌석의 개수가 개인이 예매할 수 있는 최대 좌석수를 넘기지 않았는지 검증)
