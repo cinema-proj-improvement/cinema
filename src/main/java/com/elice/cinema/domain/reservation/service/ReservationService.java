@@ -94,9 +94,10 @@ public class ReservationService {
             Reservation savedReservation = reservationRepository.save(reservation);
 
             List<ReservedSeat> reservedSeats = seats.stream()
-                    .map(seat -> ReservedSeat.createHoldReservedSeat(savedReservation, screening, seat))
+                    .map(seat -> ReservedSeat.createHoldReservedSeat(screening, seat))
+                    .peek(reservation::addReservedSeat)  // 양방향 세팅
                     .toList();
-            reservedSeatRepository.saveAll(reservedSeats);
+            reservedSeatRepository.saveAll(reservedSeats);  // FIXME: ReservedSeat의 PK 전략이 현재 IDENTIFY -> saveAll 날리면 컬렉션처럼 루프로 하나씩 insert됨
 
             return savedReservation.getId();
         } finally {  // 성공하든 실패하든 lock은 반드시 반환해줘야 함

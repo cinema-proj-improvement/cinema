@@ -2,6 +2,7 @@ package com.elice.cinema.domain.reservation.entity;
 
 import com.elice.cinema.domain.member.entity.Member;
 import com.elice.cinema.domain.screening.entity.Screening;
+import com.elice.cinema.global.common.audit.BaseEntity;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import jakarta.persistence.*;
