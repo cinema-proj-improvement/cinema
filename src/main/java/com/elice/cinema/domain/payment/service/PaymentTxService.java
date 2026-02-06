@@ -28,7 +28,7 @@ public class PaymentTxService {
     private final RefundService refundService;
 
     @Transactional
-    public void persistPaymentSuccess(TossConfirmResponse res, Long reservationId, Long memberId) {
+    public void commitPaymentSuccess(TossConfirmResponse res, Long reservationId, Long memberId) {
         if (paymentRepository.existsByPaymentKey(res.getPaymentKey())) {
             return; // 멱등 처리
         }
@@ -52,52 +52,67 @@ public class PaymentTxService {
     }
 
     @Transactional
-    public void persistPaymentCanceled(TossConfirmResponse res,
+    public void commitRollbackCanceled(TossConfirmResponse res,
                                        Long reservationId,
                                        Long memberId,
                                        String failureMessage) {
         Payment payment = getOrCreatePayment(res, reservationId, memberId);
 
-        if (payment.getStatus() == PaymentStatus.CANCELED) {
-            return;
-        }
+        Reservation reservation = getReservationById(reservationId);
+
+        if (payment.getStatus() == PaymentStatus.CANCELED) return;
+
 
         payment.markCanceled(failureMessage);
+
+        reservation.cancel();
+
         paymentRepository.save(payment); //FIXME: res에서 널 값이 들어오면 터짐, res 검증 로직이 필요할 듯
     }
 
     @Transactional
-    public void persistPaymentCancelFailed(TossConfirmResponse res,
+    public void commitRollbackCancelFailed(TossConfirmResponse res,
                                            Long reservationId,
                                            Long memberId,
                                            String failureMessage) {
         Payment payment = getOrCreatePayment(res, reservationId, memberId);
 
-        if (payment.getStatus() == PaymentStatus.CANCEL_FAILED) {
-            return;
-        }
+        if (payment.getStatus() == PaymentStatus.CANCEL_FAILED) return;
+
 
         payment.markCancelFailed(failureMessage);
         paymentRepository.save(payment);
     }
 
     @Transactional
-    public void recordCancel(
+    public void commitCancelSuccess(
             Long paymentId,
-            Long reservationId,
-            RefundCalculationResult result
-    ) {
-        Payment payment = paymentRepository.findById(paymentId)
+            RefundCalculationResult result) {
+        Payment payment = paymentRepository.findByIdWithReservation(paymentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+        if (payment.getStatus() == PaymentStatus.CANCELED) return;
+
+        Reservation reservation = payment.getReservation();
 
         reservation.cancel();
 
         payment.markCanceled(result.getReason());
 
         refundService.createRefund(payment, result.getCancelAmount());
+    }
+
+    // TODO: 결제 실패 메시지안에 결제 취소 이유를 넣어야하나? 아니면 결제 취소 실패 이유를 넣어야 하나?
+    @Transactional
+    public void commitCancelFailed(
+            Long paymentId,
+            RefundCalculationResult result) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        if (payment.getStatus() == PaymentStatus.CANCEL_FAILED) return;
+
+        payment.markCancelFailed(result.getReason());
     }
 
     private Payment getOrCreatePayment(TossConfirmResponse res, Long reservationId, Long memberId) {
@@ -109,5 +124,10 @@ public class PaymentTxService {
                             .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
                     return paymentMapper.toEntity(res, reservation, member);
                 });
+    }
+
+    private Reservation getReservationById(Long reservationId) {
+        return reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
     }
 }

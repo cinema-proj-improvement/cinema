@@ -15,6 +15,13 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, Payment
     Optional<Payment> findByPaymentKey(String paymentKey);
 
     @Query("""
+    select p from Payment p
+    join fetch p.reservation r
+    where p.id = :paymentId
+""")
+    Optional<Payment> findByIdWithReservation(@Param("paymentId") Long paymentId);
+
+    @Query("""
     select new com.elice.cinema.domain.payment.dto.response.AdminPaymentDetailResponse(
         p.id,
         p.reservationCode,

@@ -1,6 +1,7 @@
 package com.elice.cinema.domain.reservation.repository;
 
 import com.elice.cinema.domain.reservation.entity.Reservation;
+import com.elice.cinema.domain.reservation.entity.ReservationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -24,7 +25,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     """)
     Optional<Reservation> findByIdWithScreeningAndMovie(@Param("reservationId") Long reservationId);
 
-    Optional<Reservation> findByReservationCode(String reservationCode);
+    Optional<Reservation> findByReservationCodeAndStatus(String reservationCode, ReservationStatus status);
 
     @EntityGraph(attributePaths = "reservedSeats")
     Page<Reservation> findByMemberId(
