@@ -106,14 +106,20 @@ public class AdminReservationService {
     }
 
     public void cancelReservation(Long reservationId) {
-        if (!reservationRepository.existsById(reservationId)) {
-            throw new BusinessException(ErrorCode.RESERVATION_NOT_FOUND);
-        }
 
+        // 1. 예약 조회
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        // 2. 결제 조회
         Payment payment = paymentRepository.findByReservationId(reservationId)
-                        .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
+        // 3. 결제 취소 (여기서 모든 취소 정책 검증)
         paymentCancelService.cancel(payment.getId());
+
+        // 4. 예약 취소 (상태 + 좌석 일괄 처리)
+        reservation.cancel();
     }
 
 }

@@ -1,6 +1,5 @@
 package com.elice.cinema.global.batch.service.movie;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +16,6 @@ public class MovieReservationRateBatchService {
 
     @PersistenceContext
     private final EntityManager entityManager;
-
-    @PostConstruct
-    public void init() {
-        log.info("[INIT] Movie reservation rate batch start");
-        updateReservationRate();
-    }
-
 
     /**
      * 영화별 예매율 갱신
