@@ -41,13 +41,20 @@
                 <button type="submit">🔍</button>
             </form>
 
-            <select name="sort" class="movie-sort">
-                <option value="">정렬</option>
-                <option value="releaseDate"
-                        th:selected="${sort == 'releaseDate'}">개봉일순</option>
-                <option value="reservationRate"
-                        th:selected="${sort == 'reservationRate'}">예매율순</option>
-            </select>
+            <form method="get" th:action="@{/movies}" class="movie-sort-form">
+                <!-- 검색어 유지 -->
+                <input type="hidden" name="keyword" th:value="${keyword}"/>
+
+                <select name="sort"
+                        class="movie-sort"
+                        onchange="this.form.submit()">
+                    <option value="">정렬</option>
+                    <option value="releaseDate"
+                            th:selected="${sort == 'releaseDate'}">개봉일순</option>
+                    <option value="reservationRate"
+                            th:selected="${sort == 'reservationRate'}">예매율순</option>
+                </select>
+            </form>
         </div>
     </section>
 
@@ -73,15 +80,14 @@
                     개봉일
                 </p>
 
-                <div class="meta">
-                    <span>예매율</span>
-                    <strong th:text="${movie.advanceReservationRate} + '%'">0%</strong>
-                </div>
-
-                <div class="meta">
+                <strong th:text="${movie.advanceReservationRate != null
+        ? movie.advanceReservationRate
+        : '-'}">
+                </strong>
+                <!--<div class="meta">
                     <span>평점</span>
                     <strong th:text="${movie.avgScore}">0.0</strong>
-                </div>
+                </div>-->
 
                 <!-- 예매 버튼은 그대로 -->
                 <a class="reserve-btn"

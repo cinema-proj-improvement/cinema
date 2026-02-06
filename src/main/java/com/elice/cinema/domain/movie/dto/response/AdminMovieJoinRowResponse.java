@@ -29,4 +29,11 @@ public class AdminMovieJoinRowResponse {
     private final LocalDate endDate;
     private final Double avgScore;
     private final Double advanceReservationRate;
+
+    public Double getAdvanceReservationRate() {
+        if (advanceReservationRate == null) {
+            return null;
+        }
+        return Math.round(advanceReservationRate * 10) / 10.0;
+    }
 }

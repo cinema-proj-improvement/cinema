@@ -39,6 +39,8 @@ public enum ErrorCode {
     RESERVATION_SEAT_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "RS04", "한 번에 예매할 수 있는 좌석 수를 초과했습니다."),
     RESERVATION_NOT_CANCELABLE(HttpStatus.BAD_REQUEST, "RS02", "취소할 수 없는 예매 상태입니다."),
     RESERVATION_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "RS03", "이미 취소된 예매입니다."),
+    MOVIE_SORT_NOT_SUPPORTED(HttpStatus.BAD_REQUEST,"MV06", "해당 정렬 기능은 현재 지원되지 않습니다."),
+
     RESERVATION_ALREADY_CONFIRMED(HttpStatus.BAD_REQUEST, "RS06", "이미 확정된 예매입니다."),
 
     REFUND_POLICY_INVALID_RATE(HttpStatus.BAD_REQUEST, "PL01", "환불 퍼센트는 0~100 사이여야 합니다."),
@@ -78,6 +80,12 @@ public enum ErrorCode {
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SE01", "서버 내부 오류가 발생했습니다."),
+
+    // 501 Not Implemented
+    ADMIN_FEATURE_NOT_IMPLEMENTED(HttpStatus.NOT_IMPLEMENTED, "SE02", "해당 관리자 기능은 아직 구현되지 않았습니다."),
+    FEATURE_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "SE03", "해당 기능은 현재 지원되지 않습니다."),
+
+
     FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "IO01", "파일 업로드에 실패했습니다."),
     ENVIRONMENT_POLICY_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "PL05", "시스템 환경 정책이 설정되지 않았습니다.");
 

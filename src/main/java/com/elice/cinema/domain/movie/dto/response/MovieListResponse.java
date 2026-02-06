@@ -16,4 +16,11 @@ public class MovieListResponse {
     private Double advanceReservationRate;
     private Double avgScore;
 
+    public Double getAdvanceReservationRate() {
+        if (advanceReservationRate == null) {
+            return null;
+        }
+        return Math.round(advanceReservationRate * 10) / 10.0;
+    }
+
 }

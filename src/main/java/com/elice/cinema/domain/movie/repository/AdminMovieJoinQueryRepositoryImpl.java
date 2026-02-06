@@ -1,5 +1,6 @@
 package com.elice.cinema.domain.movie.repository;
 
+import com.elice.cinema.domain.movie.dto.request.AdminMovieSortType;
 import com.elice.cinema.domain.movie.dto.response.AdminMovieJoinRowResponse;
 import com.elice.cinema.domain.movie.entity.Genre;
 import com.querydsl.core.types.Projections;
@@ -21,11 +22,14 @@ public class AdminMovieJoinQueryRepositoryImpl implements AdminMovieJoinQueryRep
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<AdminMovieJoinRowResponse> findAdminMovieJoinRows(List<Long> movieIds) {
+    public List<AdminMovieJoinRowResponse> findAdminMovieJoinRows(
+            List<Long> movieIds,
+            AdminMovieSortType sortType
+    ) {
 
         EnumPath<Genre> genre = Expressions.enumPath(Genre.class, "genre");
 
-        return queryFactory
+        var query = queryFactory
                 .select(Projections.constructor(
                         AdminMovieJoinRowResponse.class,
                         movie.id,
@@ -46,7 +50,19 @@ public class AdminMovieJoinQueryRepositoryImpl implements AdminMovieJoinQueryRep
                                 .and(movieImage.displayOrder.eq(0))
                 )
                 .leftJoin(movie.genres, genre)
-                .where(movie.id.in(movieIds))
-                .fetch();
+                .where(movie.id.in(movieIds));
+
+        switch (sortType) {
+            case RELEASE_DATE_DESC ->
+                    query.orderBy(movie.releaseDate.desc());
+            case END_DATE_DESC ->
+                    query.orderBy(movie.endDate.desc());
+            case AVG_SCORE_DESC ->
+                    query.orderBy(movie.avgScore.desc().nullsLast());
+            case RESERVATION_RATE_DESC ->
+                    query.orderBy(movie.advanceReservationRate.desc().nullsLast());
+        }
+
+        return query.fetch();
     }
 }

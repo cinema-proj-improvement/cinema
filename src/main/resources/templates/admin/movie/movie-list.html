@@ -45,8 +45,9 @@
             <select name="sortType">
                 <option
                         th:each="s : ${T(com.elice.cinema.domain.movie.dto.request.AdminMovieSortType).values()}"
+                        th:selected="${s.name() == selectedSortType}"
                         th:text="${s.displayName}"
-                        th:value="${s}">
+                        th:value="${s.name()}">
                 </option>
             </select>
 
@@ -61,9 +62,9 @@
                 <label class="pill"
                        th:classappend="${search.statuses != null and search.statuses.contains(s)} ? 'selected' : ''"
                        th:each="s : ${T(com.elice.cinema.domain.movie.entity.MovieStatus).values()}">
-                    <input type="checkbox"
-                           class="status-chk"
-                           th:value="${s}">
+                    <input class="status-chk"
+                           th:value="${s}"
+                           type="checkbox">
                     <span th:text="${s.displayName}"></span>
                 </label>
             </div>
@@ -76,9 +77,9 @@
                 <label class="pill"
                        th:classappend="${search.genres != null and search.genres.contains(g)} ? 'selected' : ''"
                        th:each="g : ${T(com.elice.cinema.domain.movie.entity.Genre).values()}">
-                    <input type="checkbox"
-                           class="genre-chk"
-                           th:value="${g}">
+                    <input class="genre-chk"
+                           th:value="${g}"
+                           type="checkbox">
                     <span th:text="${g.displayName}"></span>
                 </label>
             </div>
@@ -91,9 +92,9 @@
                 <label class="pill"
                        th:classappend="${search.ageRatings != null and search.ageRatings.contains(a)} ? 'selected' : ''"
                        th:each="a : ${T(com.elice.cinema.domain.movie.entity.AgeRating).values()}">
-                    <input type="checkbox"
-                           class="ageRating-chk"
-                           th:value="${a}">
+                    <input class="ageRating-chk"
+                           th:value="${a}"
+                           type="checkbox">
                     <span th:text="${a.displayName}"></span>
                 </label>
             </div>
@@ -103,15 +104,19 @@
         <div class="filter-group">
             <label>기간</label>
             <div>
-                <input th:field="*{releaseStartDate}" type="date">
+                <input name="releaseStartDate"
+                       th:value="${search.releaseStartDate}"
+                       type="date">
                 <span>~</span>
-                <input th:field="*{releaseEndDate}" type="date">
+                <input name="releaseEndDate"
+                       th:value="${search.releaseEndDate}"
+                       type="date">
             </div>
         </div>
 
-        <input type="hidden" name="statuses" id="statuses">
-        <input type="hidden" name="genres" id="genres">
-        <input type="hidden" name="ageRatings" id="ageRatings">
+        <input id="statuses" name="statuses" type="hidden">
+        <input id="genres" name="genres" type="hidden">
+        <input id="ageRatings" name="ageRatings" type="hidden">
     </form>
 
     <!-- ================= 영화 목록 ================= -->
@@ -156,6 +161,8 @@
             <td th:text="${movie.endDate}"></td>
             <td th:text="${movie.avgScore != null ? movie.avgScore : '-'}"></td>
             <td th:text="${movie.advanceReservationRate != null ? movie.advanceReservationRate : '-'}"></td>
+            </td>
+
             <td>
                 <a th:href="@{/admin/movies/{id}(id=${movie.id})}">상세</a>
             </td>
@@ -165,18 +172,45 @@
 
     <!-- ================= 페이지네이션 ================= -->
     <div class="pagination">
-        <a th:href="@{/admin/movies(page=${moviesPage.number - 1})}"
+        <a th:href="@{/admin/movies(
+            page=${moviesPage.number - 1},
+            keyword=${search.keyword},
+            sortType=${search.sortType},
+            releaseStartDate=${search.releaseStartDate},
+            releaseEndDate=${search.releaseEndDate},
+            statuses=${search.statuses},
+            genres=${search.genres},
+            ageRatings=${search.ageRatings}
+        )}"
            th:if="${moviesPage.hasPrevious()}">
             이전
         </a>
 
         <a th:classappend="${moviesPage.number == i} ? 'active' : ''"
            th:each="i : ${#numbers.sequence(0, moviesPage.totalPages - 1)}"
-           th:href="@{/admin/movies(page=${i})}"
+           th:href="@{/admin/movies(
+        page=${i},
+        keyword=${search.keyword},
+        sortType=${search.sortType},
+        releaseStartDate=${search.releaseStartDate},
+        releaseEndDate=${search.releaseEndDate},
+        statuses=${search.statuses},
+        genres=${search.genres},
+        ageRatings=${search.ageRatings}
+   )}"
            th:text="${i + 1}">
         </a>
 
-        <a th:href="@{/admin/movies(page=${moviesPage.number + 1})}"
+        <a th:href="@{/admin/movies(
+            page=${moviesPage.number + 1},
+            keyword=${search.keyword},
+            sortType=${search.sortType},
+            releaseStartDate=${search.releaseStartDate},
+            releaseEndDate=${search.releaseEndDate},
+            statuses=${search.statuses},
+            genres=${search.genres},
+            ageRatings=${search.ageRatings}
+        )}"
            th:if="${moviesPage.hasNext()}">
             다음
         </a>
