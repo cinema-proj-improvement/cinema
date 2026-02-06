@@ -199,18 +199,19 @@ public class AdminScreeningController {
     }
 
     @DeleteMapping("/{screeningId}")
-    public String deleteScreening(@PathVariable Long screeningId,
-                                  Model model) {
+    public String deleteScreening(
+            @PathVariable Long screeningId,
+            RedirectAttributes redirectAttributes
+    ) {
         try {
             screeningService.deleteScreening(screeningId);
+            return "redirect:/admin/screenings";
+
         } catch (BusinessException e) {
-            ScreeningDetailResponse screening = screeningService.getScreeningDetail(screeningId);
-            model.addAttribute("screening", screening);
-            model.addAttribute("statuses", ScreeningStatus.values());
-            model.addAttribute("form", new ScreeningUpdateRequest()); //
-            model.addAttribute("errorMessage", e.getMessage());
-            return "admin/screening/screening-detail";
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage", e.getMessage()
+            );
+            return "redirect:/admin/screenings/" + screeningId;
         }
-        return "redirect:/admin/screenings";
     }
 }

@@ -32,28 +32,19 @@
                 <!-- 상태 -->
                 <select name="status">
                     <option value="">상태</option>
-                    <option th:each="status : ${paymentStatuses}"
-                            th:value="${status}"
-                            th:text="${status}">
+
+                    <option th:each="s : ${paymentStatuses}"
+                            th:value="${s}"
+                            th:text="${s}"
+                            th:selected="${s == condition.status}">
                     </option>
                 </select>
 
                 <!-- 정렬 -->
-                <select name="sort">
-                    <option value="LATEST"
-                            th:selected="${condition.sort == null || condition.sort == ''}">
-                        최신순
-                    </option>
-
-                    <option value="AMOUNT_DESC"
-                            th:selected="${condition.sort == 'AMOUNT_DESC'}">
-                        금액 높은 순
-                    </option>
-
-                    <option value="AMOUNT_ASC"
-                            th:selected="${condition.sort == 'AMOUNT_ASC'}">
-                        금액 낮은 순
-                    </option>
+                <select name="sort" th:value="${condition.sort}">
+                    <option value="">최신순</option>
+                    <option value="AMOUNT_DESC">금액 높은 순</option>
+                    <option value="AMOUNT_ASC">금액 낮은 순</option>
                 </select>
 
                 <button type="submit" class="btn-search">검색</button>
@@ -124,19 +115,24 @@
         <!-- =========================
              페이지네이션
         ========================= -->
-        <div class="pagination" th:if="${page.totalPages > 1}">
-            <a th:if="${!page.first}"
-               th:href="@{/admin/payments(page=${page.number - 1})}">‹</a>
-
-            <a th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
-               th:href="@{/admin/payments(page=${i})}"
-               th:text="${i + 1}"
-               th:classappend="${i == page.number} ? 'active'">
-            </a>
-
-            <a th:if="${!page.last}"
-               th:href="@{/admin/payments(page=${page.number + 1})}">›</a>
-        </div>
+        <a th:if="${!page.first}"
+           th:href="@{/admin/payments(
+        page=${page.number - 1},
+        keyword=${condition.keyword},
+        status=${condition.status},
+        sort=${condition.sort},
+        fromDate=${condition.fromDate},
+        toDate=${condition.toDate}
+   )}">‹</a>
+        <a th:if="${!page.last}"
+           th:href="@{/admin/payments(
+        page=${page.number + 1},
+        keyword=${condition.keyword},
+        status=${condition.status},
+        sort=${condition.sort},
+        fromDate=${condition.fromDate},
+        toDate=${condition.toDate}
+   )}">›</a>
 
     </section>
 
