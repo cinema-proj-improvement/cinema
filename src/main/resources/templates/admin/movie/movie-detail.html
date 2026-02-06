@@ -95,7 +95,11 @@
                         </div>
                         <div>
                             <p class="stat-label">예매율</p>
-                            <p class="stat-value">42.5%</p>
+                            <p class="stat-value"
+                               th:text="${movie.advanceReservationRate != null
+                ? T(java.lang.Math).round(movie.advanceReservationRate * 10) / 10.0
+                : '-'}">
+                            </p>
                         </div>
                     </div>
 

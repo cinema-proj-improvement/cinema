@@ -33,4 +33,11 @@ public class MovieDetailResponse {
     private List<String> images;
     private Long audienceCount;
 
+    public Double getAdvanceReservationRate() {
+        if (advanceReservationRate == null) {
+            return null;
+        }
+        return Math.round(advanceReservationRate * 10) / 10.0;
+    }
+
 }

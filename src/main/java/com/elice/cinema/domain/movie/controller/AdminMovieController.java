@@ -10,6 +10,8 @@ import com.elice.cinema.domain.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -47,6 +49,7 @@ public class AdminMovieController {
     @GetMapping
     public String getAdminMovieListPage(
             AdminMovieSearchRequest request,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable,
             Model model
 

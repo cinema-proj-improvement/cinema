@@ -43,7 +43,7 @@
                     <span th:text="${#strings.listJoin(movie.genres.![displayName], ', ')}"></span>
                 </li>
                 <li><strong>평점</strong> <span th:text="${movie.avgScore}"></span></li>
-                <li><strong>예매율</strong> <span th:text="${movie.advanceReservationRate + '%'}"></span></li>
+                <li><strong>예매율</strong> <span th:text="${movie.advanceReservationRate}"></span></li>
             </ul>
 
             <a href="#" class="reserve-btn">예매하기</a>

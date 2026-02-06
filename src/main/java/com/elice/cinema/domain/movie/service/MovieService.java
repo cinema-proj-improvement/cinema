@@ -58,13 +58,12 @@ public class MovieService {
         return movie.getId();
     }
 
-    // 관리자 영화 목록 조회 (검색조건 + 페이지네이션 + 정렬) //todo : 예매 및 리뷰 기능 구현 후 평점, 예매율 추가하기
+    // 관리자 영화 목록 조회 (검색조건 + 페이지네이션 + 정렬)
     public Page<AdminMovieListResponse> getAdminMovieListPage(
             AdminMovieSearchRequest request,
             Pageable pageable
-    ) { // TODO: 예매 및 리뷰 기능 구현 후 평점, 예매율 추가하기
-        if (request.getSortType() == AdminMovieSortType.AVG_SCORE_DESC ||
-                request.getSortType() == AdminMovieSortType.RESERVATION_RATE_DESC) {
+    ) { // TODO: 리뷰 기능 구현 후 평점 추가하기
+        if (request.getSortType() == AdminMovieSortType.AVG_SCORE_DESC) {
 
             throw new BusinessException(ErrorCode.MOVIE_SORT_NOT_SUPPORTED);
         }

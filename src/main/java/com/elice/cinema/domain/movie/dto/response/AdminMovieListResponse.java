@@ -63,4 +63,11 @@ public class AdminMovieListResponse {
 
         return new ArrayList<>(map.values());
     }
+
+    public Double getAdvanceReservationRate() {
+        if (advanceReservationRate == null) {
+            return null;
+        }
+        return Math.round(advanceReservationRate * 10) / 10.0;
+    }
 }
