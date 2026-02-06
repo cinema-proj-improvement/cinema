@@ -144,33 +144,31 @@ public class AdminScreeningController {
         return "redirect:/admin/screenings";
     }
 
-    //TODO: 상세 조회 만들고 나면 다시 만들기, 상태 변경 적용 시 적용 됐다고 메시지 만들기
     @PatchMapping("/{screeningId}/status")
     public String updateScreeningStatus(@PathVariable Long screeningId,
                                         @Valid @ModelAttribute("form") ScreeningUpdateRequest form,
                                         BindingResult bindingResult,
-                                        Model model,
                                         RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            ScreeningDetailResponse screening = screeningService.getScreeningDetail(screeningId);
-            model.addAttribute("screening", screening);
-            model.addAttribute("statuses", ScreeningStatus.values());
-            return "admin/screening/screening-detail";
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage", "상태 변경 요청 값이 올바르지 않습니다."
+            );
+            return "redirect:/admin/screenings/" + screeningId;
         }
 
-        // 2) 비즈니스 예외(상태 변경 불가 등) -> 상단 알림으로 노출
+        // 2) 비즈니스 예외 (상태 변경 불가 등)
         try {
             screeningService.updateScreening(screeningId, form);
-            redirectAttributes.addFlashAttribute("successMessage", "상영 상태가 변경되었습니다.");
+            redirectAttributes.addFlashAttribute(
+                    "successMessage", "상영 상태가 변경되었습니다."
+            );
         } catch (BusinessException e) {
-            ScreeningDetailResponse screening = screeningService.getScreeningDetail(screeningId);
-            model.addAttribute("screening", screening);
-            model.addAttribute("statuses", ScreeningStatus.values());
-            model.addAttribute("errorMessage", e.getMessage());
-            return "admin/screening/screening-detail";
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage", e.getMessage()
+            );
         }
 
-        return "redirect:/admin/screenings/{screeningId}";
+        return "redirect:/admin/screenings/" + screeningId;
     }
 
     @GetMapping({"", "/"})
