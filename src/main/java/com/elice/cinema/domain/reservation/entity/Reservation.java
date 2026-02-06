@@ -2,7 +2,6 @@ package com.elice.cinema.domain.reservation.entity;
 
 import com.elice.cinema.domain.member.entity.Member;
 import com.elice.cinema.domain.screening.entity.Screening;
-import com.elice.cinema.global.common.audit.BaseEntity;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import jakarta.persistence.*;
@@ -60,9 +59,6 @@ public class Reservation extends BaseEntity {
     @JoinColumn(name = "screening_id", nullable = false)
     private Screening screening;
 
-    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReservedSeat> reservedSeats = new ArrayList<>();
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
@@ -73,8 +69,17 @@ public class Reservation extends BaseEntity {
     @Column(name = "screen_name", nullable = false)
     private String screenName;
 
+    @Column(name = "start_at", nullable = false)
+    private LocalDateTime startAt;
+
+    @Column(name = "end_at", nullable = false)
+    private LocalDateTime endAt;
+
     @Column(name = "member_name", nullable = false)
     private String memberName;
+
+    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReservedSeat> reservedSeats = new ArrayList<>();
 
     public static Reservation createHoldReservation(Screening screening,
                                                     Member member,
@@ -94,6 +99,8 @@ public class Reservation extends BaseEntity {
         // TODO: LAZY -> 서비스에서 미리 fetch join으로 가져와야 함
         reservation.movieTitle = screening.getMovie().getTitle();
         reservation.screenName = screening.getScreen().getName();
+        reservation.startAt = screening.getStartAt();
+        reservation.endAt = screening.getEndAt();
         reservation.memberName = member.getName();
 
         return reservation;
@@ -118,11 +125,35 @@ public class Reservation extends BaseEntity {
         return isCancelableStatus() && isBeforeScreening();
     }
 
+    public void confirm() {
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
     // 예매 취소
     public void cancel() {
         if (!isCancelable()) {
             throw new BusinessException(ErrorCode.RESERVATION_NOT_CANCELABLE);
         }
         this.status = ReservationStatus.CANCELED;
+        this.canceledAt = LocalDateTime.now();
+        reservedSeats.forEach(ReservedSeat::cancel);
+    }
+
+    // 양방향 편의 메서드: ReservedSeat 추가
+    public void addReservedSeat(ReservedSeat reservedSeat) {
+        reservedSeats.add(reservedSeat);
+        reservedSeat.setReservation(this);
+    }
+
+    // 양방향 편의 메서드: ReservedSeat 제거
+    public void removeReservedSeat(ReservedSeat reservedSeat) {
+        reservedSeats.remove(reservedSeat);
+        reservedSeat.setReservation(null);
+    }
+
+    // 양방향 편의 메서드: 모든 ReservedSeat 제거
+    public void clearReservedSeats() {
+        reservedSeats.forEach(reservedSeat -> reservedSeat.setReservation(null));
+        reservedSeats.clear();
     }
 }

@@ -102,7 +102,7 @@ public class EnvironmentPolicy {
             Integer scheduledToOpenDays,
             Integer openToClosedMinutes,
             Integer cinemaOpenHour,
-            Integer dafaultPrice
+            Integer defaultPrice
     ) {
         this.cleaningMinutes = cleaningMinutes;
         this.reservationDeadlineMinutes = reservationDeadlineMinutes;
@@ -111,6 +111,6 @@ public class EnvironmentPolicy {
         this.scheduledToOpenDays = scheduledToOpenDays;
         this.openToClosedMinutes = openToClosedMinutes;
         this.cinemaOpenHour = cinemaOpenHour;
-        this.defaultPrice = dafaultPrice;
+        this.defaultPrice = defaultPrice;
     }
 }

@@ -150,6 +150,7 @@ public class ReservationService {
         }
     }
 
+    // TODO: 메서드 이름 수정
     public List<ReservationMovieSelectResponse> getMoviesWithScreeningsWithin() {
         LocalDate today = LocalDate.now();
 
@@ -232,11 +233,11 @@ public class ReservationService {
         }
     }
 
+    //TODO: 수정 고려 매번 날림
     private Integer calculateRemainingSeats(Screening screening) {
         int totalSeats = screening.getScreen().getTotalSeats();
         int reservedCount = reservedSeatRepository.countAllByScreening_Id(screening.getId());
 
         return totalSeats - reservedCount;
     }
-
 }

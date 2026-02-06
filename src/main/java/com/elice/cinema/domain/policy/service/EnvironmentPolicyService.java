@@ -26,6 +26,10 @@ public class EnvironmentPolicyService {
         return getPolicy().getScheduledToOpenDays();
     }
 
+    public int getRefundDeadlineMinutes() {
+        return getPolicy().getRefundDeadlineMinutes();
+    }
+
     public int getMaxReservationCount() {
         return getPolicy().getMaxReservationCount();
     }
