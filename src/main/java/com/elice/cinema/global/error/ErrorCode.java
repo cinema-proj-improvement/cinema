@@ -30,7 +30,9 @@ public enum ErrorCode {
     MEMBER_NICKNAME_DUPLICATED(HttpStatus.BAD_REQUEST, "MB03", "이미 사용 중인 닉네임입니다."),
     PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "PY01", "결제 금액이 일치하지 않습니다."),
     PAYMENT_CONFIRM_FAILED(HttpStatus.BAD_REQUEST, "PY02", "결제 승인에 실패했습니다."),
-    PAYMENT_CANCEL_FAILED(HttpStatus.BAD_REQUEST, "PY05", "결제 취소에 실패했습니다."),
+    PAYMENT_CANCEL_FAILED(HttpStatus.BAD_REQUEST, "PY05", "결제 취소에 실패했습니다. 관리자에게 문의하세요."),
+    PAYMENT_CANCELED_AFTER_CONFIRM(HttpStatus.BAD_REQUEST, "PY06", "결제 처리 중 오류가 발생하여 결제가 취소되었습니다."),
+    PAYMENT_CANCELED_FAILED_AFTER_CONFIRM(HttpStatus.INTERNAL_SERVER_ERROR, "PY07", "결제 처리 중 오류가 발생했으며, 결제 취소에도 실패했습니다. 고객센터에 문의해주세요."),
 
     SCREENING_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "SG10", "SCHEDULED 상태의 상영만 삭제 가능합니다."),
     SEAT_INACTIVE(HttpStatus.BAD_REQUEST, "ST06", "사용 불가능한 좌석입니다."),

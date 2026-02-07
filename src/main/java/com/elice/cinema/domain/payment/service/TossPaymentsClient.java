@@ -4,6 +4,7 @@ import com.elice.cinema.domain.payment.dto.response.TossCancelResponse;
 import com.elice.cinema.domain.payment.dto.response.TossConfirmResponse;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
+import com.elice.cinema.global.error.exception.PaymentFailRedirectException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -45,7 +46,7 @@ public class TossPaymentsClient {
                 restTemplate.postForEntity(url, entity, TossConfirmResponse.class);
 
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-            throw new BusinessException(ErrorCode.PAYMENT_CONFIRM_FAILED);
+            throw new PaymentFailRedirectException(ErrorCode.PAYMENT_CONFIRM_FAILED, orderId);
         }
 
         return response.getBody();

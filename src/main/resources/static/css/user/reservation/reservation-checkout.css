@@ -286,3 +286,22 @@
         grid-template-columns: 1fr;
     }
 }
+
+.payment-error-box {
+    margin-bottom: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    background: #fff4f4;
+    border: 1px solid #ffcccc;
+}
+
+.payment-error-box .error-title {
+    font-weight: 700;
+    color: #d32f2f;
+    margin-bottom: 6px;
+}
+
+.payment-error-box .error-message {
+    color: #555;
+    font-size: 14px;
+}

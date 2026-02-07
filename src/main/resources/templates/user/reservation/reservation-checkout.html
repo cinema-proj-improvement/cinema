@@ -26,9 +26,13 @@
 
     <!-- 2컬럼 레이아웃 -->
     <section class="checkout-layout">
-
         <!-- 좌측: 예매 정보 + 결제 수단 -->
         <div class="left-col">
+
+            <div th:if="${error}" class="payment-error-box">
+                <p class="error-title">결제에 실패했습니다</p>
+                <p class="error-message" th:text="${errorMessage}"></p>
+            </div>
 
             <!-- 예매 정보 카드 -->
             <section class="panel ticket-panel">

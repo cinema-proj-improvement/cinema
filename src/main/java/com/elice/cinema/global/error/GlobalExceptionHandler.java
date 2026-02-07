@@ -1,6 +1,7 @@
 package com.elice.cinema.global.error;
 
 import com.elice.cinema.global.error.exception.BusinessException;
+import com.elice.cinema.global.error.exception.PaymentFailRedirectException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
 @ControllerAdvice(annotations = Controller.class)
@@ -41,11 +43,6 @@ public class GlobalExceptionHandler {
         model.addAttribute("status", errorCode.getStatus().value());
         model.addAttribute("path", request.getRequestURI());
 
-        // 결제 도메인 에러만 결제 실패 페이지로 분기
-        if (errorCode.name().startsWith("PAYMENT_")) {
-            return "user/payment/fail";
-        }
-
         return "error/custom-error";
     }
 
@@ -71,5 +68,16 @@ public class GlobalExceptionHandler {
         model.addAttribute("path", request.getRequestURI());
 
         return "error/custom-error";
+    }
+
+    @ExceptionHandler(PaymentFailRedirectException.class)
+    public String handlePaymentFail(
+            PaymentFailRedirectException ex,
+            RedirectAttributes ra
+    ) {
+        ra.addAttribute("message", ex.getErrorCode().getMessage());
+        ra.addAttribute("orderId", ex.getOrderId());
+
+        return "redirect:/payments/fail";
     }
 }
