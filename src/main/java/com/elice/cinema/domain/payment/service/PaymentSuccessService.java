@@ -9,6 +9,7 @@ import com.elice.cinema.domain.reservation.entity.ReservationStatus;
 import com.elice.cinema.domain.reservation.repository.ReservationRepository;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
+import com.elice.cinema.global.error.exception.PaymentFailRedirectException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,7 @@ public class PaymentSuccessService {
         TossConfirmResponse confirmResponse = tossPaymentsClient.tossConfirm(paymentKey, orderId, amount);
 
         if (!"DONE".equals(confirmResponse.getStatus())) {
-            throw new BusinessException(ErrorCode.PAYMENT_CONFIRM_FAILED);
+            throw new PaymentFailRedirectException(ErrorCode.PAYMENT_CONFIRM_FAILED, orderId);
         }
 
         try {
@@ -83,14 +84,15 @@ public class PaymentSuccessService {
 
         boolean canceled = paymentCancelService.tryPgCancelWithRetry(confirmResponse.getPaymentKey(), confirmResponse.getTotalAmount(), cancelReason, 3);
 
-        //TODO: CONFIRM 이후 취소가 되어야 하는 상황에 맞는 취소 페이먼트 생성, 또는 취소를 시도하다 실패한 (취소해야하는) 취소 실패 결제도 추가
+        // TODO: CONFIRM 이후 취소가 되어야 하는 상황에 맞는 취소 페이먼트 생성, 또는 취소를 시도하다 실패한 (취소해야하는) 취소 실패 결제도 추가
+        // TODO: 이때는 모든 상태가 HOLD가 아닌 CANCELED가 되므로 결제 취소후 다시 예약 화면으로 보내는게 아닌 홈으로 보냄.
         if (canceled) {
             paymentTxService.commitRollbackCanceled(confirmResponse, reservationId, memberId, failureMessage);
-            return;
+            throw new BusinessException(ErrorCode.PAYMENT_CANCELED_AFTER_CONFIRM);
         }
 
         // 취소 실패는 가장 위험: 반드시 기록하고 사용자에게 결제 취소 실패로 안내
         paymentTxService.commitRollbackCancelFailed(confirmResponse, reservationId, memberId, failureMessage);
-        throw new BusinessException(ErrorCode.PAYMENT_CANCEL_FAILED);
+        throw new BusinessException(ErrorCode.PAYMENT_CANCELED_FAILED_AFTER_CONFIRM);
     }
 }

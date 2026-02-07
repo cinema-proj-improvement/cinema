@@ -25,7 +25,11 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     """)
     Optional<Reservation> findByIdWithScreeningAndMovie(@Param("reservationId") Long reservationId);
 
+    Optional<Reservation> findByReservationCode(String reservationCode);
     Optional<Reservation> findByReservationCodeAndStatus(String reservationCode, ReservationStatus status);
+
+    @EntityGraph(attributePaths = {"reservedSeats"})
+    Optional<Reservation> findWithReservedSeatsById(Long id);
 
     @EntityGraph(attributePaths = "reservedSeats")
     Page<Reservation> findByMemberId(

@@ -10,12 +10,15 @@ import com.elice.cinema.domain.payment.repository.PaymentRepository;
 import com.elice.cinema.domain.policy.dto.response.RefundCalculationResult;
 import com.elice.cinema.domain.refund.service.RefundService;
 import com.elice.cinema.domain.reservation.entity.Reservation;
+import com.elice.cinema.domain.reservation.entity.ReservedSeat;
 import com.elice.cinema.domain.reservation.repository.ReservationRepository;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,10 +36,12 @@ public class PaymentTxService {
             return; // 멱등 처리
         }
 
-        Reservation reservation = reservationRepository.findById(reservationId)
+        //TODO: 여기서도 HOLD 상태인지 검증해줘야 하나?
+        Reservation reservation = reservationRepository.findWithReservedSeatsById(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        List<ReservedSeat> reservedSeats = reservation.getReservedSeats();
 
         Long totalPrice = reservation.getTotalPrice().longValue();
 
@@ -46,6 +51,7 @@ public class PaymentTxService {
         }
 
         reservation.confirm();
+        reservedSeats.forEach(ReservedSeat::confirm);
 
         Payment payment = paymentMapper.toEntity(res, reservation, member);
         paymentRepository.save(payment);
@@ -65,7 +71,7 @@ public class PaymentTxService {
 
         payment.markCanceled(failureMessage);
 
-        reservation.cancel();
+        reservation.fail();
 
         paymentRepository.save(payment); //FIXME: res에서 널 값이 들어오면 터짐, res 검증 로직이 필요할 듯
     }

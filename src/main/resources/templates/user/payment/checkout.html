@@ -124,7 +124,7 @@
 
         <div class="actions">
             <!-- ✅ 취소(1): 안전한 고정 경로로 이동 -->
-            <a class="btn ghost" th:href="@{/reservations/select}">취소</a>
+            <a class="btn ghost" th:href="@{/reservations/{reservationId}(reservationId=${reservationId})}">>취소</a>
 
             <!-- ✅ 취소(2): 뒤로가기 방식이 더 좋으면 위 a태그 대신 이 버튼 사용
             <button type="button" class="btn ghost" id="cancel-button">취소</button>

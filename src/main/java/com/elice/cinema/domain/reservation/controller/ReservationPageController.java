@@ -33,8 +33,16 @@ public class ReservationPageController {
 
     @GetMapping("/{reservationId}")
     public String getCheckoutPage(@PathVariable Long reservationId,
+                                  @RequestParam(defaultValue = "false") boolean error,
+                                  @RequestParam(required = false) String message,
                                   Model model) {
         ReservationCheckoutResponse reservation = reservationService.getCheckoutPage(reservationId);
+
+        if (error) {
+            model.addAttribute("error", true);
+            model.addAttribute("errorMessage", message);
+        }
+
         model.addAttribute("reservation", reservation);
 
         return "user/reservation/reservation-checkout";

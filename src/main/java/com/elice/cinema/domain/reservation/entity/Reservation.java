@@ -137,7 +137,13 @@ public class Reservation extends BaseEntity {
         }
         this.status = ReservationStatus.CANCELED;
         this.canceledAt = LocalDateTime.now();
-        reservedSeats.forEach(ReservedSeat::cancel);
+        this.reservedSeats.clear();
+    }
+    // 예매 실패(현재는 취소로 나타냄)
+    public void fail() {
+        this.status = ReservationStatus.CANCELED;
+        this.canceledAt = LocalDateTime.now();
+        this.reservedSeats.clear();
     }
 
     // 양방향 편의 메서드: ReservedSeat 추가

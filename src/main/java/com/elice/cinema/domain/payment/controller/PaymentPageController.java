@@ -18,8 +18,8 @@ public class PaymentPageController {
     public String checkout(@PathVariable Long reservationId,
                            Model model) {
         TossPaymentReservationResponse reservation = reservationService.getTossPage(reservationId);
+        model.addAttribute("reservationId", reservationId);
         model.addAttribute("reservation", reservation);
-
         return "user/payment/checkout";
     }
 }
