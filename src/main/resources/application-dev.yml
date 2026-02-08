@@ -7,8 +7,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop # 운영은 validate 권장
-    show-sql: true
+      ddl-auto: none
+    show-sql: false
 
   data:
     redis:
