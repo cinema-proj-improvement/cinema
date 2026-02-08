@@ -67,11 +67,9 @@ public class ReservedSeat extends BaseEntity {
         return reservedSeat;
     }
 
-    // 예매 취소
-    public void cancel() {
-        if(status == ReservationStatus.HOLD || status == ReservationStatus.CONFIRMED) {
-            status = ReservationStatus.CANCELED;
-        }
+    //TODO: 나중에  paymentStatus의 canChangeTo 만들어서 유효성 검사하기
+    public void confirm() {
+        this.status = ReservationStatus.CONFIRMED;
     }
 
     // 양방향 편의 메서드: Reservation 설정

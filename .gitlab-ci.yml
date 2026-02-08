@@ -47,9 +47,12 @@ deploy_job:
     - export DB_USERNAME="$DB_USERNAME"
     - export DB_PASSWORD="$DB_PASSWORD"
     - export DB_URL="$DB_URL"
+    - export TOSS_CLIENT_KEY="$TOSS_CLIENT_KEY"
+    - export TOSS_SECRET_KEY="$TOSS_SECRET_KEY"
     - nohup java -Dspring.profiles.active=dev -jar build/libs/*SNAPSHOT.jar > app.log 2>&1 &
     - echo "배포가 완료되었습니다!"
   rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_BRANCH == $TARGET_BRANCH
 ######################################
 # 학습용으로 실제로는 다른 방식으로 할 것!

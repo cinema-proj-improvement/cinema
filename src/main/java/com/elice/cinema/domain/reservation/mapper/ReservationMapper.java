@@ -1,9 +1,6 @@
 package com.elice.cinema.domain.reservation.mapper;
 
-import com.elice.cinema.domain.reservation.dto.response.MypageDetailReservationResponse;
-import com.elice.cinema.domain.reservation.dto.response.MypageHomeReservationResponse;
-import com.elice.cinema.domain.reservation.dto.response.ReservationCheckoutResponse;
-import com.elice.cinema.domain.reservation.dto.response.TossPaymentReservationResponse;
+import com.elice.cinema.domain.reservation.dto.response.*;
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import org.mapstruct.Mapper;
 
@@ -20,5 +17,5 @@ public interface ReservationMapper {
     public MypageHomeReservationResponse toMypageReservationResponse(Reservation reservation, List<String> seatCodes);
     public MypageDetailReservationResponse toMypageDetailReservationResponse(Reservation reservation,
                                                                              List<String> seatCodes);
-
+    public ReservationIdResponse toReservationIdResponse(Reservation reservation);
 }

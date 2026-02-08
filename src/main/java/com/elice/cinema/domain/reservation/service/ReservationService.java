@@ -8,6 +8,7 @@ import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.reservation.dto.response.ReservationCheckoutResponse;
+import com.elice.cinema.domain.reservation.dto.response.ReservationIdResponse;
 import com.elice.cinema.domain.reservation.dto.response.TossPaymentReservationResponse;
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import com.elice.cinema.domain.reservation.entity.ReservationStatus;
@@ -128,6 +129,13 @@ public class ReservationService {
 
     public int calculateTotalPrice(List<Seat> seats) {  // TODO: 이후 가격 계산에 대한 로직이 복잡해지면 클래스로 분리합니다. (현재도 위치 적절하지 않음)
         return environmentPolicyService.getDefaultPrice() * seats.size();
+    }
+
+    public ReservationIdResponse getReservationIdByReservationCode(String orderId) {
+        Reservation reservation = reservationRepository.findByReservationCode(orderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        return reservationMapper.toReservationIdResponse(reservation);
     }
 
     // 좌석 개수 검증 (선택한 좌석의 개수가 개인이 예매할 수 있는 최대 좌석수를 넘기지 않았는지 검증)
