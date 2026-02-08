@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -86,15 +88,58 @@ public class ScreeningService {
         screening.updateScreeningStatus(req.getScreeningStatus());
     }
 
+    // 관리자 상영 리스트
     public Page<AdminScreeningResponse> searchAdmin(
             AdminScreeningSearchRequest request,
             Pageable pageable
     ) {
         applyDefaultDateRange(request);
 
+        Page<Screening> page = screeningRepository.searchAdmin(request, pageable);
+
+        List<Long> screeningIds = page.getContent().stream()
+                .map(Screening::getId)
+                .toList();
+
+        Map<Long, AdminScreeningSeatSummaryResponse> seatSummaryMap =
+                loadSeatSummaryMap(screeningIds);
+
+        return page.map(screening -> {
+            AdminScreeningResponse base =
+                    screeningMapper.toAdminListResponse(screening);
+
+            AdminScreeningSeatSummaryResponse summary =
+                    seatSummaryMap.get(screening.getId());
+
+            if (summary == null) {
+                long totalSeats = screening.getScreen().getTotalSeats();
+
+                summary = AdminScreeningSeatSummaryResponse.of(
+                        totalSeats, // total
+                        0,          // confirmed
+                        0           // hold
+                );
+            }
+
+            return AdminScreeningResponse.withSeatSummary(base, summary);
+        });
+    }
+
+    // 좌석 현황
+    private Map<Long, AdminScreeningSeatSummaryResponse> loadSeatSummaryMap(
+            List<Long> screeningIds
+    ) {
         return screeningRepository
-                .searchAdmin(request, pageable)
-                .map(screeningMapper::toAdminListResponse);
+                .findSeatSummaryByScreeningIds(screeningIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        t -> t.get(0, Long.class),
+                        t -> AdminScreeningSeatSummaryResponse.of(
+                                t.get(1, Long.class),
+                                t.get(2, Long.class),
+                                t.get(3, Long.class)
+                        )
+                ));
     }
 
     public List<AdminScreeningFilterOptionResponse> getMovieFilterOptions() {

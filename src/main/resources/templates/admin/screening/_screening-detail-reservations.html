@@ -35,17 +35,17 @@
         </a>
 
         <a th:href="@{|/admin/screenings/${screening.id}?status=CONFIRMED|}"
-           th:classappend="${selectedStatus == T(com.elice.cinema.domain.reservation.entity.ReservationStatus).CONFIRMED} ? 'active'">
+           th:classappend="${selectedStatus != null and selectedStatus.name() == 'CONFIRMED'} ? 'active'">
             예매 확정
         </a>
 
         <a th:href="@{|/admin/screenings/${screening.id}?status=HOLD|}"
-           th:classappend="${selectedStatus == T(com.elice.cinema.domain.reservation.entity.ReservationStatus).HOLD} ? 'active'">
+           th:classappend="${selectedStatus != null and selectedStatus.name() == 'HOLD'} ? 'active'">
             예매 대기
         </a>
 
         <a th:href="@{|/admin/screenings/${screening.id}?status=CANCELED|}"
-           th:classappend="${selectedStatus == T(com.elice.cinema.domain.reservation.entity.ReservationStatus).CANCELED} ? 'active'">
+           th:classappend="${selectedStatus != null and selectedStatus.name() == 'CANCELED'} ? 'active'">
             예매 취소
         </a>
     </div>

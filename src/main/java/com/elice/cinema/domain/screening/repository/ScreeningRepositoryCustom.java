@@ -5,6 +5,7 @@ import com.elice.cinema.domain.screening.dto.response.AdminScreeningFilterOption
 import com.elice.cinema.domain.screening.dto.response.AdminScreeningSeatResponse;
 import com.elice.cinema.domain.screening.dto.response.AdminScreeningSeatSummaryResponse;
 import com.elice.cinema.domain.screening.entity.Screening;
+import com.querydsl.core.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -23,4 +24,6 @@ public interface ScreeningRepositoryCustom {
 
     // 좌석 요약
     AdminScreeningSeatSummaryResponse findAdminSeatSummaryByScreeningId(Long screeningId);
+
+    List<Tuple> findSeatSummaryByScreeningIds(List<Long> screeningIds);
 }

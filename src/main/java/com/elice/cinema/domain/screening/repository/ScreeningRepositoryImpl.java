@@ -6,10 +6,12 @@ import com.elice.cinema.domain.screening.dto.response.AdminScreeningFilterOption
 import com.elice.cinema.domain.screening.dto.response.AdminScreeningSeatResponse;
 import com.elice.cinema.domain.screening.dto.response.AdminScreeningSeatSummaryResponse;
 import com.elice.cinema.domain.screening.entity.Screening;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -167,7 +169,7 @@ public class ScreeningRepositoryImpl implements ScreeningRepositoryCustom {
                 .fetch();
     }
 
-    // 상영별 좌석 요약 조회
+    // 상영별 좌석 요약 조회(상세페이지)
     public AdminScreeningSeatSummaryResponse findAdminSeatSummaryByScreeningId(Long screeningId) {
 
         Long total = queryFactory
@@ -210,5 +212,43 @@ public class ScreeningRepositoryImpl implements ScreeningRepositoryCustom {
                 h,
                 t - c - h
         );
+    }
+
+    // 좌석 현황
+    @Override
+    public List<Tuple> findSeatSummaryByScreeningIds(List<Long> screeningIds) {
+
+        NumberExpression<Long> confirmedCount =
+                new CaseBuilder()
+                        .when(reservation.status.eq(ReservationStatus.CONFIRMED)).then(1L)
+                        .otherwise(0L)
+                        .sum();
+
+        NumberExpression<Long> holdCount =
+                new CaseBuilder()
+                        .when(reservation.status.eq(ReservationStatus.HOLD)).then(1L)
+                        .otherwise(0L)
+                        .sum();
+
+        return queryFactory
+                .select(
+                        screening.id,
+                        seat.countDistinct(),
+                        confirmedCount,
+                        holdCount
+                )
+                .from(screening)
+                .join(seat).on(seat.screen.eq(screening.screen))
+                .leftJoin(reservedSeat).on(
+                        reservedSeat.screening.eq(screening),
+                        reservedSeat.seat.eq(seat)
+                )
+                .leftJoin(reservation).on(reservedSeat.reservation.eq(reservation))
+                .where(
+                        screening.id.in(screeningIds),
+                        seat.active.isTrue()
+                )
+                .groupBy(screening.id)
+                .fetch();
     }
 }

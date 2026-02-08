@@ -2,11 +2,14 @@ package com.elice.cinema.domain.payment.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class AdminPaymentReservationDetailResponse {
 
     private Long reservationId;
@@ -17,5 +20,16 @@ public class AdminPaymentReservationDetailResponse {
 
     private Long screeningId;
 
-    // TODO:  좌석 정보(seatCodes, seatCount) 포함 여부 검토
+    private List<String> seatCodes;
+
+    public AdminPaymentReservationDetailResponse(Long reservationId, String reservationCode,
+                                                 String movieTitle, String screenName,
+                                                 LocalDateTime startAt, Long screeningId) {
+        this.reservationId = reservationId;
+        this.reservationCode = reservationCode;
+        this.movieTitle = movieTitle;
+        this.screenName = screenName;
+        this.startAt = startAt;
+        this.screeningId = screeningId;
+    }
 }
