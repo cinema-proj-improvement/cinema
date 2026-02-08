@@ -19,6 +19,4 @@ public class ScreeningDetailResponse {
     private LocalDateTime startAt;
     private LocalDateTime endAt;
     private ScreeningStatus screeningStatus;
-
-    //TODO: 예매 도메인 만들고 예매 정보 넣기
 }
