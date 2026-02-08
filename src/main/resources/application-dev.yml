@@ -10,6 +10,12 @@ spring:
       ddl-auto: create-drop # 운영은 validate 권장
     show-sql: true
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 3s
+
 toss:
   payments:
     client-key: ${TOSS_CLIENT_KEY}
