@@ -1,99 +1,219 @@
-/* ===== HERO ===== */
+/* ===== HOME COMMON (배경 흰색 버전) ===== */
+.home {
+    background: #FFFFFF; /* 피그마 메인 페이지 배경 반영 */
+    padding-bottom: 80px;
+    color: #1A1A1A; /* 기본 텍스트 색상 반전 */
+}
+
+/* ===== HERO (메인 배너) ===== */
+/* 히어로 메인 컨테이너 */
 .hero {
-    max-width: 1200px;
-    margin: 60px auto;
-    display: flex;
-    align-items: center;
-    gap: 60px;
+    position: relative;
+    width: 100%;
+    min-height: 500px; /* 최소 높이만 지정 */
+    height: auto;      /* 내용물에 따라 높이 조절 */
+    background: #FFFFFF; /* 배경을 흰색으로 고정 */
+    overflow: hidden;
 }
 
+/* 히어로 배경 이미지 */
+.hero-bg {
+    position: absolute; /* 글씨 뒤에 깔리도록 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* 이미지가 잘리는 게 싫다면, 배너용 이미지는 가로로 긴 것을 쓰셔야 합니다.
+       일반적으로 배너는 cover를 쓰고 중요 피사체를 가운데 둡니다. */
+    object-fit: cover;
+    z-index: 0;
+}
+
+/* 히어로 콘텐츠 (글씨와 버튼이 잘 보이게 z-index 조정) */
 .hero-content {
-    flex: 1;
+    position: relative;
+    z-index: 2; /* 이미지와 오버레이보다 위에 배치 */
+    padding: 100px 64px; /* 여백을 줘서 높이 확보 */
 }
 
-.movie-title {
-    font-size: 42px;
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    /* 피그마의 선형 그라데이션 반영 */
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+.hero-content h1 {
+    font-family: 'Arimo', sans-serif;
+    font-size: 60px;       /* 피그마 듄:파트2 폰트 크기 */
     font-weight: 700;
+    color: #FFFFFF;       /* 어두운 오버레이 위이므로 흰색 유지 */
+    margin-bottom: 16px;
 }
 
-.movie-sub {
-    margin: 12px 0 24px;
-    color: #666;
+.hero-content p {
+    font-family: 'Arimo', sans-serif;
+    font-size: 20px;       /* 피그마 '운명의 전쟁...' 크기 */
+    color: #D1D5DC;
+    margin-bottom: 32px;
 }
 
-.hero-buttons .btn {
-    display: inline-block;
-    padding: 12px 24px;
-    margin-right: 12px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+.hero-buttons {
+    display: flex;
+    gap: 16px;
+}
+
+/* 버튼 공통 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    padding: 0 32px;
+    border-radius: 10px;
+    font-size: 16px;
     text-decoration: none;
-    color: #333;
+    transition: 0.2s;
 }
 
 .btn.primary {
-    background-color: #5a3ec8;
-    color: #fff;
-    border: none;
+    background: #9810FA;  /* 피그마 예매하기 색상 */
+    color: #FFFFFF;
 }
 
-.hero-image img {
-    width: 360px;
-    border-radius: 12px;
+.btn.ghost {
+    background: rgba(255, 255, 255, 0.2); /* 피그마 상세보기 스타일 */
+    color: #FFFFFF;
+    backdrop-filter: blur(4px);
 }
 
-/* ===== BOX OFFICE ===== */
+/* ===== BOX OFFICE (박스오피스 섹션) ===== */
 .boxoffice {
-    max-width: 1200px;
-    margin: 80px auto;
+    padding: 64px 32px 0;
+    max-width: 1440px;
+    margin: 0 auto;
 }
 
-.section-header {
+.boxoffice-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    align-items: flex-end;
+    margin-bottom: 48px; /* 피그마 gap: 48px 반영 */
 }
 
+.boxoffice-header h2 {
+    font-family: 'Arimo', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #1A1A1A;       /* 흰 배경을 위해 검은색으로 반전 */
+    margin: 0;
+}
+
+.boxoffice-header span {
+    font-size: 16px;
+    color: #99A1AF;       /* 피그마 예매율 TOP 4 색상 */
+}
+
+.boxoffice-header .more {
+    font-size: 16px;
+    color: #4B5563;       /* 더 많은 영화보기 - 가독성 위해 약간 진하게 */
+    text-decoration: none;
+}
+
+/* ===== MOVIE GRID 레이아웃 조정 ===== */
 .movie-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    /* 화면 너비에 따라 카드가 자동으로 조절되도록 설정 */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    width: 100%;
 }
 
 .movie-card {
-    border: 1px solid #eee;
-    border-radius: 12px;
-    overflow: hidden;
-    position: relative;
-}
-
-.movie-card img {
+    display: flex;
+    flex-direction: column;
+    /* 포스터와 버튼 사이의 간격을 16px로 설정 */
+    gap: 16px;
     width: 100%;
-    height: 220px;
-    object-fit: cover;
 }
 
+/* 1. 포스터 틀 (박스) 설정 */
+.poster {
+    position: relative;
+    width: 100%;           /* 부모(movie-card) 너비에 맞춤 */
+    aspect-ratio: 326 / 489; /* 피그마 비율 강제 고정 */
+    border-radius: 10px;
+    overflow: hidden;      /* ⭐ 중요: 박스보다 큰 사진 부분은 잘라냄 */
+    background: none;   /* 사진 로딩 전 배경색 */
+}
+
+/* 2. 사진 스타일 (박스에 꽉 채우기) */
+.poster-img {
+    width: 100%;           /* 박스 너비에 맞춤 */
+    height: 100%;          /* 박스 높이에 맞춤 */
+    object-fit: initial;     /* ⭐ 핵심: 비율 유지하며 박스 꽉 채우기 (이미지 안 찌그러짐) */
+    display: block;
+}
+
+/* ===== 순위 숫자 및 배지 위치 보정 ===== */
 .rank {
     position: absolute;
     top: 10px;
-    left: 10px;
-    background: #5a3ec8;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 20px;
+    left: 15px;
+    font-size: clamp(40px, 5vw, 60px); /* 화면 크기에 따라 글자 크기도 유연하게 */
+    font-weight: 700;
+    font-style: italic;
+    color: #FFFFFF;
+    text-shadow: 0px 4px 10px rgba(0, 0, 0, 0.8);
+    z-index: 2;
+    line-height: 1;
 }
 
-.movie-info {
-    padding: 12px;
-}
-
+/* 예매 버튼 */
 .reserve-btn {
-    display: block;
-    margin-top: 8px;
-    text-align: center;
-    padding: 8px;
-    background: #00a8a8;
-    color: #fff;
-    border-radius: 6px;
+    height: 48px;
+    background: #009689;  /* 피그마 예매 버튼 색상 */
+    color: #FFFFFF;
+    border-radius: 4px;   /* 피그마 반영 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-decoration: none;
+    font-size: 16px;
+    font-weight: 400;
+    transition: background 0.2s;
+}
+
+.reserve-btn:hover {
+    background: #00796B;
+}
+
+/* 관람등급 배지 */
+.age-badge {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    z-index: 2;
+}
+.age-12 { background: #00C950; }
+.age-15 { background: #FF6900; }
+
+.movie-card.placeholder {
+    opacity: 0.4;
+}
+
+.empty-poster {
+    width: 100%;
+    height: 100%;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.reserve-btn.disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
 }

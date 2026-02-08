@@ -46,7 +46,10 @@
                 <li><strong>예매율</strong> <span th:text="${movie.advanceReservationRate}"></span></li>
             </ul>
 
-            <a href="#" class="reserve-btn">예매하기</a>
+            <a th:href="@{/reservations}"
+               class="reserve-btn">
+                예매하기
+            </a>
         </div>
     </section>
 
@@ -58,7 +61,7 @@
         </p>
     </section>
 
-    <!-- 스틸컷 (미구현) -->
+    <!-- 스틸컷 -->
     <section class="movie-section">
         <h3>스틸컷</h3>
         <div class="image-grid">
