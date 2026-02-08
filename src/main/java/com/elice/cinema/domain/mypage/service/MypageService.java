@@ -57,8 +57,8 @@ public class MypageService {
                 : LocalDate.now().minusMonths(3).atStartOfDay();        // TODO: 3개월 기본 값도 환경변수에 넣어야 할지
 
         LocalDateTime end = (to != null)
-                ? to.plusDays(1).atStartOfDay().minusNanos(1)
-                : LocalDate.now().plusDays(1).atStartOfDay().minusNanos(1);
+                ? to.plusDays(1).atStartOfDay()
+                : LocalDate.now().plusDays(1).atStartOfDay();
 
         Slice<Reservation> slice =
                 reservationRepository.findMyReservationsByPeriod(
