@@ -151,9 +151,9 @@
             </td>
             <!-- 제목 -->
             <td th:text="${movie.title}"></td>
-            <td th:text="${movie.genres != null
-                    ? #strings.listJoin(movie.genres.![displayName], ', ')
-                    : '-'}">
+            <td th:text="${#lists.isEmpty(movie.genres)
+                    ? '-'
+                    : #strings.listJoin(movie.genres.?[#this != null].![displayName], ', ')}">
             </td>
             <td th:text="${movie.status.displayName}"></td>
             <td th:text="${movie.ageRating.displayName}"></td>
