@@ -66,4 +66,17 @@ public interface ReservedSeatRepository extends JpaRepository<ReservedSeat, Long
             @Param("seatIds") List<Long> seatIds,
             @Param("blockedCondition") List<ReservationStatus> blockedCondition
     );
+
+    @Query("""
+        select rs.screening.id as screeningId, count(rs.id) as reservedCount
+        from ReservedSeat rs
+        where rs.screening.id in :screeningIds
+        group by rs.screening.id
+    """)
+    List<ReservedCountRow> countByScreeningIds(@Param("screeningIds") List<Long> screeningIds);
+
+    interface ReservedCountRow {
+        Long getScreeningId();
+        Long getReservedCount();
+    }
 }
