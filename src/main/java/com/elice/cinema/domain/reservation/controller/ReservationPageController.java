@@ -25,7 +25,7 @@ public class ReservationPageController {
 
     @GetMapping
     public String getReservationPage(Model model) {
-        List<ReservationMovieSelectResponse> movies = reservationService.getMoviesWithScreeningsWithin();
+        List<ReservationMovieSelectResponse> movies = reservationService.getMoviesHavingScreeningsInDateRange();
 
         model.addAttribute("movies", movies);
         return "user/reservation/reservation-select";
