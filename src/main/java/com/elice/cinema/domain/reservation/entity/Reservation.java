@@ -128,6 +128,7 @@ public class Reservation extends BaseEntity {
 
     public void confirm() {
         this.status = ReservationStatus.CONFIRMED;
+        this.reservedAt = LocalDateTime.now();
     }
 
     // 예매 취소
