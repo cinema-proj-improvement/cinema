@@ -1,8 +1,10 @@
 package com.elice.cinema.domain.movie.repository;
 
+import com.elice.cinema.global.home.dto.response.HomeMovieJoinRowResponse;
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
 import com.elice.cinema.domain.screening.entity.ScreeningStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -64,4 +66,24 @@ public interface MovieRepository extends JpaRepository<Movie, Long>, MovieReposi
          where m.endDate = :today
     """)
     int bulkUpdateToEndedByEndDate(@Param("to") MovieStatus to, @Param("today") LocalDate today);
+
+    @Query("""
+    select new com.elice.cinema.global.home.dto.response.HomeMovieJoinRowResponse(
+        m.id,
+        m.title,
+        m.synopsis,
+        m.advanceReservationRate,
+        i.imageUrl
+    )
+    from Movie m
+    left join MovieImage i
+        on i.movie = m
+        and i.displayOrder = 0
+    where m.status = com.elice.cinema.domain.movie.entity.MovieStatus.NOW_SHOWING
+    order by m.advanceReservationRate desc
+""")
+    List<HomeMovieJoinRowResponse> findTopHomeMovies(Pageable pageable);
+
+
+
 }
