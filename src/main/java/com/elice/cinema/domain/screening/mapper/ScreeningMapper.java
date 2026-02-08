@@ -25,6 +25,7 @@ public interface ScreeningMapper {
     @Mapping(target = "date", source = "startAt", qualifiedByName = "toDate")
     @Mapping(target = "startTime", source = "startAt", qualifiedByName = "toStartTime")
     @Mapping(target = "endTime", source = "endAt", qualifiedByName = "toEndTime")
+    @Mapping(target = "seatSummary", ignore = true)
     AdminScreeningResponse toAdminListResponse(Screening screening);
 
     // LocalDateTime → LocalDate / LocalTime 변환 메서드 (날짜 시간 분해를 자동으로 하지 않기에 변환 메서드 필수)
@@ -53,5 +54,24 @@ public interface ScreeningMapper {
         res.setMovieTitle(screening.getMovie().getTitle());  // 호출 usecase 위치에서 fetch join으로 가져옴
 
         return res;
+    }
+
+    default AdminScreeningResponse toAdminListResponse(
+            Screening screening,
+            AdminScreeningSeatSummaryResponse seatSummary
+    ) {
+        AdminScreeningResponse base = toAdminListResponse(screening);
+
+        return new AdminScreeningResponse(
+                base.getId(),
+                base.getDate(),
+                base.getStartTime(),
+                base.getEndTime(),
+                base.getMovie(),
+                base.getScreen(),
+                base.getScreeningType(),
+                base.getScreeningStatus(),
+                seatSummary
+        );
     }
 }

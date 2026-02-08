@@ -25,4 +25,24 @@ public class AdminScreeningResponse {
     private final ScreeningType screeningType;
 
     private final ScreeningStatus screeningStatus;
+
+    // 좌석 현황
+    private final AdminScreeningSeatSummaryResponse seatSummary;
+
+    public static AdminScreeningResponse withSeatSummary(
+            AdminScreeningResponse base,
+            AdminScreeningSeatSummaryResponse seatSummary
+    ) {
+        return new AdminScreeningResponse(
+                base.id,
+                base.date,
+                base.startTime,
+                base.endTime,
+                base.movie,
+                base.screen,
+                base.screeningType,
+                base.screeningStatus,
+                seatSummary
+        );
+    }
 }
