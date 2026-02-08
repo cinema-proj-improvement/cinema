@@ -35,8 +35,11 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -155,8 +158,7 @@ public class ReservationService {
         }
     }
 
-    // TODO: 메서드 이름 수정
-    public List<ReservationMovieSelectResponse> getMoviesWithScreeningsWithin() {
+    public List<ReservationMovieSelectResponse> getMoviesHavingScreeningsInDateRange() {
         LocalDate today = LocalDate.now();
 
         LocalDateTime from = today.atStartOfDay();
@@ -179,9 +181,12 @@ public class ReservationService {
                 movieId
         );
 
+        // n+1을 방지하기 위해 상영들의 예약 좌석들을 한번에 쿼리로 가져와 Map으로 관리
+        Map<Long, Long> reservedCountMap = getReservedCountByScreeningIdMap(screenings);
+
         return screenings.stream()
                 .map(screening -> {
-                    Integer remainingSeats = calculateRemainingSeats(screening);
+                    int remainingSeats = calculateRemainingSeats(screening, reservedCountMap);
                     return screeningMapper
                             .toReservationScheduleResponse(screening, remainingSeats);
                 })
@@ -238,11 +243,21 @@ public class ReservationService {
         }
     }
 
-    //TODO: 수정 고려 매번 날림
-    private Integer calculateRemainingSeats(Screening screening) {
-        int totalSeats = screening.getScreen().getTotalSeats();
-        int reservedCount = reservedSeatRepository.countAllByScreening_Id(screening.getId());
+    private Map<Long, Long> getReservedCountByScreeningIdMap(List<Screening> screenings) {
+        if (screenings.isEmpty()) return Collections.emptyMap();
 
-        return totalSeats - reservedCount;
+        List<Long> screeningIds = screenings.stream().map(Screening::getId).toList();
+
+        return reservedSeatRepository.countByScreeningIds(screeningIds).stream()
+                .collect(Collectors.toMap(
+                        ReservedSeatRepository.ReservedCountRow::getScreeningId,
+                        ReservedSeatRepository.ReservedCountRow::getReservedCount
+                ));
+    }
+
+    private int calculateRemainingSeats(Screening sc, Map<Long, Long> reservedCountMap) {
+        int totalSeats = sc.getScreen().getTotalSeats();
+        long reservedCount = reservedCountMap.getOrDefault(sc.getId(), 0L);
+        return (int) (totalSeats - reservedCount); // 방어적으로 0 미만 방지
     }
 }
