@@ -55,13 +55,27 @@ public class AdminMovieListResponse {
         Map<Long, AdminMovieListResponse> map = new LinkedHashMap<>();
 
         for (AdminMovieJoinRowResponse row : rows) {
-            map.computeIfAbsent(
-                    row.getMovieId(),
-                    id -> AdminMovieListResponse.from(row)
-            ).addGenre(row.getGenre());
+            AdminMovieListResponse dto =
+                    map.computeIfAbsent(
+                            row.getMovieId(),
+                            id -> AdminMovieListResponse.from(row)
+                    );
+
+            // ⭐ 핵심: 썸네일은 null이면 보정
+            if (dto.getThumbnail() == null && row.getThumbnail() != null) {
+                dto.setThumbnail(row.getThumbnail());
+            }
+
+            if (row.getGenre() != null) {
+                dto.addGenre(row.getGenre());
+            }
         }
 
         return new ArrayList<>(map.values());
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
     }
 
     public Double getAdvanceReservationRate() {
