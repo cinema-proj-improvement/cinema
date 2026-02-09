@@ -19,39 +19,50 @@ import java.util.stream.Collectors;
 public class ExpireHoldBatchService {
     private final ReservationRepository reservationRepository;
     private final ReservedSeatRepository reservedSeatRepository;
-
     private final ReservationLockRepository reservationLockRepository;
+
+    private static final int BATCH_SIZE = 500;
+    private static final int MAX_BATCHES_PER_RUN = 5;
 
     @Transactional
     public void expireHolds() {
         LocalDateTime now = LocalDateTime.now();
-        int batchSize = 500;
 
-        while(true) {  // FIXME: 만약 반복문 안 코드에서 어떤 문제가 생겼는데 예외를 던지지 않고 탈출조건에도 안 걸리게 된다면? -> 무한 반복이 아니라 시간 단위로 돌아가도록
-            // 1) 만료 대상 reservation id들 조회
-            List<Long> reservationIds = reservationRepository
-                    .findExpiredHoldReservationIds(now, PageRequest.of(0, batchSize));
-
-            if (reservationIds.isEmpty()) break;
-
-            // 2) 좌석 락 해제용 (screeningId, seatId) 조회
-            List<SeatLockInfoDto> locks = reservedSeatRepository.findSeatLocksByReservationIds(reservationIds);
-
-            // 3) screeningId별로 좌석들을 묶기 (reservationLockRepository.unlockAll() 쓰기 위한 사전작업)
-            Map<Long, List<Long>> seatIdsByScreeningId = locks.stream()
-                    .collect(Collectors.groupingBy(
-                            SeatLockInfoDto::getScreeningId,
-                            Collectors.mapping(SeatLockInfoDto::getSeatId, Collectors.toList())
-                    ));
-
-            // 4) redis lock 해제
-            for (Map.Entry<Long, List<Long>> e : seatIdsByScreeningId.entrySet()) {
-                reservationLockRepository.unlockAll(e.getKey(), e.getValue());
+        for(int i = 0; i < MAX_BATCHES_PER_RUN; i++) {
+            int processed = expireHoldsForOneBatch(now);
+            if(processed == 0) {
+                return;
             }
-
-            // 5) DB 정리 (예매 좌석 삭제 + 예매 만료 처리)
-            reservedSeatRepository.bulkDeleteHoldSeatsByReservationIds(reservationIds);
-            reservationRepository.bulkExpireHoldReservations(reservationIds);
         }
+    }
+
+    protected int expireHoldsForOneBatch(LocalDateTime now) {
+        List<Long> reservationIds = reservationRepository
+                .findExpiredHoldReservationIds(now, PageRequest.of(0, BATCH_SIZE));
+
+        if(reservationIds.isEmpty()) {
+            return 0;
+        }
+
+        // 2) 좌석 락 해제용 (screeningId, seatId) 조회
+        List<SeatLockInfoDto> locks = reservedSeatRepository.findSeatLocksByReservationIds(reservationIds);
+
+        // 3) screeningId별로 좌석들을 묶기 (reservationLockRepository.unlockAll() 쓰기 위한 사전작업)
+        Map<Long, List<Long>> seatIdsByScreeningId = locks.stream()
+                .collect(Collectors.groupingBy(
+                        SeatLockInfoDto::getScreeningId,
+                        Collectors.mapping(SeatLockInfoDto::getSeatId, Collectors.toList())
+                ));
+
+        // 4) redis lock 해제
+        for (Map.Entry<Long, List<Long>> e : seatIdsByScreeningId.entrySet()) {
+            reservationLockRepository.unlockAll(e.getKey(), e.getValue());
+        }
+
+        // 5) DB 정리 (예매 좌석 삭제 + 예매 만료 처리)
+        reservedSeatRepository.bulkDeleteHoldSeatsByReservationIds(reservationIds);
+        reservationRepository.bulkExpireHoldReservations(reservationIds);
+
+        return reservationIds.size();
     }
 }

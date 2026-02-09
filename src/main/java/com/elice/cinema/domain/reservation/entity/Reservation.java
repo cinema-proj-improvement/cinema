@@ -97,7 +97,7 @@ public class Reservation extends BaseEntity {
         reservation.screening = screening;
         reservation.member = member;
 
-        // TODO: LAZY -> 서비스에서 미리 fetch join으로 가져와야 함
+        // LAZY 방지를 위해 호출하는 위치에서 미리 fetch join으로 가져와야 합니다.
         reservation.movieTitle = screening.getMovie().getTitle();
         reservation.screenName = screening.getScreen().getName();
         reservation.startAt = screening.getStartAt();

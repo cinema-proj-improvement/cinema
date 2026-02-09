@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(  // FIXME: Entity 코드에서 하지 말고 DB에서 설정하는 게 낫지 않나 싶음...
+@Table(
         name = "movie_images",
         uniqueConstraints = {
                 @UniqueConstraint(
@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
         })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class MovieImage {  // TODO: Movie에 양방향 연관관계 맺어주지 않을 경우 DB level에서 movie_id FK에 ON DELETE CASCADE 걸어줘야 함
+public class MovieImage {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;

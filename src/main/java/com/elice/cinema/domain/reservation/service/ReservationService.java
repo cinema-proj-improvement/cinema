@@ -65,7 +65,7 @@ public class ReservationService {
     private final ReservationMapper reservationMapper;
 
     @Transactional
-    public Long holdSeats(Long screeningId, List<Long> seatIds, Long memberId) {  // TODO: 메서드 분리 고려하기
+    public Long holdSeats(Long screeningId, List<Long> seatIds, Long memberId) {
         validateSeatCount(seatIds);
         validateBookable(screeningId, seatIds);
 
@@ -130,7 +130,7 @@ public class ReservationService {
         reservationRepository.delete(reservation);  // HOLD라면 삭제 - 연관된 reservedSeat들은 delete cascade로 삭제됨
     }
 
-    public int calculateTotalPrice(List<Seat> seats) {  // TODO: 이후 가격 계산에 대한 로직이 복잡해지면 클래스로 분리합니다. (현재도 위치 적절하지 않음)
+    public int calculateTotalPrice(List<Seat> seats) {
         return environmentPolicyService.getDefaultPrice() * seats.size();
     }
 
@@ -214,7 +214,7 @@ public class ReservationService {
         return reservationMapper.toPaymentReservationResponse(reservation, orderId, tossClientKey);
     }
 
-    private Screening getScreeningWithMovieAndScreen(Long screeningId) {  // FIXME: ScreeningService로 메서드 위치 이동해뒀습니다.
+    private Screening getScreeningWithMovieAndScreen(Long screeningId) {  // ScreeningService로 메서드 위치 이동해뒀습니다.
         return screeningRepository.findByIdWithMovieAndScreen(screeningId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SCREENING_NOT_FOUND));
     }

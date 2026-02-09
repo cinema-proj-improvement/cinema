@@ -22,7 +22,7 @@ public class CustomAuthSuccessHandler implements AuthenticationSuccessHandler {
         // 권한 확인 후 리다이렉트
         for (GrantedAuthority authority : authorities) {
             if (authority.getAuthority().equals("ROLE_ADMIN")) {
-                response.sendRedirect("/admin/movies"); // TODO: 추후 관리자 대시보드 혹은 첫번째 탭으로
+                response.sendRedirect("/admin"); // TODO: 추후 관리자 대시보드 혹은 첫번째 탭으로
                 return;
             }
         }

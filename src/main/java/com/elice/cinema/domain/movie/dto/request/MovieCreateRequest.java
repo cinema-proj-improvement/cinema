@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 @Getter
-@Setter  // TODO: ModelAttribute 바인딩은 기본적으로 setter로 채워주기 때문에 @Setter 필요하다는데 무슨 말인지 찾아보기
+@Setter
 public class MovieCreateRequest {
     @NotBlank(message = "영화 제목은 필수입니다.")
     @Size(max = 255, message = "영화 제목은 255자 이내여야 합니다.")
