@@ -31,6 +31,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @EntityGraph(attributePaths = {"reservedSeats"})
     Optional<Reservation> findWithReservedSeatsById(Long id);
 
+    Optional<Reservation> findByIdAndStatus(Long id, ReservationStatus status);
+
     @EntityGraph(attributePaths = "reservedSeats")
     Page<Reservation> findByMemberId(
             Long memberId,
