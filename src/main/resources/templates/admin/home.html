@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: layout(
+        '관리자 메인', 'home', ~{::pageCss}, ~{::content}
+      )}">
+
+<th:block th:fragment="pageCss">
+    <link rel="stylesheet" th:href="@{/css/admin/home.css}">
+</th:block>
+
+<th:block th:fragment="content">
+
+    <!-- 상단 환영 배너 -->
+    <section class="welcome-banner">
+        <div class="welcome-left">
+            <h2 class="welcome-title">안녕하세요!</h2>
+
+            <p class="welcome-sub">
+                <span th:text="${cinemaName}">여운</span> 영화관 관리자 페이지입니다.
+            </p>
+
+            <p class="welcome-desc">
+                원하는 관리 메뉴로 빠르게 이동할 수 있어요.
+            </p>
+        </div>
+
+        <div class="welcome-right" aria-hidden="true">
+            <div class="welcome-icon-circle">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V7Z"
+                          stroke="currentColor" stroke-width="1.6"/>
+                    <path d="M9 8v8"
+                          stroke="currentColor"
+                          stroke-width="1.6"
+                          stroke-linecap="round"
+                          stroke-dasharray="1.5 2.5"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- 바로가기 -->
+    <section class="section">
+        <div class="section-head">
+            <h2 class="section-title">바로가기</h2>
+        </div>
+
+        <div class="menu-grid">
+
+            <!-- 추후 개발 예정 -->
+            <a href="#" class="menu-card menu-card--coming"
+               data-coming-soon="사용자 관리는 추후 개발 예정입니다.">
+                <div class="menu-icon">👥</div>
+                <div class="menu-title">사용자 관리</div>
+                <div class="menu-desc">회원 정보 조회/관리</div>
+                <div class="menu-link">이동 →</div>
+            </a>
+
+            <a href="#" class="menu-card menu-card--coming"
+               data-coming-soon="리뷰 관리는 추후 개발 예정입니다.">
+                <div class="menu-icon">💬</div>
+                <div class="menu-title">리뷰 관리</div>
+                <div class="menu-desc">사용자 리뷰 모니터링</div>
+                <div class="menu-link">이동 →</div>
+            </a>
+
+            <!-- 실제 페이지 -->
+            <a class="menu-card" th:href="@{/admin/movies}">
+                <div class="menu-icon">🎬</div>
+                <div class="menu-title">영화 관리</div>
+                <div class="menu-desc">영화 등록/수정/상태 관리</div>
+                <div class="menu-link">이동 →</div>
+            </a>
+
+            <a class="menu-card" th:href="@{/admin/screens}">
+                <div class="menu-icon">🏛️</div>
+                <div class="menu-title">상영관 관리</div>
+                <div class="menu-desc">상영관/좌석 운영 설정</div>
+                <div class="menu-link">이동 →</div>
+            </a>
+
+            <a class="menu-card" th:href="@{/admin/screenings}">
+                <div class="menu-icon">🗓️</div>
+                <div class="menu-title">상영 관리</div>
+                <div class="menu-desc">상영 일정 등록/수정</div>
+                <div class="menu-link">이동 →</div>
+            </a>
+
+            <a class="menu-card" th:href="@{/admin/payments}">
+                <div class="menu-icon">💳</div>
+                <div class="menu-title">결제 관리</div>
+                <div class="menu-desc">결제 내역 조회/상태 확인</div>
+                <div class="menu-link">이동 →</div>
+            </a>
+
+            <a class="menu-card" th:href="@{/admin/refunds}">
+                <div class="menu-icon">↩️</div>
+                <div class="menu-title">환불 관리</div>
+                <div class="menu-desc">환불 내역 및 처리 현황</div>
+                <div class="menu-link">이동 →</div>
+            </a>
+
+            <a class="menu-card" th:href="@{/admin/policies/refunds}">
+                <div class="menu-icon">📄</div>
+                <div class="menu-title">환불 정책 관리</div>
+                <div class="menu-desc">환불 기준/정책 설정</div>
+                <div class="menu-link">이동 →</div>
+            </a>
+        </div>
+    </section>
+
+    <!-- 추후 개발 alert -->
+    <script>
+        document.addEventListener('click', function (e) {
+            const target = e.target.closest('[data-coming-soon]');
+            if (!target) return;
+
+            e.preventDefault();
+            alert(target.dataset.comingSoon);
+        });
+    </script>
+
+</th:block>
+</html>

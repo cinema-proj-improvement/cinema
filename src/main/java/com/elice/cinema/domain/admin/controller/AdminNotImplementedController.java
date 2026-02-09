@@ -1,4 +1,4 @@
-package com.elice.cinema.domain.admin;
+package com.elice.cinema.domain.admin.controller;
 
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
