@@ -51,7 +51,7 @@ public class ReservationPageController {
     @GetMapping("/screenings/{screeningId}/seat-selection")
     public String getSeatSelectionPage(@PathVariable Long screeningId, Model model) {
         model.addAttribute("screeningId", screeningId);
-        return "user/reservation/seat-selection";  // TODO: 좌석 선택 페이지 html 코드 개발해야 함
+        return "user/reservation/seat-selection";
     }
 
     @GetMapping("/screenings/{screeningId}/seat-selection/info")

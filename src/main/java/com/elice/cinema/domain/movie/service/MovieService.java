@@ -14,6 +14,7 @@ import com.elice.cinema.domain.movie.repository.MovieRepository;
 import com.elice.cinema.domain.movieImage.entity.MovieImage;
 import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
 import com.elice.cinema.domain.movieImage.service.MovieImageService;
+import com.elice.cinema.domain.screening.service.ScreeningService;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ public class MovieService {
     private final AdminMovieJoinQueryRepository adminMovieJoinQueryRepository;
 
     private final MovieImageService movieImageService;
+    private final ScreeningService screeningService;
 
     // 관리자 - 영화 생성 요청을 받아 영화를 생성하고 DB에 저장하는 메서드
     @Transactional
@@ -62,7 +64,7 @@ public class MovieService {
     public Page<AdminMovieListResponse> getAdminMovieListPage(
             AdminMovieSearchRequest request,
             Pageable pageable
-    ) { // TODO: 리뷰 기능 구현 후 평점 추가하기
+    ) {
         if (request.getSortType() == AdminMovieSortType.AVG_SCORE_DESC) {
 
             throw new BusinessException(ErrorCode.MOVIE_SORT_NOT_SUPPORTED);
@@ -135,13 +137,11 @@ public class MovieService {
     public void updateMovie(Long movieId, MovieUpdateRequest req) {
         Movie movie = findMovieById(movieId);
 
-        // TODO: Screening 도메인 개발 후 반영하기
-        // 러닝타임 변경 관련 business rule
-//        if(!movie.getRunningTimeMinutes().equals(req.getRunningTimeMinutes())) {
-//            if(screeningRepository.existsByMovieId(movieId)) {
-//                throw new BusinessException(ErrorCode.MOVIE_RUNNING_TIME_CANNOT_CHANGE_WHEN_SCREENING_EXISTS);
-//            }
-//        }
+        if(!movie.getRunningTimeMinutes().equals(req.getRunningTimeMinutes())) {  // 러닝타임 변경 관련 business rule
+            if(screeningService.existsScreeningByMovieId(movieId)) {
+                throw new BusinessException(ErrorCode.MOVIE_RUNNING_TIME_CANNOT_CHANGE_WHEN_SCREENING_EXISTS);
+            }
+        }
 
         movie.changeBasicInfo(
                 req.getTitle(),
