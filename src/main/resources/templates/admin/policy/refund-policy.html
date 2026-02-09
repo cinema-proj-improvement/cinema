@@ -1,63 +1,103 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/admin-layout :: layout(
+        '환불 정책 관리', 'refund-policy', ~{::pageCss}, ~{::content}
+      )}">
+
 <head>
-    <meta charset="UTF-8">
-    <title>환불 정책 관리</title>
-    <link rel="stylesheet" th:href="@{/css/admin/admin-common.css}">
+    <th:block th:fragment="pageCss">
+        <!-- ✅ 파일명/경로는 너가 실제 둔 곳에 맞추기 -->
+        <link rel="stylesheet" th:href="@{/css/admin/policy/refund-policy.css}">
+    </th:block>
 </head>
+
 <body>
+<th:block th:fragment="content">
 
-<h1>환불 정책 관리</h1>
+    <section class="admin-page">
+        <h1 class="page-title">환불 정책 관리</h1>
 
-<button id="openCreateModal">+ 환불 정책 생성</button>
+        <!-- 액션 -->
+        <div class="top-actions">
+            <button class="btn primary" id="openCreateModal">
+                + 환불 정책 생성
+            </button>
+        </div>
 
-<table>
-    <thead>
-    <tr>
-        <th>정책명</th>
-        <th>상영 시작 전 시간(분)</th>
-        <th>환불 퍼센트(%)</th>
-        <th>관리</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="p : ${policies}" th:data-id="${p.id}">
-        <td th:text="${p.name}"></td>
+        <!-- 테이블 -->
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>정책명</th>
+                <th>상영 시작 전 (분)</th>
+                <th>환불 비율 (%)</th>
+                <th>관리</th>
+            </tr>
+            </thead>
 
-        <td>
-            <input type="number"
-                   class="before-input"
-                   th:value="${p.beforeStartMinutes}"
-                   disabled>
-        </td>
+            <tbody>
+            <tr th:each="p : ${policies}" th:data-id="${p.id}">
+                <td th:text="${p.name}"></td>
 
-        <td>
-            <input type="number"
-                   class="rate-input"
-                   th:value="${p.refundRate}"
-                   disabled>
-        </td>
+                <td>
+                    <input type="number"
+                           class="before-input"
+                           th:value="${p.beforeStartMinutes}"
+                           disabled>
+                </td>
 
-        <td>
-            <button class="edit-btn">수정</button>
-            <button class="save-btn" style="display:none;">저장</button>
-        </td>
-    </tr>
-    </tbody>
-</table>
+                <td>
+                    <input type="number"
+                           class="rate-input"
+                           th:value="${p.refundRate}"
+                           disabled>
+                </td>
 
-<!-- 생성 모달 -->
-<div id="createModal" style="display:none;">
-    <h3>환불 정책 생성</h3>
+                <td class="actions">
+                    <button class="btn ghost edit-btn">수정</button>
+                    <button class="btn primary save-btn" style="display:none;">저장</button>
+                </td>
+            </tr>
 
-    <input id="nameInput" placeholder="정책명">
-    <input id="beforeInput" type="number" placeholder="상영 시작 전 시간(분)">
-    <input id="rateInput" type="number" placeholder="환불 퍼센트(%)">
+            <tr th:if="${#lists.isEmpty(policies)}">
+                <td colspan="4" class="empty">
+                    등록된 환불 정책이 없습니다.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
 
-    <button id="createBtn">생성</button>
-    <button id="closeCreateModal">닫기</button>
-</div>
+    <!-- 생성 모달 -->
+    <div class="modal" id="createModal" style="display:none;">
+        <div class="modal-box">
+            <h3 class="modal-title">환불 정책 생성</h3>
 
-<script src="/js/admin/refund-policy.js"></script>
+            <div class="form-group">
+                <label>정책명</label>
+                <input id="nameInput" placeholder="정책명">
+            </div>
+
+            <div class="form-group">
+                <label>상영 시작 전 시간(분)</label>
+                <input id="beforeInput" type="number" placeholder="예: 60">
+            </div>
+
+            <div class="form-group">
+                <label>환불 퍼센트(%)</label>
+                <input id="rateInput" type="number" placeholder="예: 50">
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn ghost" id="closeCreateModal">닫기</button>
+                <button class="btn primary" id="createBtn">생성</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ JS 경로도 폴더 구조에 맞춰 통일 추천 -->
+    <script th:src="@{/js/admin/refund-policy.js}"></script>
+
+</th:block>
 </body>
 </html>

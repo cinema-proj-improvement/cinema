@@ -1,0 +1,314 @@
+/* =========================
+   Base / Tokens
+========================= */
+:root{
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #111827;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --line-soft: #eef2f7;
+
+    --primary: #2563eb;
+    --primary-hover: #1e40af;
+
+    --shadow-sm: 0 8px 18px rgba(15, 23, 42, 0.06);
+    --shadow-md: 0 18px 40px rgba(15, 23, 42, 0.10);
+
+    --radius-lg: 14px;
+    --radius-md: 10px;
+}
+
+/* =========================
+   Page Layout
+========================= */
+.admin-page {
+    padding: 24px;
+    background: var(--bg);
+}
+
+.page-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 14px;
+    letter-spacing: -0.2px;
+}
+
+/* =========================
+   Top Actions
+========================= */
+.top-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 14px;
+}
+
+/* =========================
+   Table Wrapper (Responsive)
+========================= */
+.admin-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+/* sticky header feel */
+.admin-table thead {
+    background: #f9fafb;
+}
+
+.admin-table th {
+    padding: 14px 14px;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--muted);
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+    letter-spacing: 0.2px;
+}
+
+/* column sizing */
+.admin-table th:nth-child(1),
+.admin-table td:nth-child(1) {
+    text-align: left;
+    padding-left: 18px;
+    width: 44%;
+}
+
+.admin-table th:nth-child(2),
+.admin-table td:nth-child(2),
+.admin-table th:nth-child(3),
+.admin-table td:nth-child(3) {
+    width: 18%;
+}
+
+.admin-table th:nth-child(4),
+.admin-table td:nth-child(4) {
+    width: 20%;
+}
+
+/* cells */
+.admin-table td {
+    padding: 14px 14px;
+    font-size: 14px;
+    color: var(--text);
+    text-align: center;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+}
+
+.admin-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* first column text behavior (policy name) */
+.admin-table td:first-child {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* last row border removal */
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* empty row */
+.admin-table td.empty {
+    padding: 44px 0;
+    color: #9ca3af;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* =========================
+   Inputs
+========================= */
+.admin-table input[type="number"],
+.admin-table input[type="text"] {
+    width: 110px;
+    height: 36px;
+    padding: 0 10px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    background: #fff;
+    text-align: center;
+    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+/* disabled = view mode */
+.admin-table input:disabled {
+    background: #f9fafb;
+    color: #6b7280;
+    border-color: #e5e7eb;
+}
+
+/* ✅ edit mode highlight: disabled 풀리면 자동 적용 */
+.admin-table input:not(:disabled) {
+    background: #ffffff;
+    border-color: rgba(37, 99, 235, 0.45);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+/* focus */
+.admin-table input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.16);
+}
+
+/* =========================
+   Actions Cell / Buttons
+========================= */
+.admin-table td.actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* buttons */
+.btn {
+    height: 40px;
+    padding: 0 14px;
+    font-size: 14px;
+    font-weight: 800;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: transform .06s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+    user-select: none;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn.primary {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 10px 18px rgba(37, 99, 235, 0.18);
+}
+
+.btn.primary:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+.btn.ghost {
+    background: #ffffff;
+    color: #374151;
+    border-color: #e5e7eb;
+}
+
+.btn.ghost:hover {
+    background: #f3f4f6;
+}
+
+/* top create button 조금 더 강조 */
+.top-actions .btn.primary {
+    padding: 0 16px;
+}
+
+/* =========================
+   Modal
+========================= */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+/* simple entrance */
+@keyframes pop {
+    from { transform: translateY(8px) scale(0.98); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal-box {
+    width: min(540px, 100%);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 22px 22px 18px;
+    animation: pop .14s ease-out;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 14px;
+    letter-spacing: -0.2px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--muted);
+}
+
+.form-group input {
+    height: 42px;
+    padding: 0 12px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* =========================
+   Responsive
+========================= */
+@media (max-width: 920px) {
+    .admin-page { padding: 18px; }
+
+    /* 테이블이 깨지면 가로 스크롤 */
+    .admin-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .admin-table th:nth-child(1),
+    .admin-table td:nth-child(1) {
+        width: 320px; /* 정책명 최소폭 */
+    }
+}
