@@ -20,16 +20,16 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import static com.elice.cinema.domain.reservation.entity.QReservation.reservation;
-import static com.elice.cinema.domain.reservation.entity.QReservedSeat.reservedSeat;
 import static com.elice.cinema.domain.member.entity.QMember.member;
-import static com.elice.cinema.domain.screening.entity.QScreening.screening;
 import static com.elice.cinema.domain.payment.entity.QPayment.payment;
-
-
+import static com.elice.cinema.domain.reservation.entity.QReservation.reservation;
+import static com.elice.cinema.domain.screening.entity.QScreening.screening;
+import static com.elice.cinema.domain.reservation.entity.QReservedSeat.reservedSeat;
 
 @Repository
 @RequiredArgsConstructor
@@ -52,7 +52,7 @@ public class AdminReservationQueryRepositoryCustomImpl implements AdminReservati
             condition = condition.and(reservation.status.eq(status));
         }
 
-        List<AdminReservationPageResponse> content =
+        List<AdminReservationPageResponse> baseList =
                 queryFactory
                         .select(Projections.constructor(
                                 AdminReservationPageResponse.class,
@@ -60,26 +60,67 @@ public class AdminReservationQueryRepositoryCustomImpl implements AdminReservati
                                 reservation.reservationCode,
                                 reservation.member.name,
                                 reservation.status,
-                                Expressions.stringTemplate(
-                                        "group_concat({0})", // TODO: 실제 예약좌석 연동 시 해당 projection 제거 예정.
-                                        reservedSeat.seat.seatCode
-                                ),
+                                Expressions.stringTemplate("null"), // seatSummary
                                 payment.status,
                                 reservation.reservedAt,
                                 reservation.totalPrice
                         ))
                         .from(reservation)
-                        .leftJoin(reservedSeat)
-                        .on(reservedSeat.reservation.id.eq(reservation.id))
-                        .leftJoin(reservedSeat.seat)
                         .leftJoin(payment)
                         .on(payment.reservation.id.eq(reservation.id))
                         .where(condition)
-                        .groupBy(reservation.id)
                         .orderBy(reservation.reservedAt.desc())
                         .offset(pageable.getOffset())
                         .limit(pageable.getPageSize())
                         .fetch();
+
+        if (baseList.isEmpty()) {
+            return new PageImpl<>(baseList, pageable, 0);
+        }
+
+        // 2️⃣ reservationId 목록 추출
+        List<Long> reservationIds =
+                baseList.stream()
+                        .map(AdminReservationPageResponse::getId)
+                        .toList();
+
+        // 3️⃣ DB에서 실제 ReservedSeat.seatCode 조회
+        Map<Long, String> seatSummaryMap =
+                queryFactory
+                        .select(
+                                reservedSeat.reservation.id,
+                                reservedSeat.seatCode
+                        )
+                        .from(reservedSeat)
+                        .where(reservedSeat.reservation.id.in(reservationIds))
+                        .orderBy(reservedSeat.id.asc())
+                        .fetch()
+                        .stream()
+                        .collect(Collectors.groupingBy(
+                                tuple -> tuple.get(reservedSeat.reservation.id),
+                                Collectors.mapping(
+                                        tuple -> tuple.get(reservedSeat.seatCode),
+                                        Collectors.collectingAndThen(
+                                                Collectors.toList(),
+                                                list -> String.join(", ", list)
+                                        )
+                                )
+                        ));
+
+        // 4️⃣ seatSummary 반영 (DTO 재생성)
+        List<AdminReservationPageResponse> content =
+                baseList.stream()
+                        .map(r -> new AdminReservationPageResponse(
+                                r.getId(),
+                                r.getReservationCode(),
+                                r.getMemberName(),
+                                r.getStatus(),
+                                seatSummaryMap.getOrDefault(r.getId(), "-"),
+                                r.getPaymentStatus(),
+                                r.getReservedAt(),
+                                r.getTotalPrice()
+                        ))
+                        .toList();
 
         Long total =
                 queryFactory
