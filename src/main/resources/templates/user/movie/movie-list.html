@@ -80,9 +80,10 @@
                     개봉일
                 </p>
 
-                <strong th:text="${movie.advanceReservationRate != null
-        ? movie.advanceReservationRate
-        : '-'}">
+                <strong
+                        th:text="|예매율 ${movie.advanceReservationRate != null
+        ? movie.advanceReservationRate + '%'
+        : '-'}|">
                 </strong>
                 <!--<div class="meta">
                     <span>평점</span>
