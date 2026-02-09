@@ -155,3 +155,41 @@
     padding: 0 14px;
     border-radius: 8px;
 }
+/* ===== Pagination ===== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.pagination a {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 14px;
+    font-weight: 500;
+    color: #475569;
+
+    border: 1px solid #E2E8F0;
+    background: #fff;
+    text-decoration: none;
+
+    transition: all 0.15s ease;
+}
+
+.pagination a:hover {
+    background: #F1F5F9;
+}
+
+.pagination a.active {
+    background: #2563EB;
+    color: #fff;
+    border-color: #2563EB;
+    font-weight: 600;
+}

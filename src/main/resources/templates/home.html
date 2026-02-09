@@ -61,6 +61,7 @@
                 <a href="/reservations" class="reserve-btn">예매하기</a>
             </div>
             <div class="movie-card placeholder"
+                 th:if="${topMovies.size() < 4}"
                  th:each="i : ${#numbers.sequence(topMovies.size() + 1, 4)}">
                 <div class="poster empty">
                     <span class="rank" th:text="${i}">4</span>

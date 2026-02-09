@@ -49,6 +49,7 @@
                        onchange="this.form.submit()">
 
                 <!-- 기존 필터 유지 -->
+                <input type="hidden" name="page" th:value="${screenings.number}">
                 <input type="hidden" name="movieId" th:value="${search.movieId}">
                 <input type="hidden" name="screenId" th:value="${search.screenId}">
                 <input type="hidden" name="keyword" th:value="${search.keyword}">
@@ -69,6 +70,7 @@
                        name="keyword"
                        placeholder="영화 제목 검색"
                        th:value="${search.keyword}">
+                <input type="hidden" name="page" th:value="${screenings.number}">
                 <input type="hidden" name="startDate" th:value="${search.startDate}">
                 <input type="hidden" name="endDate" th:value="${search.endDate}">
                 <input type="hidden" name="movieId" th:value="${search.movieId}">
@@ -203,20 +205,36 @@
     <!-- ================= Pagination ================= -->
     <div class="pagination" th:if="${screenings.totalPages > 1}">
         <a th:if="${screenings.hasPrevious()}"
-           th:href="@{/admin/screenings(page=${screenings.number - 1})}">
-            이전
-        </a>
+           th:href="@{/admin/screenings(
+           page=${screenings.number - 1},
+           startDate=${search.startDate},
+           endDate=${search.endDate},
+           keyword=${search.keyword},
+           movieId=${search.movieId},
+           screenId=${search.screenId}
+       )}">이전</a>
 
-        <a th:each="i : ${#numbers.sequence(0, screenings.totalPages - 1)}"
-           th:href="@{/admin/screenings(page=${i})}"
-           th:text="${i + 1}"
-           th:classappend="${i == screenings.number} ? 'active'">
-        </a>
+        <a th:each="i : ${#numbers.sequence(1, screenings.totalPages)}"
+           th:href="@{/admin/screenings(
+           page=${i - 1},
+           startDate=${search.startDate},
+           endDate=${search.endDate},
+           keyword=${search.keyword},
+           movieId=${search.movieId},
+           screenId=${search.screenId}
+       )}"
+           th:text="${i}"
+           th:classappend="${(i - 1) == screenings.number} ? 'active'"></a>
 
         <a th:if="${screenings.hasNext()}"
-           th:href="@{/admin/screenings(page=${screenings.number + 1})}">
-            다음
-        </a>
+           th:href="@{/admin/screenings(
+           page=${screenings.number + 1},
+           startDate=${search.startDate},
+           endDate=${search.endDate},
+           keyword=${search.keyword},
+           movieId=${search.movieId},
+           screenId=${search.screenId}
+       )}">다음</a>
     </div>
 
 </th:block>
