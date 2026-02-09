@@ -19,6 +19,7 @@ import com.elice.cinema.domain.screening.service.ScreeningService;
 import com.elice.cinema.global.error.exception.BusinessException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -33,6 +34,7 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/screenings")
+@Slf4j
 public class AdminScreeningController {
     private final ScreeningService screeningService;
     private final MovieService movieService;
@@ -137,9 +139,15 @@ public class AdminScreeningController {
     @GetMapping({"", "/"})
     public String getAdminScreenings(
             AdminScreeningSearchRequest request,
-            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "startAt,desc") String sort,
             Model model
     ) {
+        // Pageable 객체 직접 생성
+        org.springframework.data.domain.Pageable pageable = 
+            org.springframework.data.domain.PageRequest.of(page, size);
+        
         Page<AdminScreeningResponse> screenings =
                 screeningService.searchAdmin(request, pageable);
 
@@ -153,7 +161,6 @@ public class AdminScreeningController {
         model.addAttribute("search", request);
         model.addAttribute("movieFilterOptions", movieFilterOptions);
         model.addAttribute("screenFilterOptions", screenFilterOptions);
-
 
         return "admin/screening/screening-list";
     }
