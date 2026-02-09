@@ -172,6 +172,10 @@ public class ScreeningService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.SCREENING_NOT_FOUND));
     }
 
+    public boolean existsScreeningByMovieId(Long movieId) {
+        return screeningRepository.existsByMovieId(movieId);
+    }
+
 
     // 헬퍼 메서드
     private void applyDefaultDateRange(AdminScreeningSearchRequest request) {

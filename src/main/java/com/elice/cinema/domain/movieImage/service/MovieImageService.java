@@ -36,10 +36,6 @@ public class MovieImageService {
             throw new BusinessException(ErrorCode.MOVIE_THUMBNAIL_REQUIRED);
         }
 
-        // (선택) 이미 썸네일이 존재하는 movieId면 방어
-        // movieImageRepository.findByMovieIdAndDisplayOrder(movieId, 0)
-        //        .ifPresent(x -> { throw new BusinessException(ErrorCode.MOVIE_THUMBNAIL_ALREADY_EXISTS); });
-
         String thumbnailUrl = fileService.upload(thumbnailImage, FileCategory.MOVIE_THUMBNAIL);  // FIXME: 파일 처리가 Transaction 안에 묶여있음. 분리 필요
         movieImageRepository.save(MovieImage.thumbnail(movie, thumbnailUrl));
 

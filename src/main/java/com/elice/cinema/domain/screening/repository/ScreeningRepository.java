@@ -92,4 +92,6 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long>, Scr
     Optional<Screening> findByIdWithMovieAndScreen(@Param("id") Long id);
 
     boolean existsByScreenIdAndScreeningStatusNot(Long screenId, ScreeningStatus status);
+
+    boolean existsByMovieId(Long movieId);
 }

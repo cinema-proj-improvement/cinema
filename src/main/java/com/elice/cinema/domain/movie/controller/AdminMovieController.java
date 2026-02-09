@@ -30,7 +30,6 @@ public class AdminMovieController {
     public String showCreateMovieForm(Model model) {
         model.addAttribute("form", new MovieCreateRequest());
         return "admin/movie/movie-create";
-        // TODO: 관리자 영화 생성 화면 html 파일(movie-create.html) 작성 필요
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
