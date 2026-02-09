@@ -10,7 +10,20 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "movies")  // TODO: index 설정 필요. notion page "구현관련" -> "Movie Table Index" 확인
+@Table(name = "movies",
+        indexes = {
+                // 상태 + 개봉일 (개봉 전 → 상영중 배치)
+                @Index(
+                        name = "idx_movie_status_release_date",
+                        columnList = "status, release_date"
+                ),
+
+                // 상태 + 상영 종료일 (상영중 → 종료 배치)
+                @Index(
+                        name = "idx_movie_status_end_date",
+                        columnList = "status, end_date"
+                )
+        })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Movie extends BaseEntity {
