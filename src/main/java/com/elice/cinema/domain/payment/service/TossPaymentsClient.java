@@ -28,7 +28,6 @@ public class TossPaymentsClient {
 
     private final RestTemplate restTemplate;
 
-    // TODO: 토스 응답 요청,응답 시간 정하는 로직 찾아보기
     public TossConfirmResponse tossConfirm(String paymentKey, String orderId, Long amount) {
         String url = "https://api.tosspayments.com/v1/payments/confirm";
 

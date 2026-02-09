@@ -115,15 +115,15 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
-        if(!reservation.getMember().getId().equals(memberId)) {  // 본인 예매만 취소 가능
+        if (!reservation.getMember().getId().equals(memberId)) {  // 본인 예매만 취소 가능
             throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
         }
 
-        if(reservation.getStatus() == ReservationStatus.CONFIRMED) {  // 이미 확정된 예매는 삭제 불가
+        if (reservation.getStatus() == ReservationStatus.CONFIRMED) {  // 이미 확정된 예매는 삭제 불가
             throw new BusinessException(ErrorCode.RESERVATION_ALREADY_CONFIRMED);
         }
 
-        if(reservation.getStatus() != ReservationStatus.HOLD) {  // EXPIRED나 CANCELED면 처리해줄 것이 없는 상태
+        if (reservation.getStatus() != ReservationStatus.HOLD) {  // EXPIRED나 CANCELED면 처리해줄 것이 없는 상태
             return;
         }
 
@@ -207,7 +207,6 @@ public class ReservationService {
         return reservationMapper.toReservationCheckoutResponse(reservation, movieThumbnail, seatCodes);
     }
 
-    //TODO: 나중에 내 예매만 가능하게 조건 걸어주기
     public TossPaymentReservationResponse getTossPage(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));

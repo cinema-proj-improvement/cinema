@@ -159,6 +159,9 @@
         const cleaningMinutes = parseInt(document.getElementById('cleaningMinutes')?.value || '0', 10);
         const adMinutes = parseInt(document.getElementById('adMinutes')?.value || '0', 10);
 
+        // ✅ API base
+        const API_BASE = '/api/admin/screenings';
+
         // ===== utils =====
         function setDisabled($el, disabled, placeholderText) {
             $el.disabled = disabled;
@@ -236,7 +239,7 @@
 
         // ===== API =====
         async function fetchJson(url) {
-            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            const res = await fetch(url, {headers: {'Accept': 'application/json'}});
             if (!res.ok) {
                 const text = await res.text().catch(() => '');
                 throw new Error(`HTTP ${res.status} ${url}\n${text}`);
@@ -245,17 +248,17 @@
         }
 
         async function loadScreeningTypes(movieId) {
-            return await fetchJson(`/admin/screenings/options/types?movieId=${movieId}`);
+            return await fetchJson(`${API_BASE}/options/types?movieId=${movieId}`);
         }
 
         async function loadScreens(movieId, screeningType) {
-            const q = new URLSearchParams({ movieId, screeningType }).toString();
-            return await fetchJson(`/admin/screenings/options/screens?${q}`);
+            const q = new URLSearchParams({movieId, screeningType}).toString();
+            return await fetchJson(`${API_BASE}/options/screens?${q}`);
         }
 
         async function loadTimetable(screenId, date) {
-            const q = new URLSearchParams({ screenId, date }).toString();
-            return await fetchJson(`/admin/screenings/timetable?${q}`);
+            const q = new URLSearchParams({screenId, date}).toString();
+            return await fetchJson(`${API_BASE}/timetable?${q}`);
         }
 
         // DTO: ScreeningTimetableResponse { startAt, endAt, movie{title} }
@@ -272,10 +275,10 @@
             rows.forEach(r => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${formatHHmm(r.startAt)}</td>
-                    <td>${formatHHmm(r.endAt)}</td>
-                    <td>${r.movie?.title ?? ''}</td>
-                `;
+                <td>${formatHHmm(r.startAt)}</td>
+                <td>${formatHHmm(r.endAt)}</td>
+                <td>${r.movie?.title ?? ''}</td>
+            `;
                 $timetableBody.appendChild(tr);
             });
         }
@@ -348,12 +351,28 @@
             refreshTimetable();
         }
 
+        function todayStrLocal() {
+            const d = new Date();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
         // ===== bind =====
         $movieId.addEventListener('change', onMovieChange);
         $screeningType.addEventListener('change', onTypeChange);
         $screenId.addEventListener('change', refreshTimetable);
-        $date.addEventListener('change', onDateOrTimeChange);
         $startTime.addEventListener('input', onDateOrTimeChange);
+
+        // ✅ date change는 중복 제거하고 여기 하나만
+        $date.addEventListener('change', () => {
+            if ($date.value && $date.min && $date.value < $date.min) {
+                alert('오늘 이전 날짜는 선택할 수 없습니다.');
+                $date.value = $date.min;
+            }
+            onDateOrTimeChange();
+        });
 
         document.getElementById('screeningForm').addEventListener('submit', (e) => {
             if (!$movieId.value || !$screeningType.value || !$screenId.value) {
@@ -368,32 +387,10 @@
             }
         });
 
+        // ✅ DOMContentLoaded도 하나로 통합
         document.addEventListener('DOMContentLoaded', async () => {
-            calcEndTimeAndStartAt();
-
-            if ($movieId.value) {
-                await onMovieChange();
-                if ($screeningType.value) {
-                    await onTypeChange();
-                }
-            }
-            refreshTimetable();
-        });
-
-        function todayStrKST() {
-            // 브라우저 로컬 기준 yyyy-mm-dd
-            const d = new Date();
-            const yyyy = d.getFullYear();
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd}`;
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            const today = todayStrKST();
+            const today = todayStrLocal();
             $date.min = today;
-
-            // (원하면) 기본값을 오늘로
             if (!$date.value) $date.value = today;
 
             calcEndTimeAndStartAt();
@@ -405,14 +402,6 @@
                 }
             }
             refreshTimetable();
-        });
-
-        $date.addEventListener('change', () => {
-            if ($date.value && $date.min && $date.value < $date.min) {
-                alert('오늘 이전 날짜는 선택할 수 없습니다.');
-                $date.value = $date.min;
-            }
-            onDateOrTimeChange();
         });
     </script>
 

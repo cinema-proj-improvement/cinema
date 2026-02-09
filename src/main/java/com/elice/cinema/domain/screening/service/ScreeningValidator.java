@@ -42,7 +42,7 @@ public class ScreeningValidator {
             throw new BusinessException(ErrorCode.SCREENING_STATUS_CHANGE_NOT_ALLOWED);
         }
 
-        // enum이 진짜 CANCLED면 여기만 맞춰 바꿔주면 됨
+        // enum이 진짜 CANCELED이면 여기만 맞춰 바꿔주면 됨
         if (req.getScreeningStatus() != ScreeningStatus.CANCELED) {
             throw new BusinessException(ErrorCode.SCREENING_ONLY_CAN_CANCEL);
         }
