@@ -6,6 +6,7 @@ import com.elice.cinema.domain.movie.dto.response.ReservationMovieSelectResponse
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
+import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.reservation.dto.response.ReservationCheckoutResponse;
 import com.elice.cinema.domain.reservation.dto.response.ReservationIdResponse;
@@ -57,6 +58,7 @@ public class ReservationService {
     private final ReservationLockRepository reservationLockRepository;
     private final MemberRepository memberRepository;
     private final SeatRepository seatRepository;
+    private final MovieImageRepository movieImageRepository;
 
     private final EnvironmentPolicyService environmentPolicyService;
     private final SeatHoldProperties seatHoldProperties;
@@ -199,8 +201,10 @@ public class ReservationService {
 
         Movie movie = reservation.getScreening().getMovie();
 
-        String movieThumbnail = /*movieImageRepository.findThumbnailUrlByMovieId(movie.getId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_THUMBNAIL_NOT_FOUND));*/ null;
+        String movieThumbnail = movieImageRepository.findThumbnailUrlByMovieId(movie.getId())
+                .orElse(null);
+        /*String movieThumbnail = movieImageRepository.findThumbnailUrlByMovieId(movie.getId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_THUMBNAIL_NOT_FOUND));*/
         // TODO: 데이터로 영화 썸네일 넣고 다시 시도하기, 예매 생성 생기면 다시 시도
         List<String> seatCodes = reservedSeatRepository.findSeatCodesByReservationId(reservationId);
 
