@@ -1,5 +1,6 @@
 package com.elice.cinema.domain.reservation.repository;
 
+import com.elice.cinema.domain.reservation.dto.CancelReservationInfoDto;
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import com.elice.cinema.domain.reservation.entity.ReservationStatus;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
     Optional<Reservation> findByIdWithScreeningAndMovie(@Param("reservationId") Long reservationId);
 
     Optional<Reservation> findByReservationCode(String reservationCode);
+
+    Optional<Reservation> findByReservationCodeAndStatus(String reservationCode, ReservationStatus status);
 
     @Query("""
             select r
@@ -87,4 +90,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
                   and r.status = com.elice.cinema.domain.reservation.entity.ReservationStatus.HOLD
             """)
     int bulkExpireHoldReservations(@Param("ids") List<Long> ids);
+
+    @Query("""
+                    select r.member.id as memberId,
+                           r.status as status
+                    from Reservation r
+                    where r.id = :reservationId
+            """)
+    Optional<CancelReservationInfoDto> findCancelReservationInfo(@Param("reservationId") Long reservationId);
 }

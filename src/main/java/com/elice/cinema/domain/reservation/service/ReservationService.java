@@ -7,6 +7,7 @@ import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
+import com.elice.cinema.domain.reservation.dto.CancelReservationInfoDto;
 import com.elice.cinema.domain.reservation.dto.response.ReservationCheckoutResponse;
 import com.elice.cinema.domain.reservation.dto.response.ReservationIdResponse;
 import com.elice.cinema.domain.reservation.dto.response.TossPaymentReservationResponse;
@@ -80,7 +81,7 @@ public class ReservationService {
         List<Long> locked = new ArrayList<>();
         try {
             for (Long seatId : seatIds) {
-                boolean ok = reservationLockRepository.lock(
+                boolean ok = reservationLockRepository.lock(  // FIXME: seatId들을 한 번에 모아서 lock 걸도록 수정하기
                         screeningId,
                         seatId,
                         memberId,
@@ -112,22 +113,22 @@ public class ReservationService {
 
     @Transactional
     public void cancelHoldReservation(Long reservationId, Long memberId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
+        CancelReservationInfoDto target = reservationRepository.findCancelReservationInfo(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
-        if (!reservation.getMember().getId().equals(memberId)) {  // 본인 예매만 취소 가능
+        if(target.getMemberId().equals(memberId)) {
             throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
         }
 
-        if (reservation.getStatus() == ReservationStatus.CONFIRMED) {  // 이미 확정된 예매는 삭제 불가
+        if (target.getStatus() == ReservationStatus.CONFIRMED) {  // 이미 확정된 예매는 삭제 불가
             throw new BusinessException(ErrorCode.RESERVATION_ALREADY_CONFIRMED);
         }
 
-        if (reservation.getStatus() != ReservationStatus.HOLD) {  // EXPIRED나 CANCELED면 처리해줄 것이 없는 상태
+        if (target.getStatus() != ReservationStatus.HOLD) {  // EXPIRED나 CANCELED면 처리해줄 것이 없는 상태
             return;
         }
 
-        reservationRepository.delete(reservation);  // HOLD라면 삭제 - 연관된 reservedSeat들은 delete cascade로 삭제됨
+        reservationRepository.deleteById(reservationId);  // HOLD라면 삭제 - 연관된 reservedSeat들은 delete cascade로 삭제됨
     }
 
     public int calculateTotalPrice(List<Seat> seats) {
