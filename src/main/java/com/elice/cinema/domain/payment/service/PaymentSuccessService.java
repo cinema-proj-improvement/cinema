@@ -32,7 +32,7 @@ public class PaymentSuccessService {
             return;
         }
 
-        Reservation reservation = reservationRepository.findByReservationCodeAndStatus(orderId, ReservationStatus.HOLD)
+        Reservation reservation = reservationRepository.findByReservationCodeAndStatusWithMember(orderId, ReservationStatus.HOLD)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
         Member member = memberRepository.findById(memberId)
