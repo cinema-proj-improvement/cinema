@@ -30,6 +30,18 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
 
     Optional<Reservation> findByReservationCodeAndStatus(String reservationCode, ReservationStatus status);
 
+    @Query("""
+            select r
+            from Reservation r
+            join fetch r.member
+            where r.reservationCode = :code
+            and r.status = :status
+            """)
+    Optional<Reservation> findByReservationCodeAndStatusWithMember(
+            @Param("code") String code,
+            @Param("status") ReservationStatus status
+    );
+
     @EntityGraph(attributePaths = {"reservedSeats"})
     Optional<Reservation> findWithReservedSeatsById(Long id);
 

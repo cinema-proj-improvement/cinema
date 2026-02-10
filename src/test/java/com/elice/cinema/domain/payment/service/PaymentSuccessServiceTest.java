@@ -50,7 +50,7 @@ class PaymentSuccessServiceTest {
         Reservation reservation = mock(Reservation.class);
         Member owner = mock(Member.class);
 
-        when(reservationRepository.findByReservationCodeAndStatus(orderId, ReservationStatus.HOLD))
+        when(reservationRepository.findByReservationCodeAndStatusWithMember(orderId, ReservationStatus.HOLD))
                 .thenReturn(Optional.of(reservation));
 
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(mock(Member.class)));
@@ -101,7 +101,7 @@ class PaymentSuccessServiceTest {
         when(paymentRepository.existsByPaymentKey(paymentKey)).thenReturn(false);
 
         Reservation reservation = mock(Reservation.class);
-        when(reservationRepository.findByReservationCodeAndStatus(orderId, ReservationStatus.HOLD))
+        when(reservationRepository.findByReservationCodeAndStatusWithMember(orderId, ReservationStatus.HOLD))
                 .thenReturn(Optional.of(reservation));
 
         when(memberRepository.findById(memberId))
@@ -136,7 +136,7 @@ class PaymentSuccessServiceTest {
         Reservation reservation = mock(Reservation.class);
         Member owner = mock(Member.class);
 
-        when(reservationRepository.findByReservationCodeAndStatus(orderId, ReservationStatus.HOLD))
+        when(reservationRepository.findByReservationCodeAndStatusWithMember(orderId, ReservationStatus.HOLD))
                 .thenReturn(Optional.of(reservation));
 
         Member member = mock(Member.class);
@@ -179,7 +179,7 @@ class PaymentSuccessServiceTest {
         Reservation reservation = mock(Reservation.class);
         Member owner = mock(Member.class);
 
-        when(reservationRepository.findByReservationCodeAndStatus(orderId, ReservationStatus.HOLD))
+        when(reservationRepository.findByReservationCodeAndStatusWithMember(orderId, ReservationStatus.HOLD))
                 .thenReturn(Optional.of(reservation));
 
         when(reservation.getTotalPrice()).thenReturn(amount.intValue());
