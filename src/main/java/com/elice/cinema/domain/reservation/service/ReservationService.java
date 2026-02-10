@@ -118,7 +118,7 @@ public class ReservationService {
         CancelReservationInfoDto target = reservationRepository.findCancelReservationInfo(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
-        if(target.getMemberId().equals(memberId)) {
+        if(!target.getMemberId().equals(memberId)) {
             throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
         }
 
