@@ -78,9 +78,15 @@
     <div class="sidebar-user">
       <div class="avatar">A</div>
       <div class="user-meta">
-        <div class="name">관리자</div>
+        <div class="name" th:text="${#authentication.name}">관리자</div>
         <div class="email">admin@cinema.com</div>
       </div>
+
+      <!-- ✅ 로그아웃 -->
+      <form th:action="@{/logout}" method="post" class="logout-form">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit" class="logout-btn">로그아웃</button>
+      </form>
     </div>
   </aside>
 
