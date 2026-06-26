@@ -5,15 +5,22 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  flyway:
+    enabled: true
+
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: false
+    open-in-view: false
+
+  session:
+    store-type: redis
 
   data:
     redis:
-      host: localhost
+      host: ${REDIS_HOST}
       port: 6379
+      password: ${REDIS_PASSWORD}
       timeout: 3s
 
 toss:
@@ -25,9 +32,5 @@ file:
   storage:
     type: local
   upload:
-    base-path: /home/gitlab-runner/uploads
+    base-path: ${FILE_UPLOAD_BASE_PATH:/app/uploads}
     url-prefix: /uploads
-
-logging:
-  level:
-    com.example.cinema: DEBUG

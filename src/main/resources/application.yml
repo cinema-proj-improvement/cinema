@@ -2,7 +2,7 @@ spring:
   application:
     name: cinema
   profiles:
-    active: local
+    active: ${SPRING_PROFILES_ACTIVE:local}
   mvc:
     hiddenmethod:
       filter:
@@ -19,7 +19,3 @@ spring:
 seat-hold:
   minutes: 5
   redis-grace-minutes: 1
-
-logging:
-  level:
-    root: INFO
