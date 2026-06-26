@@ -29,6 +29,7 @@ import com.elice.cinema.global.config.properties.SeatHoldProperties;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -91,6 +93,7 @@ public class ReservationService {
                         TimeUnit.MINUTES
                 );
                 if (!ok) {  // 이미 lock이 걸린 좌석을 선택한 경우 이전에 lock 걸었던 좌석들의 lock을 풀어주고 예외를 던짐
+                    log.warn("좌석 선점 실패 - 이미 선점된 좌석: screeningId={}, seatId={}, memberId={}", screeningId, seatId, memberId);
                     throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
                 }
                 locked.add(seatId);  // 성공한 것만 기록
@@ -106,7 +109,9 @@ public class ReservationService {
                     .toList();
             reservedSeatRepository.saveAll(reservedSeats);  // FIXME: ReservedSeat의 PK 전략이 현재 IDENTIFY -> saveAll 날리면 컬렉션처럼 루프로 하나씩 insert됨
 
-            return savedReservation.getId();
+            Long reservationId = savedReservation.getId();
+            log.info("좌석 선점(HOLD) 성공: reservationId={}, screeningId={}, memberId={}, seatIds={}", reservationId, screeningId, memberId, seatIds);
+            return reservationId;
         } finally {  // 성공하든 실패하든 lock은 반드시 반환해줘야 함
             // 내가 잡은 redis lock만 해제
             reservationLockRepository.unlockAll(screeningId, locked);
@@ -119,6 +124,7 @@ public class ReservationService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
         if(!target.getMemberId().equals(memberId)) {
+            log.warn("예매 취소 권한 없음 - 타인 예매 취소 시도: reservationId={}, 예매memberId={}, 요청memberId={}", reservationId, target.getMemberId(), memberId);
             throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
         }
 
@@ -131,6 +137,7 @@ public class ReservationService {
         }
 
         reservationRepository.deleteById(reservationId);  // HOLD라면 삭제 - 연관된 reservedSeat들은 delete cascade로 삭제됨
+        log.info("HOLD 예매 취소 처리: reservationId={}, memberId={}", reservationId, memberId);
     }
 
     public int calculateTotalPrice(List<Seat> seats) {
@@ -148,6 +155,7 @@ public class ReservationService {
     private void validateSeatCount(List<Long> seatIds) {
         int max = environmentPolicyService.getMaxReservationCount();
         if (seatIds == null || seatIds.isEmpty() || seatIds.size() > max) {
+            log.warn("좌석 선점 실패 - 최대 좌석 수 초과: 요청={}, max={}", seatIds == null ? 0 : seatIds.size(), max);
             throw new BusinessException(ErrorCode.RESERVATION_SEAT_LIMIT_EXCEEDED);
         }
     }
@@ -157,6 +165,7 @@ public class ReservationService {
         List<Long> blocked = reservedSeatRepository.findBlockedSeatIdsIn(screeningId, seatIds, ReservationStatus.blocked());
 
         if (!blocked.isEmpty()) {  // 이미 선점되었거나 예매된 좌석이 포함된 요청임을 의미
+            log.warn("좌석 선점 실패 - 이미 예매/선점된 좌석 포함: screeningId={}, 요청seatIds={}, blockedSeatIds={}", screeningId, seatIds, blocked);
             throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
         }
     }

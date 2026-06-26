@@ -48,7 +48,8 @@ public class SecurityConfig {
                                 "/login",       // 로그인 페이지
                                 "/signup",
                                 "/h2-console/**",
-                                "test/**"
+                                "test/**",
+                                "/health"
                         ).permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/admin/**").hasRole("ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")

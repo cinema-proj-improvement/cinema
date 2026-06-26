@@ -57,5 +57,6 @@ public class MovieReservationRateBatchService {
             .setParameter("movieId", movieId)
             .executeUpdate();
         }
+        log.info("예매율 갱신 완료: {}개 영화 처리", rows.size());
     }
 }

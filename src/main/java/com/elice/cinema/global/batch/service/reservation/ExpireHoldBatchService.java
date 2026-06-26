@@ -5,6 +5,7 @@ import com.elice.cinema.domain.reservation.repository.ReservationLockRepository;
 import com.elice.cinema.domain.reservation.repository.ReservationRepository;
 import com.elice.cinema.domain.reservation.repository.ReservedSeatRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExpireHoldBatchService {
@@ -33,6 +35,7 @@ public class ExpireHoldBatchService {
             if(processed == 0) {
                 return;
             }
+            log.info("HOLD 만료 처리: batch={}, processed={}건", i + 1, processed);
         }
     }
 
