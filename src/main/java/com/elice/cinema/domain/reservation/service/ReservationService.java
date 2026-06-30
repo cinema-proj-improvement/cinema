@@ -280,6 +280,6 @@ public class ReservationService {
     private int calculateRemainingSeats(Screening sc, Map<Long, Long> reservedCountMap) {
         int totalSeats = sc.getScreen().getTotalSeats();
         long reservedCount = reservedCountMap.getOrDefault(sc.getId(), 0L);
-        return (int) (totalSeats - reservedCount); // 방어적으로 0 미만 방지
+        return (int) Math.max(0, totalSeats - reservedCount);
     }
 }
