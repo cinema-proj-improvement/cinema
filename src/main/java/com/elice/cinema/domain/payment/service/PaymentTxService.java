@@ -15,11 +15,13 @@ import com.elice.cinema.domain.reservation.repository.ReservationRepository;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentTxService {
@@ -33,6 +35,7 @@ public class PaymentTxService {
     @Transactional
     public void commitPaymentSuccess(TossConfirmResponse res, Long reservationId, Long memberId) {
         if (paymentRepository.existsByPaymentKey(res.getPaymentKey())) {
+            log.warn("[Payment] 중복 결제 승인 요청 무시: paymentKey={}, reservationId={}", res.getPaymentKey(), reservationId);
             return; // 멱등 처리
         }
 
@@ -47,6 +50,7 @@ public class PaymentTxService {
 
         // 승인된 금액도 같은지 확인
         if (!totalPrice.equals(res.getTotalAmount())) {
+            log.error("[Payment] 결제 금액 불일치: reservationId={}, expected={}, actual={}", reservationId, totalPrice, res.getTotalAmount());
             throw new BusinessException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
         }
 
@@ -55,6 +59,8 @@ public class PaymentTxService {
 
         Payment payment = paymentMapper.toEntity(res, reservation, member);
         paymentRepository.save(payment);
+
+        log.info("[Payment] 결제 승인 커밋 완료: reservationId={}, memberId={}, amount={}", reservationId, memberId, res.getTotalAmount());
     }
 
     @Transactional
@@ -66,14 +72,20 @@ public class PaymentTxService {
 
         Reservation reservation = getReservationById(reservationId);
 
-        if (payment.getStatus() == PaymentStatus.CANCELED) return;
+        if (payment.getStatus() == PaymentStatus.CANCELED) {
+            log.warn("[Payment] 이미 취소된 결제 롤백 요청 무시: reservationId={}", reservationId);
+            return;
+        }
 
+        log.warn("[Payment] 결제 승인 후 처리 실패로 롤백 시작: reservationId={}, reason={}", reservationId, failureMessage);
 
         payment.markCanceled(failureMessage);
 
         reservation.fail();
 
         paymentRepository.save(payment); //FIXME: res에서 널 값이 들어오면 터짐, res 검증 로직이 필요할 듯
+
+        log.warn("[Payment] 결제 롤백 완료 (취소 처리): reservationId={}", reservationId);
     }
 
     @Transactional
@@ -83,8 +95,14 @@ public class PaymentTxService {
                                            String failureMessage) {
         Payment payment = getOrCreatePayment(res, reservationId, memberId);
 
-        if (payment.getStatus() == PaymentStatus.CANCEL_FAILED) return;
+        if (payment.getStatus() == PaymentStatus.CANCEL_FAILED) {
+            log.warn("[Payment] 이미 취소 실패 상태인 결제 재처리 요청 무시: reservationId={}", reservationId);
+            return;
+        }
 
+        // 결제는 승인됐으나 취소 불가 — 수동 처리 필요
+        log.error("[Payment] 결제 롤백 취소 실패 (CANCEL_FAILED): reservationId={}, paymentKey={}, reason={}",
+                reservationId, res.getPaymentKey(), failureMessage);
 
         payment.markCancelFailed(failureMessage);
         paymentRepository.save(payment);
@@ -97,7 +115,10 @@ public class PaymentTxService {
         Payment payment = paymentRepository.findByIdWithReservation(paymentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        if (payment.getStatus() == PaymentStatus.CANCELED) return;
+        if (payment.getStatus() == PaymentStatus.CANCELED) {
+            log.warn("[Payment] 이미 취소된 결제 취소 요청 무시: paymentId={}", paymentId);
+            return;
+        }
 
         Reservation reservation = payment.getReservation();
 
@@ -106,6 +127,9 @@ public class PaymentTxService {
         payment.markCanceled(result.getReason());
 
         refundService.createRefund(payment, result.getCancelAmount());
+
+        log.info("[Payment] 결제 취소 커밋 완료: paymentId={}, cancelAmount={}, reason={}",
+                paymentId, result.getCancelAmount(), result.getReason());
     }
 
     // TODO: 결제 실패 메시지안에 결제 취소 이유를 넣어야하나? 아니면 결제 취소 실패 이유를 넣어야 하나?
@@ -116,7 +140,12 @@ public class PaymentTxService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        if (payment.getStatus() == PaymentStatus.CANCEL_FAILED) return;
+        if (payment.getStatus() == PaymentStatus.CANCEL_FAILED) {
+            log.warn("[Payment] 이미 취소 실패 상태인 결제 재처리 요청 무시: paymentId={}", paymentId);
+            return;
+        }
+
+        log.warn("[Payment] 결제 취소 실패 커밋: paymentId={}, reason={}", paymentId, result.getReason());
 
         payment.markCancelFailed(result.getReason());
     }
