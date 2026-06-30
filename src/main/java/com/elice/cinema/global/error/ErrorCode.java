@@ -61,7 +61,7 @@ public enum ErrorCode {
 
     // 403 Forbidden
     PAYMENT_FORBIDDEN(HttpStatus.FORBIDDEN, "PY04", "결제 권한이 없습니다."),
-    RESERVATION_FORBIDDEN(HttpStatus.FORBIDDEN, "RS05", "해당 예매 권한이 없습니다."),
+    RESERVATION_FORBIDDEN(HttpStatus.FORBIDDEN, "RS05", "해당 예매에 대한 권한이 없습니다."),
 
     // 404 Not Found
     MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "MV01", "영화를 찾을 수 없습니다."),
