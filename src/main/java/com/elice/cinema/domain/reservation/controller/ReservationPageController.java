@@ -35,8 +35,9 @@ public class ReservationPageController {
     public String getCheckoutPage(@PathVariable Long reservationId,
                                   @RequestParam(defaultValue = "false") boolean error,
                                   @RequestParam(required = false) String message,
+                                  @AuthenticationPrincipal CustomUserDetails userDetail,
                                   Model model) {
-        ReservationCheckoutResponse reservation = reservationService.getCheckoutPage(reservationId);
+        ReservationCheckoutResponse reservation = reservationService.getCheckoutPage(reservationId, userDetail.getMemberId());
 
         if (error) {
             model.addAttribute("error", true);

@@ -205,9 +205,13 @@ public class ReservationService {
                 .toList();
     }
 
-    public ReservationCheckoutResponse getCheckoutPage(Long reservationId) {
+    public ReservationCheckoutResponse getCheckoutPage(Long reservationId, Long memberId) {
         Reservation reservation = reservationRepository.findByIdWithScreeningAndMovie(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        if (!reservation.getMember().getId().equals(memberId)) {
+            throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
+        }
 
         Movie movie = reservation.getScreening().getMovie();
 
@@ -221,9 +225,14 @@ public class ReservationService {
         return reservationMapper.toReservationCheckoutResponse(reservation, movieThumbnail, seatCodes);
     }
 
-    public TossPaymentReservationResponse getTossPage(Long reservationId) {
+    public TossPaymentReservationResponse getTossPage(Long reservationId, Long memberId) {
         Reservation reservation = reservationRepository.findByIdAndStatus(reservationId, ReservationStatus.HOLD)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        if (!reservation.getMember().getId().equals(memberId)) {
+            throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
+        }
+
         String orderId = reservation.getReservationCode();
         return reservationMapper.toPaymentReservationResponse(reservation, orderId, tossClientKey);
     }
