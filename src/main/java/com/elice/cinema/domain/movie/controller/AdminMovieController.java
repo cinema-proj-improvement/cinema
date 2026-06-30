@@ -6,6 +6,7 @@ import com.elice.cinema.domain.movie.dto.request.MovieCreateRequest;
 import com.elice.cinema.domain.movie.dto.request.MovieUpdateRequest;
 import com.elice.cinema.domain.movie.dto.response.MovieDetailResponse;
 import com.elice.cinema.domain.movie.dto.response.MovieUpdateFormResponse;
+import com.elice.cinema.domain.movie.facade.MovieRegistrationFacade;
 import com.elice.cinema.domain.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AdminMovieController {
     private final MovieService movieService;
+    private final MovieRegistrationFacade movieRegistrationFacade;
 
     @GetMapping("/new")
     public String showCreateMovieForm(Model model) {
@@ -40,7 +42,7 @@ public class AdminMovieController {
             return "admin/movie/movie-create";
         }
 
-        Long movieId = movieService.createMovie(req);
+        Long movieId = movieRegistrationFacade.createMovie(req);
         return "redirect:/admin/movies/" + movieId;
     }
 

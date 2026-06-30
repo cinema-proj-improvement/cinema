@@ -14,9 +14,10 @@ public class FileProperties {
 
     @Getter @Setter
     public static class Storage {
-        private String type;       // local | s3
+        private String type;         // local | s3
         private String s3Bucket;
-        private String s3BaseUrl;  // optional
+        private String s3Region;
+        private String imageBaseUrl; // 이미지 URL prefix: local=/uploads, s3=CDN 도메인
     }
 
     @Getter @Setter
