@@ -36,7 +36,6 @@
     // reservationId가 없으면 뒤 로직은 실행할 이유 없음
     if (!reservationId) return;
 
-    // (선택) CSRF meta 태그가 있으면 자동으로 헤더에 넣음
     const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');
     const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
 
@@ -53,20 +52,10 @@
             await fetch(`/reservations/${reservationId}/cancel-hold`, {
                 method: "POST",
                 headers: buildHeaders(),
-                // 페이지 이동 직전에도 요청이 끊기지 않게(best-effort)
-                keepalive: true
+                keepalive: true  // 페이지 이동 직전에도 요청이 끊기지 않게(best-effort)
             });
         } catch (e) {
             // 실패해도 이동은 진행 (TTL/배치가 최종 정리)
-        }
-    }
-
-    function cancelHoldViaBeacon() {
-        try {
-            // beacon은 헤더를 못 실어서 CSRF 켜면 막힐 수 있음(현재는 off라 OK)
-            navigator.sendBeacon(`/reservations/${reservationId}/cancel-hold`);
-        } catch (e) {
-            // 무시
         }
     }
 
@@ -82,11 +71,11 @@
     }
 
     // 2) 뒤로가기/탭닫기/새로고침 등으로 페이지를 떠날 때: best-effort 정리
-    window.addEventListener("pagehide", cancelHoldViaBeacon);
+    window.addEventListener("pagehide", cancelHoldViaFetch);
 
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "hidden") {
-            cancelHoldViaBeacon();
+            cancelHoldViaFetch();
         }
     });
 })();
