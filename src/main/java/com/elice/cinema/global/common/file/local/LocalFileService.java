@@ -1,6 +1,7 @@
 package com.elice.cinema.global.common.file.local;
 
 import com.elice.cinema.global.common.file.FileCategory;
+import com.elice.cinema.global.common.file.FileMetadata;
 import com.elice.cinema.global.common.file.FileService;
 import com.elice.cinema.global.config.properties.FileProperties;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -19,73 +23,72 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "local", matchIfMissing = true)
 public class LocalFileService implements FileService {
+
     private final FileProperties fileProperties;
 
     @Override
     public String upload(MultipartFile file, FileCategory category) {
-        if(file == null || file.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             return null;
         }
 
         try {
             String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
-            String savedFileName = UUID.randomUUID() + "." + extension;  // 원본 파일명은 필요로 하는 요구사항이 없기 때문에 생략
+            String fileName = UUID.randomUUID() + "." + extension;
+            String key = category.getDir() + "/" + fileName;
 
             File dir = new File(fileProperties.getUpload().getBasePath(), category.getDir());
-
             if (!dir.exists() && !dir.mkdirs()) {
                 throw new IOException("디렉토리 생성 실패: " + dir.getAbsolutePath());
             }
 
-            File target = new File(dir, savedFileName);
-            file.transferTo(target);
-
-            return fileProperties.getUpload().getUrlPrefix()
-                    + "/" + category.getDir()
-                    + "/" + savedFileName;
+            file.transferTo(new File(dir, fileName));
+            return key;
 
         } catch (IOException e) {
             log.error("로컬 파일 업로드 실패", e);
-            throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);  // TODO: FileUploadException 또는 BusinessException(ErrorCode.FILE_UPLOAD_FAILED)로 교체
+            throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    /**
+     * best-effort 삭제 — 보상 처리 경로에서 호출되므로 예외를 던지지 않는다.
+     */
+    @Override
+    public void delete(String key) {
+        if (!StringUtils.hasText(key)) {
+            return;
+        }
+
+        File target = new File(fileProperties.getUpload().getBasePath(), key);
+        if (!target.exists()) {
+            log.warn("삭제할 파일이 존재하지 않음: {}", target.getAbsolutePath());
+            return;
+        }
+
+        if (!target.delete()) {
+            log.warn("파일 삭제 실패(권한 문제 가능): {}", target.getAbsolutePath());
         }
     }
 
     @Override
-    public void delete(String fileUrl) {
-        if (!StringUtils.hasText(fileUrl)) {
-            return;
-        }
+    public List<FileMetadata> listFiles(FileCategory category) {
+        File dir = new File(fileProperties.getUpload().getBasePath(), category.getDir());
+        if (!dir.exists()) return List.of();
 
-        try {
-            String urlPrefix = fileProperties.getUpload().getUrlPrefix();
+        File[] files = dir.listFiles(File::isFile);
+        if (files == null) return List.of();
 
-            // /uploads/xxx/yyy.png -> xxx/yyy.png
-            if (!fileUrl.startsWith(urlPrefix)) {
-                log.warn("삭제 대상 파일이 url-prefix와 일치하지 않음: {}", fileUrl);
-                return;
-            }
+        return Arrays.stream(files)
+                .map(f -> new FileMetadata(
+                        category.getDir() + "/" + f.getName(),
+                        Instant.ofEpochMilli(f.lastModified())
+                ))
+                .toList();
+    }
 
-            String relativePath = fileUrl.substring(urlPrefix.length());
-            if (relativePath.startsWith("/")) {
-                relativePath = relativePath.substring(1);
-            }
-
-            File target = new File(
-                    fileProperties.getUpload().getBasePath(),
-                    relativePath
-            );
-
-            if (!target.exists()) {
-                log.warn("삭제할 파일이 존재하지 않음: {}", target.getAbsolutePath());
-                return;
-            }
-
-            if (!target.delete()) {
-                log.warn("파일 삭제 실패(권한 문제 가능): {}", target.getAbsolutePath());
-            }
-
-        } catch (Exception e) {
-            log.error("로컬 파일 삭제 중 오류 발생: {}", fileUrl, e);
-        }
+    @Override
+    public String getImageBaseUrl() {
+        return fileProperties.getStorage().getImageBaseUrl();
     }
 }

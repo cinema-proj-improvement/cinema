@@ -10,7 +10,6 @@ import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -25,33 +24,6 @@ public class MovieImageService {
     private final MovieRepository movieRepository;
     private final MovieImageRepository movieImageRepository;
     private final FileService fileService;
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void storeImages(Long movieId, MultipartFile thumbnailImage, List<MultipartFile> extraImages) {
-        Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_NOT_FOUND));
-
-        // 1) 썸네일 필수
-        if (thumbnailImage == null || thumbnailImage.isEmpty()) {
-            throw new BusinessException(ErrorCode.MOVIE_THUMBNAIL_REQUIRED);
-        }
-
-        String thumbnailUrl = fileService.upload(thumbnailImage, FileCategory.MOVIE_THUMBNAIL);  // FIXME: 파일 처리가 Transaction 안에 묶여있음. 분리 필요
-        movieImageRepository.save(MovieImage.thumbnail(movie, thumbnailUrl));
-
-        // 2) 추가 이미지: 1..n
-        if (extraImages == null || extraImages.isEmpty()) {
-            return;
-        }
-
-        int order = 1;
-        for (MultipartFile f : extraImages) {
-            if (f == null || f.isEmpty()) continue;
-
-            String url = fileService.upload(f, FileCategory.MOVIE_EXTRA);
-            movieImageRepository.save(MovieImage.extra(movie, url, order++));
-        }
-    }
 
     /**
      * 부분 교체(A-변형)

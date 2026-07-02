@@ -30,7 +30,7 @@ toss:
 
 file:
   storage:
-    type: local
-  upload:
-    base-path: ${FILE_UPLOAD_BASE_PATH:/app/uploads}
-    url-prefix: /uploads
+    type: s3
+    s3-bucket: ${S3_BUCKET_NAME}
+    s3-region: ${AWS_REGION:ap-northeast-2}
+    image-base-url: ${CDN_BASE_URL}

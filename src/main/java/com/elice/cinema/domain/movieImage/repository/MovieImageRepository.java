@@ -55,4 +55,6 @@ public interface MovieImageRepository extends JpaRepository<MovieImage, Long> {
     """)
     List<String> findExtraImagesByMovieId(@Param("movieId") Long movieId);
 
+    @Query("select mi.imageUrl from MovieImage mi")
+    List<String> findAllImageKeys();
 }
