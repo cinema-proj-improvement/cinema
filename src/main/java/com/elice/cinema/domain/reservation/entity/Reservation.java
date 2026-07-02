@@ -127,6 +127,12 @@ public class Reservation extends BaseEntity {
     }
 
     public void confirm() {
+        if (this.status == ReservationStatus.CONFIRMED) {
+            throw new BusinessException(ErrorCode.RESERVATION_ALREADY_CONFIRMED);
+        }
+        if (this.status != ReservationStatus.HOLD) {
+            throw new BusinessException(ErrorCode.RESERVATION_INVALID_STATUS);
+        }
         this.status = ReservationStatus.CONFIRMED;
         this.reservedAt = LocalDateTime.now();
     }
@@ -140,8 +146,12 @@ public class Reservation extends BaseEntity {
         this.canceledAt = LocalDateTime.now();
         this.reservedSeats.clear();
     }
-    // 예매 실패(현재는 취소로 나타냄)
+
+    // 예매 실패(현재는 취소로 나타냄) — HOLD 상태에서만 호출 가능
     public void fail() {
+        if (this.status != ReservationStatus.HOLD) {
+            throw new BusinessException(ErrorCode.RESERVATION_INVALID_STATUS);
+        }
         this.status = ReservationStatus.CANCELED;
         this.canceledAt = LocalDateTime.now();
         this.reservedSeats.clear();
