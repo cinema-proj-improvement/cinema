@@ -86,6 +86,7 @@ public class MovieService {
 
         List<AdminMovieListResponse> contents =
                 AdminMovieListResponse.fromRows(rows);
+        contents.forEach(dto -> dto.setThumbnail(fileService.toImageUrl(dto.getThumbnail())));
 
         return new PageImpl<>(contents, pageable, totalCount);
     }
@@ -180,7 +181,14 @@ public class MovieService {
             Pageable pageable
     ) {
         return movieRepository.findUserMovies(keyword, sort, pageable)
-                .map(movieMapper::toMovieListResponse);
+                .map(row -> new MovieListResponse(
+                        row.getId(),
+                        fileService.toImageUrl(row.getThumbnail()),
+                        row.getTitle(),
+                        row.getReleaseDate(),
+                        row.getAdvanceReservationRate(),
+                        row.getAvgScore()
+                ));
     }
 
     // 사용자 영화 상세 조회

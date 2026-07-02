@@ -25,6 +25,7 @@ import com.elice.cinema.domain.screening.dto.response.ReservationScheduleRespons
 import com.elice.cinema.domain.screening.entity.Screening;
 import com.elice.cinema.domain.screening.mapper.ScreeningMapper;
 import com.elice.cinema.domain.screening.repository.ScreeningRepository;
+import com.elice.cinema.global.common.file.FileService;
 import com.elice.cinema.global.config.properties.SeatHoldProperties;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
@@ -68,6 +69,7 @@ public class ReservationService {
     private final MovieMapper movieMapper;
     private final ScreeningMapper screeningMapper;
     private final ReservationMapper reservationMapper;
+    private final FileService fileService;
 
     @Transactional
     public Long holdSeats(Long screeningId, List<Long> seatIds, Long memberId) {
@@ -212,6 +214,7 @@ public class ReservationService {
         Movie movie = reservation.getScreening().getMovie();
 
         String movieThumbnail = movieImageRepository.findThumbnailUrlByMovieId(movie.getId())
+                .map(fileService::toImageUrl)
                 .orElse(null);
         /*String movieThumbnail = movieImageRepository.findThumbnailUrlByMovieId(movie.getId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_THUMBNAIL_NOT_FOUND));*/
