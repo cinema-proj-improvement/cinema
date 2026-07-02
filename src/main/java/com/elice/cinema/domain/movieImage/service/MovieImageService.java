@@ -1,19 +1,12 @@
 package com.elice.cinema.domain.movieImage.service;
 
 import com.elice.cinema.domain.movie.entity.Movie;
-import com.elice.cinema.domain.movie.repository.MovieRepository;
+import com.elice.cinema.domain.movieImage.dto.MovieImageUploadResult;
 import com.elice.cinema.domain.movieImage.entity.MovieImage;
 import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
-import com.elice.cinema.global.common.file.FileCategory;
-import com.elice.cinema.global.common.file.FileService;
-import com.elice.cinema.global.error.ErrorCode;
-import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,114 +14,34 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MovieImageService {
-    private final MovieRepository movieRepository;
     private final MovieImageRepository movieImageRepository;
-    private final FileService fileService;
 
     /**
-     * 부분 교체(A-변형)
-     * - 썸네일만 변경: 썸네일만 DB/파일 삭제 후 재저장
-     * - extra만 변경: extra만 DB/파일 삭제 후 재저장
-     * - 둘 다 변경: 전체 삭제 후 재저장
-     *
-     * 파일 삭제는 AFTER_COMMIT, 롤백이면 새 파일 정리(AFTER_ROLLBACK).
+     * 이미 업로드된 이미지 key로 기존 row를 교체한다 (DB 전용, 파일 I/O 없음).
+     * 교체된(=삭제된) 기존 key 목록을 반환한다 — 실제 파일 삭제는 호출자 책임.
      */
     @Transactional
-    public void updateImages(Long movieId, MultipartFile newThumbnail, List<MultipartFile> newExtraImages) {
+    public List<String> replaceImages(Movie movie, MovieImageUploadResult uploadResult) {
+        List<String> oldKeys = new ArrayList<>();
 
-        boolean thumbnailChanged = hasFile(newThumbnail);
-        boolean extrasChanged = hasAnyFile(newExtraImages);
-
-        if (!thumbnailChanged && !extrasChanged) {
-            return; // 이미지 변경 없음
+        if (uploadResult.thumbnailKey() != null) {
+            movieImageRepository.findByMovieIdAndDisplayOrder(movie.getId(), 0)
+                    .ifPresent(mi -> oldKeys.add(mi.getImageUrl()));
+            movieImageRepository.deleteThumbnailByMovieId(movie.getId());
+            movieImageRepository.save(MovieImage.thumbnail(movie, uploadResult.thumbnailKey()));
         }
 
-        Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_NOT_FOUND));
+        if (!uploadResult.extraKeys().isEmpty()) {
+            movieImageRepository.findByMovieIdAndDisplayOrderGreaterThanEqualOrderByDisplayOrderAsc(movie.getId(), 1)
+                    .forEach(mi -> oldKeys.add(mi.getImageUrl()));
+            movieImageRepository.deleteExtrasByMovieId(movie.getId());
 
-        List<String> deleteAfterCommit = new ArrayList<>();
-        List<String> cleanupOnRollback = new ArrayList<>();
-
-        // 1) 기존 이미지 조회 + DB 삭제 범위 결정
-        if (thumbnailChanged && extrasChanged) {
-            // 전체 삭제
-            movieImageRepository.findByMovieIdOrderByDisplayOrderAsc(movieId)
-                    .forEach(mi -> deleteAfterCommit.add(mi.getImageUrl()));
-            movieImageRepository.deleteAllByMovieId(movieId);
-
-        } else if (thumbnailChanged) {
-            // 썸네일만 삭제
-            movieImageRepository.findByMovieIdAndDisplayOrder(movieId, 0)
-                    .ifPresent(mi -> deleteAfterCommit.add(mi.getImageUrl()));
-            movieImageRepository.deleteThumbnailByMovieId(movieId);
-
-        } else {
-            // extra만 삭제
-            movieImageRepository.findByMovieIdAndDisplayOrderGreaterThanEqualOrderByDisplayOrderAsc(movieId, 1)
-                    .forEach(mi -> deleteAfterCommit.add(mi.getImageUrl()));
-            movieImageRepository.deleteExtrasByMovieId(movieId);
-        }
-
-        // 2) 새 파일 업로드 + DB 저장
-        if (thumbnailChanged) {
-            String thumbUrl = fileService.upload(newThumbnail, FileCategory.MOVIE_THUMBNAIL);
-            if (thumbUrl == null) throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
-            cleanupOnRollback.add(thumbUrl);
-            movieImageRepository.save(MovieImage.thumbnail(movie, thumbUrl));
-        }
-
-        if (extrasChanged) {
             int order = 1;
-            for (MultipartFile f : newExtraImages) {
-                if (!hasFile(f)) continue;
-                String url = fileService.upload(f, FileCategory.MOVIE_EXTRA);
-                if (url == null) continue;
-                cleanupOnRollback.add(url);
-                movieImageRepository.save(MovieImage.extra(movie, url, order++));
+            for (String key : uploadResult.extraKeys()) {
+                movieImageRepository.save(MovieImage.extra(movie, key, order++));
             }
         }
 
-        // 3) 트랜잭션 훅 등록 (파일 정리)
-        registerCleanupHooks(deleteAfterCommit, cleanupOnRollback);
-    }
-
-
-
-    // === Helper methods ===
-
-    private void registerCleanupHooks(List<String> deleteAfterCommit, List<String> cleanupOnRollback) {
-        if (!TransactionSynchronizationManager.isActualTransactionActive()) {
-            throw new IllegalStateException("updateImages는 트랜잭션 내부에서 호출되어야 합니다.");
-        }
-
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                for (String url : deleteAfterCommit) {
-                    fileService.delete(url);
-                }
-            }
-
-            @Override
-            public void afterCompletion(int status) {
-                if (status == STATUS_ROLLED_BACK) {
-                    for (String url : cleanupOnRollback) {
-                        fileService.delete(url);
-                    }
-                }
-            }
-        });
-    }
-
-    private boolean hasFile(MultipartFile f) {
-        return f != null && !f.isEmpty();
-    }
-
-    private boolean hasAnyFile(List<MultipartFile> files) {
-        if (files == null) return false;
-        for (MultipartFile f : files) {
-            if (hasFile(f)) return true;
-        }
-        return false;
+        return oldKeys;
     }
 }

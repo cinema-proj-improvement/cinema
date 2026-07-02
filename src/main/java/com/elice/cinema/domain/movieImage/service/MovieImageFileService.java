@@ -24,12 +24,23 @@ public class MovieImageFileService {
         if (thumbnail == null || thumbnail.isEmpty()) {
             throw new BusinessException(ErrorCode.MOVIE_THUMBNAIL_REQUIRED);
         }
+        return upload(thumbnail, extras);
+    }
 
+    /** 수정 API용: 썸네일은 선택 사항(안 바뀌면 null/empty로 넘어옴) — 필수 검증 없이 업로드. */
+    public MovieImageUploadResult uploadChanged(MultipartFile thumbnail, List<MultipartFile> extras) {
+        return upload(thumbnail, extras);
+    }
+
+    private MovieImageUploadResult upload(MultipartFile thumbnail, List<MultipartFile> extras) {
         List<String> uploadedSoFar = new ArrayList<>();
 
         try {
-            String thumbnailKey = fileService.upload(thumbnail, FileCategory.MOVIE_THUMBNAIL);
-            uploadedSoFar.add(thumbnailKey);
+            String thumbnailKey = null;
+            if (thumbnail != null && !thumbnail.isEmpty()) {
+                thumbnailKey = fileService.upload(thumbnail, FileCategory.MOVIE_THUMBNAIL);
+                uploadedSoFar.add(thumbnailKey);
+            }
 
             List<String> extraKeys = new ArrayList<>();
             if (extras != null) {
@@ -41,7 +52,7 @@ public class MovieImageFileService {
                 }
             }
 
-            log.info("영화 이미지 업로드 완료: thumbnailUploaded=true, extraCount={}", extraKeys.size());
+            log.info("영화 이미지 업로드 완료: thumbnailUploaded={}, extraCount={}", thumbnailKey != null, extraKeys.size());
             return new MovieImageUploadResult(thumbnailKey, extraKeys);
 
         } catch (Exception e) {

@@ -135,8 +135,21 @@ public class MovieService {
         return movieUpdateFormResponse;
     }
 
+    // 이미지 변경이 없는 수정 (텍스트/장르/상영타입만)
     @Transactional
     public void updateMovie(Long movieId, MovieUpdateRequest req) {
+        applyBasicInfoChange(movieId, req);
+    }
+
+    // 이미지 변경이 있는 수정 - 이미지는 이미 업로드가 끝난 상태(uploadResult)로 전달받아 DB 작업만 수행
+    // 반환값: 교체되어 더 이상 필요 없는 기존 이미지 key 목록 (파일 삭제는 호출자 책임)
+    @Transactional
+    public List<String> updateMovieWithImages(Long movieId, MovieUpdateRequest req, MovieImageUploadResult uploadResult) {
+        Movie movie = applyBasicInfoChange(movieId, req);
+        return movieImageService.replaceImages(movie, uploadResult);
+    }
+
+    private Movie applyBasicInfoChange(Long movieId, MovieUpdateRequest req) {
         Movie movie = findMovieById(movieId);
 
         if(!movie.getRunningTimeMinutes().equals(req.getRunningTimeMinutes())) {  // 러닝타임 변경 관련 business rule
@@ -155,9 +168,7 @@ public class MovieService {
         movie.changeGenres(new HashSet<>(req.getGenres()));
         movie.changeScreeningTypes(new HashSet<>(req.getScreeningTypes()));
 
-        if(req.hasAnyImageChange()) {
-            movieImageService.updateImages(movieId, req.getThumbnailImage(), req.getExtraImages());
-        }
+        return movie;
     }
 
 
