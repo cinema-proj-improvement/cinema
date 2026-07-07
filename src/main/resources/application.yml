@@ -18,4 +18,4 @@ spring:
 
 seat-hold:
   minutes: 5
-  redis-grace-minutes: 1
+  lock-ttl-seconds: 15
