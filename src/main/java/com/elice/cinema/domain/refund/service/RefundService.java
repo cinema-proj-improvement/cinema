@@ -7,6 +7,7 @@ import com.elice.cinema.domain.refund.mapper.RefundMapper;
 import com.elice.cinema.domain.refund.repository.RefundRepository;
 import com.elice.cinema.domain.reservation.entity.Reservation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -26,6 +28,7 @@ public class RefundService {
     public void createRefund(Payment payment, Long cancelAmount) {
         Refund refund = Refund.create(payment, cancelAmount);
         refundRepository.save(refund);
+        log.info("[Refund] 환불 생성 완료: paymentId={}, paymentKey={}, cancelAmount={}", payment.getId(), payment.getPaymentKey(), cancelAmount);
     }
 
     public Page<AdminRefundListResponse> searchAdminRefunds(
