@@ -5,7 +5,7 @@
     <springProfile name="local,test">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
-                <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%blue(%X{traceId:-})] %cyan(%logger{36}) - %msg%n</pattern>
+                <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%blue(%X{traceId:-}),%blue(%X{spanId:-})] %cyan(%logger{36}) - %msg%n</pattern>
                 <charset>UTF-8</charset>
             </encoder>
         </appender>

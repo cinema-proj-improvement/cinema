@@ -76,6 +76,14 @@ dependencies {
 
     // 12. Logging
     implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+
+    // 13. Observability (Micrometer Tracing + OpenTelemetry)
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+    implementation 'io.micrometer:micrometer-registry-otlp' // 메트릭 OTLP export (CloudWatch용)
+    implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot:1.1.1' // JDBC 쿼리 Span 계측
+    implementation 'io.opentelemetry.contrib:opentelemetry-aws-xray:1.46.0' // X-Ray 호환 Trace ID 생성기
 }
 
 

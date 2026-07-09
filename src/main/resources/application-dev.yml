@@ -34,3 +34,13 @@ file:
     s3-bucket: ${S3_BUCKET_NAME}
     s3-region: ${AWS_REGION:ap-northeast-2}
     image-base-url: ${CDN_BASE_URL}
+
+# ADOT Collector 사이드카(같은 Task, awsvpc 네트워크 공유)로 전송 → Collector가 X-Ray/CloudWatch로 export
+management:
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+    metrics:
+      export:
+        enabled: true
+        url: http://localhost:4318/v1/metrics

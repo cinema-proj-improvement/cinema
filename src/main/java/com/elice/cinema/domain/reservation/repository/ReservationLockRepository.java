@@ -1,5 +1,6 @@
 package com.elice.cinema.domain.reservation.repository;
 
+import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class ReservationLockRepository {
     private final RedisTemplate<String, String> redisTemplate;
 
+    @Observed(name = "seat.hold", contextualName = "seat-hold-lock")
     public Boolean lock(Long screeningId, Long seatId, Long memberId, long lockTime, TimeUnit timeUnit) {
         String lockKey = seatHoldKey(screeningId, seatId);
         String lockValue = seatHoldLockValue(memberId);
