@@ -29,7 +29,7 @@ import http from 'k6/http';
 import { check } from 'k6';
 import { Counter, Trend } from 'k6/metrics';
 import { extractCsrf, login, loginAndGetSessionCookie } from '../lib/auth.js';
-import { createSpikeTestFixture } from '../lib/fixtures.js';
+import { createSeatFixture } from '../lib/fixtures.js';
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
 const MOVIE_ID = __ENV.MOVIE_ID;
@@ -76,7 +76,7 @@ export function setup() {
   const startAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const startAtStr = startAt.toISOString().slice(0, 19); // 'yyyy-MM-ddTHH:mm:ss' (초 단위, offset 제거)
 
-  const fixture = createSpikeTestFixture(BASE_URL, {
+  const fixture = createSeatFixture(BASE_URL, {
     movieId: MOVIE_ID,
     screeningType: 'TWO_D',
     startAt: startAtStr,

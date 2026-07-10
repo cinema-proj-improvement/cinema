@@ -58,7 +58,8 @@ function findLatestScreeningId(baseUrl, screenId) {
 
 // 40석짜리 상영관 + 그 상영관에 대한 상영 1건을 만들고 screeningId를 반환한다.
 // movieId는 호출부에서 넘겨받는다 (현재 NOW_SHOWING 상태이고, screeningType을 지원하는 영화여야 함).
-export function createSpikeTestFixture(baseUrl, { movieId, screeningType = 'TWO_D', startAt }) {
+// 시나리오 A(spike), B(stress) 공용 픽스처.
+export function createSeatFixture(baseUrl, { movieId, screeningType = 'TWO_D', startAt }) {
   const stamp = Date.now();
   const screenName = `K6-PERF-SCREEN-${stamp}`;
 
