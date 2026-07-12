@@ -44,8 +44,9 @@ public class MypageController {
     }
 
     @PostMapping("/reservations/{reservationId}/cancel")
-    public String cancelReservation(@PathVariable Long reservationId) {
-        mypageService.cancelReservation(reservationId);
+    public String cancelReservation(@PathVariable Long reservationId,
+                                    @AuthenticationPrincipal CustomUserDetails userDetail) {
+        mypageService.cancelReservation(reservationId, userDetail.getMemberId());
         return "redirect:/mypage/reservations";
     }
 }

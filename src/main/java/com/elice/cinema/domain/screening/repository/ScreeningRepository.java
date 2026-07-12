@@ -77,7 +77,9 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long>, Scr
     @Query("""
         update Screening s
            set s.screeningStatus = com.elice.cinema.domain.screening.entity.ScreeningStatus.FINISHED
-         where s.screeningStatus <> com.elice.cinema.domain.screening.entity.ScreeningStatus.FINISHED
+         where s.screeningStatus in (
+               com.elice.cinema.domain.screening.entity.ScreeningStatus.SCHEDULED,
+               com.elice.cinema.domain.screening.entity.ScreeningStatus.OPEN)
            and s.endAt < :now
     """)
     int bulkUpdateToFinished(LocalDateTime now);

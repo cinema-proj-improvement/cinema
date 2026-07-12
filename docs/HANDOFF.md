@@ -1,98 +1,61 @@
 # HANDOFF
 
----
+**마지막 갱신**: 2026-07-07
+**dev 최신 커밋**: `01fe1ed`
+**현재 브랜치**: `refactor/seat-lock-redis` (커밋 `0e8a4b8`, push 완료 / **dev 미병합, PR 필요**)
 
-## feature/setup-logging
-
-**기간**: 2026-06-22 ~
-
-### 작업한 내용
-
-#### 인프라 설정
-
-- **`build.gradle`**: `logstash-logback-encoder:8.0` 의존성 추가
-- **`src/main/resources/logback-spring.xml`** (신규):
-  - `local`, `test` 프로파일: `%highlight`, `%cyan` 등 색상 패턴 + `%X{traceId:-}` 포함 콘솔 출력. Hibernate SQL/바인드 파라미터 DEBUG/TRACE 레벨.
-  - `dev` 프로파일: `LogstashEncoder`로 JSON stdout 출력 → ECS awslogs → CloudWatch
-- **`application.yml`**: `logging.level.root: INFO` 제거 (logback-spring.xml로 일원화)
-- **`application-test.yml`**: `logging.level.root: WARN` 제거
-
-#### HTTP 요청/응답 로깅 (MDC Filter)
-
-- **`global/logging/filter/MdcLoggingFilter.java`** (신규):
-  - `OncePerRequestFilter` 구현
-  - 요청 진입 시 `traceId`(UUID), `method`, `uri`를 MDC에 세팅 → 해당 요청의 모든 로그에 자동 포함
-  - 응답 시점 finally 블록에서 `"{method} {uri} {status} {duration}ms"` INFO 로그
-  - `shouldNotFilter()`로 정적 리소스(`/css/`, `/js/`, `/images/`, `/static/`, `/uploads/`, `/favicon.ico`) 제외
-  - `@Component` 없음 (FilterRegistrationBean 이중 등록 방지)
-- **`global/logging/config/LoggingFilterConfig.java`** (신규):
-  - `FilterRegistrationBean`으로 `MdcLoggingFilter` 등록, `Ordered.HIGHEST_PRECEDENCE`로 가장 바깥(첫 번째) 실행
-
-#### 서비스 레이어 로깅
-
-- **`MemberService.signup()`**: 이메일 중복 throw 전 WARN, 닉네임 중복 throw 전 WARN, 저장 성공 후 INFO (memberId, email)
-- **`ReservationService`**:
-  - `holdSeats()`: Redis 좌석 선점 실패 시 WARN (screeningId, seatId, memberId)
-  - `holdSeats()`: 선점 성공 시 INFO (reservationId, screeningId, memberId, seatIds)
-  - `cancelHoldReservation()`: 타인 예매 취소 시도 WARN, 취소 완료 INFO
-  - `validateSeatCount()`: 최대 좌석 수 초과 시 WARN (요청 수, max)
-  - `validateBookable()`: 이미 선점/예매된 좌석 포함 시 WARN (screeningId, 요청 seatIds, blockedSeatIds)
-
-#### 배치 서비스 로깅
-
-- **`MovieStatusBatchService`**: 배치 완료 후 INFO (today, UPCOMING→NOW_SHOWING 건수, →ENDED 건수)
-- **`ScreeningStatusBatchService`**: 오픈 전환 완료 INFO (SCHEDULED→OPEN 건수, from/to), 종료 처리 완료 INFO (→FINISHED 건수, now)
-- **`ExpireHoldBatchService`**: 배치별 처리 건수 > 0 인 경우에만 INFO (batch 번호, processed 건수). 만료 HOLD 없는 실행(= 대부분)에서는 로그 없음.
-- **`MovieReservationRateBatchService`**: 갱신 완료 후 INFO (처리 영화 수)
-
-### 미완료 (나중에 처리)
-
-- **Payment/Refund 로깅**: `PaymentSuccessService`, `PaymentCancelService`, `PaymentTxService`, `RefundService` — 결제·환불 플로우 로깅 미추가
-- **`MovieImageService` 로깅**: 해당 서비스 코드 수정 시 같이 추가 예정
+이 문서는 프로젝트의 "지금 상태"를 담는 스냅샷이다. 매 작업 후 이 파일을 최신 상태로 다시 써서 유지한다 — 지난 작업의 시간순 기록이 아니라 "지금 뭐가 어떻게 되어 있고, 뭐가 남았는지"만 담는다. 커밋 단위 상세 이력은 `git log`로 확인한다.
 
 ---
 
-## feature/create-dockerfile
+## 진행 중 / dev 병합 대기
 
-**기간**: 2026-06-09 ~ 2026-06-18
+### 좌석 선점(Redis lock) 트랜잭션 버그 수정 — `refactor/seat-lock-redis`
 
-### 작업한 내용
+**아직 PR 생성 전. dev에 병합 안 됨.**
 
-- **Dockerfile 멀티 스테이지 빌드** (eclipse-temurin:21-jre-alpine 기반, `app.jar` 고정)
-- **`entrypoint.sh`**: AWS Secrets Manager JSON 시크릿 자동 파싱
-- **Health check 엔드포인트** (`GET /health`): ECS ALB 타겟 그룹 대응, 인증 없이 접근 허용
-- **Flyway 도입**: `V1__init.sql`(전체 DDL), `V2__seed_data.sql`(seed) 작성
-- **GitHub Actions CI/CD** (`.github/workflows/dev-cicd.yml`): `dev` 브랜치 push 시 test → build → ECR 푸시 → ECS 롤링 배포 자동화. AWS OIDC 인증 사용. **동작 확인 완료.**
-- **설정 정비**: `application-dev.yml` 환경변수화, `application-test.yml` CI 통과용 정비 (Redis 연결 없이 빈 생성만, Toss 더미 키 하드코딩)
+- **문제였던 것**: `holdSeats()`가 `@Transactional` 메서드의 `finally`에서 redis lock을 해제했는데, 이 시점은 DB 커밋보다 먼저 실행됨. 그 틈에 동시 요청이 같은 좌석에 DB insert를 시도할 수 있었음. `ReservedSeat`의 `(screening_id, seat_id)` UNIQUE 제약이 데이터 정합성은 지켜주지만, 경쟁에서 진 요청은 깔끔한 `SEAT_ALREADY_HELD` 대신 일반 500 에러를 받았음.
+- **지금 구조**: Redis lock은 "5분간 선점 유지"가 아니라 DB 가용성 체크+INSERT라는 짧은 임계구역만 보호(TTL 15초, 크래시 안전망 용도). 5분간의 실제 선점 상태는 DB(`ReservedSeat.status=HOLD` + UNIQUE 제약)만 담당. lock 해제는 `SeatHoldFacade`가 DB 커밋을 확인한 뒤에만 수행(성공/실패 양쪽 다).
+- **핵심 파일**: `ReservationLockRepository`(Lua 스크립트 `scripts/seat-lock.lua`/`seat-unlock.lua` 기반 `lockAll()`/`unlockAllSafely()`), `SeatHoldFacade`(신규, 트랜잭션 밖 오케스트레이션), `ReservationService.createHoldReservation()`(DB 전용), `SeatHoldProperties.lockTtlSeconds`
+- **검증**: 로컬 Docker Redis로 동시 요청 테스트 완료 — 하나는 302(성공), 하나는 `400 SEAT_ALREADY_HELD`(경합이 Redis 단계에서 걸러짐, DB까지 안 내려감). 처리 직후 redis 키 잔존 없음 확인.
+- **남은 일**: PR 생성/리뷰. `ExpireHoldScheduler`가 ECS 멀티 task에서 각자 독립 실행되는 문제(ShedLock 등 분산락 없음)는 범위 밖으로 분리해둠 — 아래 "알려진 이슈" 참고.
 
-### 현재 상태
+---
 
-- CI/CD 파이프라인 동작 중 (`dev` 브랜치 push → ECR → ECS 자동 배포)
-- **Redis 미연동**: 세션은 JVM 인메모리, 좌석 선점 락 비동작
-- **`application-dev.yml` 미커밋 변경사항 있음**: `REDIS_HOST` 폴백 제거, `REDIS_PASSWORD` 추가 → 커밋 필요
-- 파일 업로드는 컨테이너 로컬 저장 (재시작 시 유실)
+## 완료된 주요 기능 (dev 반영됨)
 
-### ECS Task Definition 환경변수 목록
+### 영화 이미지 스토리지 (S3/CDN)
 
-| 환경변수 | 필수 여부 | 비고 |
-|---------|----------|------|
-| `SPRING_PROFILES_ACTIVE` | 필수 | `dev` |
-| `DB_URL` | 필수 | |
-| `DB_USERNAME` | 필수 | |
-| `DB_PASSWORD` | 필수 | |
-| `TOSS_CLIENT_KEY` | 필수 | |
-| `TOSS_SECRET_KEY` | 필수 | |
-| `REDIS_HOST` | Redis 구성 후 필수 | 폴백 없음 — 미설정 시 앱 기동 실패 |
-| `REDIS_PASSWORD` | Redis 구성 후 필수 | |
-| `FILE_UPLOAD_BASE_PATH` | 선택 | 미설정 시 `/app/uploads` 폴백 |
+- `FileService` 인터페이스에 local/S3 구현체. DB(`movie_images.image_url`)엔 스토리지 key만 저장, 응답 시 `toImageUrl(key)`로 CDN URL 조합(도메인 변경 시 DB 마이그레이션 불필요).
+- 영화 등록·수정 둘 다 "파일 업로드(트랜잭션 밖) → DB 저장(트랜잭션) → 실패 시 파일 보상 삭제 / 수정은 성공 시 기존 파일도 삭제" 패턴으로 통일 (`MovieRegistrationFacade`, `MovieUpdateFacade`).
+- `OrphanImageCleanupBatchService`(매일 03:00 KST)가 DB에 참조 없는 스토리지 파일을 정리.
+- **알려진 갭**:
+  - 영화 삭제 API 자체가 없음 — 필요 시 soft delete로 구현해야 하는 이유가 `docs/movie-deletion-strategy.md`에 정리되어 있음(예매/환불 기록 보존, FK 무결성 때문에 하드 삭제 불가).
+  - 이미지 URL 변환 누락 재발 방지용 타입 분리(`ImageKey`/`ResolvedImageUrl`) 설계는 `docs/image-url-resolution-improvement.md`에 정리만 해두고 보류 중(현재는 서비스 레이어에서 개별 처리).
 
-### 나중에 처리할 것들
+### 인프라 / 배포
 
-#### Redis 서버 구성 후
-- `application-dev.yml`: `store-type: none` → `redis`
-- ECS Task Definition에 `REDIS_HOST`, `REDIS_PASSWORD` 추가
-- 정상화될 기능: 좌석 선점 락, 예약 충돌 방지, 세션 지속성
+- ECS Fargate 배포. GitHub Actions CI/CD(`.github/workflows/dev-cicd.yml`): `dev` 브랜치 push → test → build → ECR → ECS 롤링 배포(AWS OIDC 인증), 동작 확인됨.
+- Dockerfile 멀티스테이지 빌드, `entrypoint.sh`(AWS Secrets Manager JSON 파싱), health check(`GET /health`, 인증 불필요).
+- Flyway(`V1__init.sql` 전체 DDL, `V2__seed_data.sql`) — dev는 `ddl-auto: none` + Flyway로 스키마 관리.
+- Redis(세션 스토리지 + 좌석 선점 락)와 S3(이미지) 둘 다 dev 환경변수 구성 완료 — 아래 표 참고.
+- MDC 로깅 필터(`traceId`/`method`/`uri` 전 로그 포함), 배치 서비스별 완료 로그.
 
-#### 파일 스토리지 S3 전환 시
-- `application-dev.yml`: `file.storage.type: local` → `s3`
-- S3 버킷, IAM 권한, 관련 환경변수 구성
+#### ECS Task Definition 필수 환경변수
+
+| 환경변수 | 비고 |
+|---|---|
+| `SPRING_PROFILES_ACTIVE` | `dev` |
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | |
+| `TOSS_CLIENT_KEY`, `TOSS_SECRET_KEY` | |
+| `REDIS_HOST`, `REDIS_PASSWORD` | 폴백 없음 — 미설정 시 앱 기동 실패 |
+| `S3_BUCKET_NAME`, `AWS_REGION`, `CDN_BASE_URL` | `file.storage.type=s3`용 |
+
+---
+
+## 알려진 이슈 / TODO
+
+- **`ExpireHoldScheduler` ECS 멀티 task 중복 실행**: `@Scheduled(fixedDelay=60_000)`가 분산 스케줄 락(ShedLock 등) 없이 각 task에서 독립 실행됨. 벌크 UPDATE/DELETE라 멱등적이라 데이터는 안 깨지지만, task 수만큼 불필요하게 자주 실행됨.
+- **Payment/Refund 플로우 로깅 미비**: `PaymentSuccessService`, `PaymentCancelService`, `PaymentTxService`, `RefundService`에 로깅 없음.
+- **영화 삭제 기능 미구현**: 위 "영화 이미지 스토리지" 항목의 "알려진 갭" 참고.
+- **좌석 선점 리팩토링 미병합**: 위 "진행 중" 항목 참고.

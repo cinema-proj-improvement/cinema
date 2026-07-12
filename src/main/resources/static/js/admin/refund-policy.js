@@ -1,3 +1,9 @@
+function getCsrfHeaders() {
+    const token = document.querySelector('meta[name="_csrf"]')?.content;
+    const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+    return (token && header) ? { [header]: token } : {};
+}
+
 // ===== 생성 모달 =====
 const modal = document.getElementById("createModal");
 
@@ -18,7 +24,7 @@ document.getElementById("createBtn").onclick = async () => {
 
     const res = await fetch("/admin/api/policies/refunds", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getCsrfHeaders() },
         body: JSON.stringify(data)
     });
 
@@ -50,7 +56,7 @@ document.querySelectorAll("tr[data-id]").forEach(row => {
 
         const res = await fetch(`/admin/api/policies/refunds/${policyId}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...getCsrfHeaders() },
             body: JSON.stringify(data)
         });
 

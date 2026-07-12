@@ -1,3 +1,9 @@
+function getCsrfHeaders() {
+    const token = document.querySelector('meta[name="_csrf"]')?.content;
+    const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+    return (token && header) ? { [header]: token } : {};
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const cancelBtn = document.getElementById('cancelPaymentBtn');
 
@@ -12,7 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const paymentId = getPaymentIdFromPage();
 
             const res = await fetch(`/admin/api/payments/${paymentId}/cancel`, {
-                method: 'POST'
+                method: 'POST',
+                headers: { ...getCsrfHeaders() }
             });
 
             if (!res.ok) {

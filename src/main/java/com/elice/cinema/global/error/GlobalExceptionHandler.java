@@ -75,7 +75,8 @@ public class GlobalExceptionHandler {
             PaymentFailRedirectException ex,
             RedirectAttributes ra
     ) {
-        ra.addAttribute("message", ex.getErrorCode().getMessage());
+        log.warn("[Payment] 결제 실패 처리: orderId={}, errorCode={}", ex.getOrderId(), ex.getErrorCode().name());
+        ra.addAttribute("code", ex.getErrorCode().name());
         ra.addAttribute("orderId", ex.getOrderId());
 
         return "redirect:/payments/fail";

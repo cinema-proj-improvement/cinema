@@ -36,7 +36,7 @@ public class SecurityConfig {
 //                .csrf(AbstractHttpConfigurer::disable)
                 // (개발용) h2-console csrf 보호 비활성화
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**","/admin/api/**")
+                        .ignoringRequestMatchers("/h2-console/**")
                 )
 
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))

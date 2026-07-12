@@ -9,6 +9,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "seat-hold")
 @Getter @Setter
 public class SeatHoldProperties {
-    private int minutes;  // 사용자 notice용 좌석 선점 시간
-    private int redisGraceMinutes;  // 실제 시스템상 redis lock 점유시간 구현을 위한 시스템 여유시간
+    private int minutes;  // 사용자 notice용 좌석 선점 시간 (DB hold_expires_at 기준)
+    private int lockTtlSeconds;  // redis lock TTL(초) - holdSeats() 임계구역 보호 + 크래시 안전망 용도, 짧게 유지
 }

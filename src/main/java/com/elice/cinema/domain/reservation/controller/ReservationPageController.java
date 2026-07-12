@@ -4,8 +4,9 @@ import com.elice.cinema.domain.movie.dto.response.ReservationMovieSelectResponse
 import com.elice.cinema.domain.reservation.dto.request.HoldReservationRequest;
 import com.elice.cinema.domain.reservation.dto.response.ReservationCheckoutResponse;
 import com.elice.cinema.domain.reservation.dto.response.seatselection.SeatSelectionResponse;
+import com.elice.cinema.domain.reservation.facade.SeatHoldFacade;
 import com.elice.cinema.domain.reservation.service.ReservationService;
-import com.elice.cinema.domain.reservation.service.SeatSelectionFacade;
+import com.elice.cinema.domain.reservation.facade.SeatSelectionFacade;
 import com.elice.cinema.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.util.List;
 public class ReservationPageController {
     private final ReservationService reservationService;
     private final SeatSelectionFacade seatSelectionFacade;
+    private final SeatHoldFacade seatHoldFacade;
 
     @GetMapping
     public String getReservationPage(Model model) {
@@ -35,8 +37,9 @@ public class ReservationPageController {
     public String getCheckoutPage(@PathVariable Long reservationId,
                                   @RequestParam(defaultValue = "false") boolean error,
                                   @RequestParam(required = false) String message,
+                                  @AuthenticationPrincipal CustomUserDetails userDetail,
                                   Model model) {
-        ReservationCheckoutResponse reservation = reservationService.getCheckoutPage(reservationId);
+        ReservationCheckoutResponse reservation = reservationService.getCheckoutPage(reservationId, userDetail.getMemberId());
 
         if (error) {
             model.addAttribute("error", true);
@@ -63,7 +66,7 @@ public class ReservationPageController {
     @PostMapping("/holds")
     public String createHoldReservation(@AuthenticationPrincipal CustomUserDetails principal,
                                         @ModelAttribute @Valid HoldReservationRequest req) {
-        Long reservationId = reservationService.holdSeats(
+        Long reservationId = seatHoldFacade.holdSeats(
                 req.getScreeningId(), req.getSeatIds(), principal.getMemberId()
         );
         return "redirect:/reservations/" + reservationId;
