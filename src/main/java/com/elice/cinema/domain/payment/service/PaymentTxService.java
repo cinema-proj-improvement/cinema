@@ -10,6 +10,7 @@ import com.elice.cinema.domain.payment.repository.PaymentRepository;
 import com.elice.cinema.domain.policy.dto.response.RefundCalculationResult;
 import com.elice.cinema.domain.refund.service.RefundService;
 import com.elice.cinema.domain.reservation.entity.Reservation;
+import com.elice.cinema.domain.reservation.entity.ReservationStatus;
 import com.elice.cinema.domain.reservation.entity.ReservedSeat;
 import com.elice.cinema.domain.reservation.repository.ReservationRepository;
 import com.elice.cinema.global.error.ErrorCode;
@@ -39,9 +40,14 @@ public class PaymentTxService {
             return; // 멱등 처리
         }
 
-        //TODO: 여기서도 HOLD 상태인지 검증해줘야 하나?
         Reservation reservation = reservationRepository.findWithReservedSeatsById(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        if (reservation.getStatus() != ReservationStatus.HOLD) {
+            log.warn("[Payment] HOLD 상태가 아닌 예약에 대한 결제 승인 시도: reservationId={}, currentStatus={}", reservationId, reservation.getStatus());
+            throw new BusinessException(ErrorCode.RESERVATION_INVALID_STATUS);
+        }
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         List<ReservedSeat> reservedSeats = reservation.getReservedSeats();

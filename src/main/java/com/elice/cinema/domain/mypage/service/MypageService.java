@@ -70,9 +70,14 @@ public class MypageService {
         );
     }
 
-    public void cancelReservation(Long reservationId) {
+    @Transactional
+    public void cancelReservation(Long reservationId, Long memberId) {
         Payment payment = paymentRepository.findByReservationId(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        if (!payment.getMember().getId().equals(memberId)) {
+            throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
+        }
 
         paymentCancelService.cancel(payment.getId());
     }

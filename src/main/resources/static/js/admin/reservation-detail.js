@@ -1,3 +1,9 @@
+function getCsrfHeaders() {
+    const token = document.querySelector('meta[name="_csrf"]')?.content;
+    const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+    return (token && header) ? { [header]: token } : {};
+}
+
 console.log("reservation-detail.js loaded");
 
 let currentReservationId = null;
@@ -129,7 +135,8 @@ function cancelReservation() {
     console.log("🚨 cancelReservation called:", currentReservationId);
 
     fetch(`/admin/api/reservations/${currentReservationId}/cancel`, {
-        method: "POST"
+        method: "POST",
+        headers: { ...getCsrfHeaders() }
     })
         .then(res => {
             if (!res.ok) throw new Error("cancel failed");

@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PaymentSuccessService {
+public class PaymentConfirmService {
     private final PaymentTxService paymentTxService;
     private final PaymentCancelService paymentCancelService;
     private final TossPaymentsClient tossPaymentsClient;
@@ -105,5 +105,16 @@ public class PaymentSuccessService {
         log.error("[PaymentSuccess] 롤백 취소 실패 — 수동 처리 필요: paymentKey={}, reservationId={}, amount={}", confirmResponse.getPaymentKey(), reservationId, confirmResponse.getTotalAmount());
         paymentTxService.commitRollbackCancelFailed(confirmResponse, reservationId, memberId, failureMessage);
         throw new BusinessException(ErrorCode.PAYMENT_CANCELED_FAILED_AFTER_CONFIRM);
+    }
+
+    public String resolveFailMessage(String code) {
+        if (code == null) return "결제에 실패했습니다.";
+        return switch (code) {
+            case "PAY_PROCESS_CANCELED"   -> "결제가 취소되었습니다.";
+            case "PAY_PROCESS_ABORTED"    -> "결제 처리 중 오류가 발생했습니다.";
+            case "REJECT_CARD_COMPANY"    -> "카드사에서 결제가 거절되었습니다.";
+            case "PAYMENT_CONFIRM_FAILED" -> "결제 승인에 실패했습니다.";
+            default                       -> "결제에 실패했습니다.";
+        };
     }
 }

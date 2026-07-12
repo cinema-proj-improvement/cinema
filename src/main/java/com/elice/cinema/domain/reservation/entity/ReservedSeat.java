@@ -3,6 +3,8 @@ package com.elice.cinema.domain.reservation.entity;
 import com.elice.cinema.domain.screen.entity.Seat;
 import com.elice.cinema.domain.screening.entity.Screening;
 import com.elice.cinema.global.common.audit.BaseEntity;
+import com.elice.cinema.global.error.ErrorCode;
+import com.elice.cinema.global.error.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -67,8 +69,13 @@ public class ReservedSeat extends BaseEntity {
         return reservedSeat;
     }
 
-    //TODO: 나중에  paymentStatus의 canChangeTo 만들어서 유효성 검사하기
     public void confirm() {
+        if (this.status == ReservationStatus.CONFIRMED) {
+            throw new BusinessException(ErrorCode.RESERVATION_ALREADY_CONFIRMED);
+        }
+        if (this.status != ReservationStatus.HOLD) {
+            throw new BusinessException(ErrorCode.RESERVATION_INVALID_STATUS);
+        }
         this.status = ReservationStatus.CONFIRMED;
     }
 

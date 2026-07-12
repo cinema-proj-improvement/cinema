@@ -2,7 +2,9 @@ package com.elice.cinema.domain.payment.controller;
 
 import com.elice.cinema.domain.reservation.dto.response.TossPaymentReservationResponse;
 import com.elice.cinema.domain.reservation.service.ReservationService;
+import com.elice.cinema.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +18,9 @@ public class PaymentPageController {
 
     @GetMapping("reservations/{reservationId}/payment")
     public String checkout(@PathVariable Long reservationId,
+                           @AuthenticationPrincipal CustomUserDetails userDetail,
                            Model model) {
-        TossPaymentReservationResponse reservation = reservationService.getTossPage(reservationId);
+        TossPaymentReservationResponse reservation = reservationService.getTossPage(reservationId, userDetail.getMemberId());
         model.addAttribute("reservationId", reservationId);
         model.addAttribute("reservation", reservation);
         return "user/payment/checkout";

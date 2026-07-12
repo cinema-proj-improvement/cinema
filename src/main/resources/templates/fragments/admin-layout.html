@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
   <title th:text="${pageTitle} ?: 'Cinema Admin'">Cinema Admin</title>
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
   <!-- 공통 CSS -->
   <link rel="stylesheet" href="/css/common/reset.css">

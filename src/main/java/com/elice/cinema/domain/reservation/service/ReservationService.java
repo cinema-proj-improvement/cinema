@@ -186,9 +186,13 @@ public class ReservationService {
                 .toList();
     }
 
-    public ReservationCheckoutResponse getCheckoutPage(Long reservationId) {
+    public ReservationCheckoutResponse getCheckoutPage(Long reservationId, Long memberId) {
         Reservation reservation = reservationRepository.findByIdWithScreeningAndMovie(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        if (!reservation.getMember().getId().equals(memberId)) {
+            throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
+        }
 
         Movie movie = reservation.getScreening().getMovie();
 
@@ -203,9 +207,14 @@ public class ReservationService {
         return reservationMapper.toReservationCheckoutResponse(reservation, movieThumbnail, seatCodes);
     }
 
-    public TossPaymentReservationResponse getTossPage(Long reservationId) {
+    public TossPaymentReservationResponse getTossPage(Long reservationId, Long memberId) {
         Reservation reservation = reservationRepository.findByIdAndStatus(reservationId, ReservationStatus.HOLD)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        if (!reservation.getMember().getId().equals(memberId)) {
+            throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
+        }
+
         String orderId = reservation.getReservationCode();
         return reservationMapper.toPaymentReservationResponse(reservation, orderId, tossClientKey);
     }
@@ -253,6 +262,6 @@ public class ReservationService {
     private int calculateRemainingSeats(Screening sc, Map<Long, Long> reservedCountMap) {
         int totalSeats = sc.getScreen().getTotalSeats();
         long reservedCount = reservedCountMap.getOrDefault(sc.getId(), 0L);
-        return (int) (totalSeats - reservedCount); // 방어적으로 0 미만 방지
+        return (int) Math.max(0, totalSeats - reservedCount);
     }
 }

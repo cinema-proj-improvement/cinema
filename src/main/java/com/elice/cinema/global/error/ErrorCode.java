@@ -44,6 +44,7 @@ public enum ErrorCode {
     MOVIE_SORT_NOT_SUPPORTED(HttpStatus.BAD_REQUEST,"MV06", "해당 정렬 기능은 현재 지원되지 않습니다."),
 
     RESERVATION_ALREADY_CONFIRMED(HttpStatus.BAD_REQUEST, "RS06", "이미 확정된 예매입니다."),
+    RESERVATION_INVALID_STATUS(HttpStatus.BAD_REQUEST, "RS07", "현재 예매 상태에서는 해당 작업을 수행할 수 없습니다."),
 
     REFUND_POLICY_INVALID_RATE(HttpStatus.BAD_REQUEST, "PL01", "환불 퍼센트는 0~100 사이여야 합니다."),
     REFUND_POLICY_INVALID_BEFORE_TIME(HttpStatus.BAD_REQUEST, "PL02", "상영 시작 전 시간은 0 이상이어야 합니다."),
@@ -61,7 +62,7 @@ public enum ErrorCode {
 
     // 403 Forbidden
     PAYMENT_FORBIDDEN(HttpStatus.FORBIDDEN, "PY04", "결제 권한이 없습니다."),
-    RESERVATION_FORBIDDEN(HttpStatus.FORBIDDEN, "RS05", "해당 예매 권한이 없습니다."),
+    RESERVATION_FORBIDDEN(HttpStatus.FORBIDDEN, "RS05", "해당 예매에 대한 권한이 없습니다."),
 
     // 404 Not Found
     MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "MV01", "영화를 찾을 수 없습니다."),
