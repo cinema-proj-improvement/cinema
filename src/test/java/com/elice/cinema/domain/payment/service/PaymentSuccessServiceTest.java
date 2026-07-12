@@ -33,7 +33,8 @@ class PaymentSuccessServiceTest {
     @Mock ReservationRepository reservationRepository;
     @Mock MemberRepository memberRepository;
 
-    @InjectMocks PaymentSuccessService paymentSuccessService;
+    @InjectMocks PaymentConfirmService paymentConfirmService;
+
 
     @Test
     @DisplayName("성공: 금액/본인 검증 OK + confirm DONE → commitPaymentSuccess 호출")
@@ -73,7 +74,7 @@ class PaymentSuccessServiceTest {
         when(reservation.getId()).thenReturn(reservationId);
 
         // when
-        paymentSuccessService.handleSuccess(paymentKey, orderId, amount, memberId);
+        paymentConfirmService.handleSuccess(paymentKey, orderId, amount, memberId);
 
         // then
         verify(paymentTxService, times(1))
@@ -112,7 +113,7 @@ class PaymentSuccessServiceTest {
 
         // when & then
         BusinessException ex = catchThrowableOfType(
-                () -> paymentSuccessService.handleSuccess(paymentKey, orderId, requestAmount, memberId),
+                () -> paymentConfirmService.handleSuccess(paymentKey, orderId, requestAmount, memberId),
                 BusinessException.class
         );
 
@@ -154,7 +155,7 @@ class PaymentSuccessServiceTest {
 
         // when & then
         PaymentFailRedirectException ex = catchThrowableOfType(
-                () -> paymentSuccessService.handleSuccess(paymentKey, orderId, amount, memberId),
+                () -> paymentConfirmService.handleSuccess(paymentKey, orderId, amount, memberId),
                 PaymentFailRedirectException.class
         );
 
@@ -208,7 +209,7 @@ class PaymentSuccessServiceTest {
 
         // when & then
         BusinessException ex = catchThrowableOfType(
-                () -> paymentSuccessService.handleSuccess(paymentKey, orderId, amount, memberId),
+                () -> paymentConfirmService.handleSuccess(paymentKey, orderId, amount, memberId),
                 BusinessException.class
         );
 
