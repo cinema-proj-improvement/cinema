@@ -37,7 +37,7 @@ const ADMIN_USERNAME = __ENV.ADMIN_USERNAME || 'admin@test.com';
 const ADMIN_PASSWORD = __ENV.ADMIN_PASSWORD || '1234';
 const TEST_USERNAME = __ENV.TEST_USERNAME || 'user@test.com';
 const TEST_PASSWORD = __ENV.TEST_PASSWORD || '1234';
-const VU_COUNT = Number(__ENV.VU_COUNT || 200);
+const VU_COUNT = Number(__ENV.VU_COUNT || 1000);
 
 if (!MOVIE_ID) {
   throw new Error('MOVIE_ID 환경변수가 필요합니다 (-e MOVIE_ID=<현재 NOW_SHOWING인 영화 id>).');
