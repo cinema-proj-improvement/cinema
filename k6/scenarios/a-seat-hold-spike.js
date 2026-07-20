@@ -12,6 +12,8 @@
 //   - 정확히 좌석 수(40)만큼만 성공(302)하고 나머지는 SEAT_ALREADY_HELD(400)로 떨어지는지
 //   - 성공 응답의 p95 latency (이제 홀드 요청 자체만의 순수한 지연시간)
 //   - (스크립트 밖에서 DB로 확인) 같은 좌석이 2명에게 동시 할당되는 경우가 0건인지
+//   - seat_hold_duration(p95 5초대)이 blocked+connecting(연결 수립 대기) 때문인지,
+//     waiting(TTFB, 서버가 응답 시작하기까지) 때문인지 세부 타이밍으로 분리해서 확인
 //
 // 실행 전 준비물:
 //   - dev 프로필로 뜬 앱 인스턴스 (BASE_URL)
@@ -47,6 +49,16 @@ export const holdSuccess = new Counter('seat_hold_success');
 export const holdConflict = new Counter('seat_hold_conflict');
 export const holdUnexpected = new Counter('seat_hold_unexpected_error');
 export const holdLatency = new Trend('seat_hold_duration', true);
+
+// duration(=sending+waiting+receiving)이 왜 5초씩 걸리는지 어느 구간 때문인지 분리해서 보기 위한 세부 타이밍.
+// blocked+connecting(+tls_handshaking)이 크면 "연결 자체를 못 맺어서" 느린 거라 DBCP/스레드풀 튜닝은 무의미하고
+// ALB/ECS 네트워크 레벨을 봐야 함. waiting(TTFB)이 크면 서버가 응답을 늦게 만든다는 뜻인데, Grafana 서버 사이드
+// 스팬은 항상 짧았으니 그 경우 Tomcat이 소켓을 읽고 나서 실제 서블릿 처리(OTel 계측 시작)로 넘기기 전 어딘가에
+// 숨은 지연이 있다는 뜻.
+export const holdBlocked = new Trend('seat_hold_blocked', true);
+export const holdConnecting = new Trend('seat_hold_connecting', true);
+export const holdTlsHandshaking = new Trend('seat_hold_tls_handshaking', true);
+export const holdWaiting = new Trend('seat_hold_waiting', true);
 
 export const options = {
   scenarios: {
@@ -132,6 +144,10 @@ export default function (data) {
   );
 
   holdLatency.add(res.timings.duration);
+  holdBlocked.add(res.timings.blocked);
+  holdConnecting.add(res.timings.connecting);
+  holdTlsHandshaking.add(res.timings.tls_handshaking);
+  holdWaiting.add(res.timings.waiting);
 
   if (res.status === 302 && res.headers.Location && res.headers.Location.includes('/reservations/')) {
     holdSuccess.add(1);
