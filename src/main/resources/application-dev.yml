@@ -1,3 +1,10 @@
+server:
+  tomcat:
+    threads:
+      max: 400
+      min-spare: 10
+    accept-count: 200
+
 spring:
   datasource:
     url: ${DB_URL}
