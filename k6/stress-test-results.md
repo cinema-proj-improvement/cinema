@@ -1,152 +1,121 @@
 # 좌석 선점 스트레스 테스트 결과 (시나리오 B)
 
-- 작성일: 2026-07-10
-- 대상 브랜치: `refactor/seat-lock-redis`
+- 작성일: 2026-07-22
+- 대상 브랜치: `test/add-k6-performance-test`
 - 테스트 스크립트: `k6/scenarios/b-seat-hold-stress.js`
-- 테스트 환경: dev ECS Fargate(1 vCPU) + RDS MySQL `db.t4g.micro`(2 vCPU) + Redis
-- 관련 문서: [`spike-test-results.md`](./spike-test-results.md) (시나리오 A, 정합성 검증)
+- 관련 문서: [`spike-test-results.md`](./spike-test-results.md) (시나리오 A, 좌석 정합성 + 튜닝 기록)
 
-> 이 문서는 1차 조사 결과다. **헬스체크 아키텍처를 고치기 전** 상태에서 얻은 결과이며,
-> 수정 후 재검증한 결과는 별도로 추가될 예정이다.
+> **이 문서는 이전 기록을 초기화하고 다시 작성한 것이다.** 기존 내용(`refactor/seat-lock-redis`
+> 브랜치, 2026-07-10 실행분)은 모니터링 스택(OTel + Prometheus + Grafana) 도입 이전에 얻은
+> 결과였고, 그때 발견한 "높은 rps에서 ECS task가 SIGTERM으로 교체됨" 현상은 실제 처리 용량
+> 한계가 아니라 **헬스체크(`/health`)가 비즈니스 요청과 같은 Tomcat 스레드풀/큐를 공유해서
+> 굶은 것**이 원인이었다(결론 자체는 유효). 이 문제는 "헬스체크를 별도 포트로 분리"하는 방식이
+> 아니라 요청 처리 자체의 근본 원인을 고치는 방향으로 가기로 결정된 상태이며(관련: 시나리오 A
+> 튜닝 기록), 그 결정 이후 모니터링이 갖춰진 지금 환경에서 시나리오 B를 처음부터 다시 측정한다.
 
 ## 시나리오 개요
 
 시나리오 A(spike)가 "순간 폭증에도 정합성이 깨지지 않는가"를 봤다면, B는 "요청률을 계단식으로
-올렸을 때 어디서부터, 어떻게 무너지는가"를 본다. 좌석 40석을 hold → 즉시 cancel-hold로 반납하는
-루프로 지속적인 락 경합을 유지하면서 rps를 단계적으로 올렸다. 로그인/CSRF는 시나리오 A와
+올렸을 때 어디서부터, 어떻게 무너지는가"를 본다. 40석을 hold → 즉시 `cancel-hold`로 반납하는
+루프로 지속적인 락 경합을 유지하면서, `ramping-arrival-rate`로 목표 rps를 1 → 100 → 200 → 400
+→ 800 → 1500까지 계단식으로 올린다(각 단계 5~30초, 총 3분 20초). 로그인/CSRF는 시나리오 A와
 동일하게 `setup()`에서 미리 끝내고, 측정 구간은 순수하게 홀드+취소 사이클만 반복한다.
 
----
-
-## 1차 실행 — 5~100rps
-
-`5 → 15 → 30 → 60 → 100` rps, 각 단계 20초 유지 (총 ~2분 40초).
-
-### 결과 — 완전히 통과
-
-```
-stress_hold_success............: 5274   32.673903/s
-stress_hold_conflict...........: 1030   6.381138/s
-stress_hold_unexpected_error...: 0      0/s
-stress_hold_duration...........: avg=107.84ms min=26.6ms med=96.73ms max=561.94ms p(90)=187.42ms p(95)=217.03ms
-
-http_req_failed.................: 8.88%  1030 out of 11590
-iterations......................: 6304   39.055041/s
-vus..............................: min=0 max=34 (preAllocatedVUs=50, maxVUs=500)
-
-running (2m41.4s), 6304 complete and 0 interrupted iterations
-```
-
-- 이터레이션 수(6304)가 설계한 rps 램프 곡선의 이론치(≈6300)와 거의 정확히 일치 — k6가 목표
-  rps를 못 따라가서 밀린 게 아니라, 서버가 그 rps를 실제로 다 받아냈다는 뜻.
-- 100rps까지도 지연시간 증가 추세조차 안 보임. **이 구간까지는 문제없음.**
+시나리오 A의 튜닝(DBCP↑ → Thread↑ → Replica↑)으로 "순간 폭증"에는 강해졌다는 걸 확인했지만,
+그 튜닝이 "지속적인 고부하"에도 그대로 유효한지는 별도로 검증이 필요해서 B를 이어서 실행한다.
+앞으로 replica 수 / HikariCP 풀 크기 / Tomcat 스레드 수 조합을 바꿔가며 반복 실행하고, 조건별로
+아래에 기록을 이어붙인다.
 
 ---
 
-## 2차 실행 — 100~1500rps (한계점 발견)
+## 조건 1 — replica=1 / DBCP=10 / thread=400 (첫 실행)
 
-1차에서 100rps가 멀쩡했으므로 상한을 `100 → 200 → 400 → 800 → 1500` rps로 올려서
-(각 단계 30초 유지, 총 ~3분 20초) 재시도했다.
+### 설정
 
-### 결과 — 한계 도달, 테스트 중도 중단
+| 항목 | 값 |
+|---|---|
+| 앱 컨테이너 | 1.5 vCPU / 3GB (전 조건 공통 고정값) |
+| OTel Collector 사이드카 | 0.5 vCPU / 1GB |
+| ECS replica | **1개** |
+| Tomcat | `threads.max=400`, `min-spare=10`, `accept-count=200` |
+| HikariCP | `maximum-pool-size=10` |
+| RDS | `db.t4g.micro` (2 vCPU / 1GiB, 버스터블) |
 
-```
-stress_hold_success............: 3275   17.229695/s
-stress_hold_conflict...........: 37113  195.250587/s
-stress_hold_unexpected_error...: 817    4.298217/s   <- threshold(count<500) 초과로 abortOnFail 발동
-stress_hold_duration...........: avg=7.55s min=4.98ms med=10.81s max=14.81s p(90)=12.1s p(95)=12.28s
+> HikariCP 10은 원래 시나리오 A 마지막 단계에서 "replica 2대로 나눠 쓰는 걸 가정하고" 20에서
+> 줄여둔 값이다. 이번 조건은 replica는 1대로 되돌렸지만 DBCP는 그 값을 그대로 둔 상태 —
+> 즉 시나리오 A가 끝난 시점의 `application-dev.yml`을 손대지 않고 그대로 실행한 결과다.
 
-http_req_failed.................: 85.32% 37934 out of 44458
-dropped_iterations..............: 72336  380.55793/s   <- k6가 쏘려던 요청의 상당수를 아예 못 쏨
-vus..............................: max=3000 (maxVUs 상한까지 전부 사용)
-
-running (3m10.1s), 41168 complete / 3000 interrupted iterations
-ERRO: thresholds on metrics 'stress_hold_unexpected_error' were crossed;
-      stopping test prematurely
-```
-
-테스트 도중 **기존 ECS task가 종료되고 새 task로 교체**되는 것을 실시간으로 관찰함
-(`status=0` 에러 다수 — 연결 자체가 끊긴 것).
-
----
-
-## 원인 조사
-
-### 1) CloudWatch 지표
-
-| 시각(KST) | ECS CPU | ECS Memory |
-|---|---|---|
-| 평소 | ~1% | ~24.5%(baseline) |
-| 15:25~15:28 (부하 구간) | 100%까지 상승, 지속 | 32.4% → 39.6%까지 계속 상승 |
-| 15:29 (부하 종료 직후) | 2.6%로 즉시 회복 | **38%대에서 회복 안 됨** |
-
-CPU는 부하가 끝나자마자 즉시 정상화됐지만 메모리는 안 돌아왔다 — 정리 안 되고 쌓이는 리소스가
-있다는 신호였는데, 실제 원인은 아래에서 보듯 메모리 누수가 아니라 **큐에 쌓인 대기 요청/스레드**였다.
-
-### 2) ECS 콘솔 — Stopped reason (사용자 직접 확인)
+### 결과 (k6 클라이언트 기준)
 
 ```
-다음 시간에 작업이 중지됨: 2026-07-10T06:34:55.781Z
-Task failed ELB health checks in
-  (target-group arn:aws:elasticloadbalancing:...:targetgroup/cinema-app-tg/...)
-종료 코드: 143
+checks_total.......................: 95775   475.450036/s
+checks_succeeded...................: 100.00% 95775 out of 95775
+
+stress_hold_success.................: 10476  52.005373/s
+stress_hold_conflict................: 85299  423.444663/s
+stress_hold_unexpected_error........: 0      0/s
+stress_hold_duration.................: avg=2.44s min=18.84ms med=3.3s max=5.52s p(90)=3.9s p(95)=4.04s
+
+http_req_duration....................: avg=2.24s med=3.2s max=5.52s p(90)=3.86s p(95)=4.03s
+  { expected_response:true }.........: avg=489.08ms med=113.5ms max=5.52s p(90)=1.42s p(95)=3.43s
+http_req_failed......................: 80.27% 85299 out of 106263
+http_reqs.............................: 106263 527.51498/s
+
+dropped_iterations....................: 31227  155.018306/s
+iterations.............................: 95775  475.450036/s
+vus_max................................: 3000
+
+running (3m21.4s), 95775 complete and 0 interrupted iterations
 ```
 
-**종료 코드 143 = 128 + 15(SIGTERM).** OOM Kill(SIGKILL=137)이 아니라 **ECS가 헬스체크 실패를
-근거로 정상 종료 신호를 보낸 것.** ALB가 이 target을 unhealthy로 판정 → ECS가 SIGTERM으로
-task를 내리고 교체.
+- `unexpected_error=0` — 정합성/예외 측면은 끝까지 깨지지 않았고, `abortOnFail` 임계값에
+  걸리지도 않았다(이전 실행과 달리 중도 중단 없이 완주).
+- `stress_hold_conflict` 비율(80.3%)은 40석짜리 경합 설계상 정상 동작이지 오류가 아니다.
+- **`dropped_iterations`가 31,227건(전체 요청 스케줄의 약 25%)** — k6가 목표 rps를 계속
+  올리려 했지만 서버 응답이 너무 느려져서(이전 요청에 VU가 묶여) 다음 이터레이션을 아예
+  시작도 못 한 것. 실제 도달한 rps는 목표(최대 1500)에 한참 못 미쳤다는 신호.
 
-### 3) CloudWatch Logs (`/ecs/cinema-task`) — 죽은 task의 마지막 로그
+### 관찰 (대시보드)
 
-- **ERROR 레벨 로그 0건.** WARN 38건은 전부 이미 아는 "좌석 이미 선점됨" 비즈니스 경고뿐.
-- `GET /health 200 1ms` — **마지막까지(06:28:30) 정상적으로 빠르게 응답.** 이후 5분 넘게 헬스체크
-  로그가 아예 없음(체크가 실패해서 로그가 남은 게 아니라, 아예 처리가 안 됨).
-- 06:34:20 — `HikariPool-1 - Shutdown initiated...` → `Shutdown completed.` **완전히 정상적인
-  Spring Boot 종료 훅**이 끝까지 실행됨. 앱이 강제로 죽은 게 아니라 스스로 깔끔하게 종료했다는 뜻.
+- **HTTP Request Rate**: 실측 RPS 최대 **421 req/s**(평균 105) — 목표 상한 1500은커녕 800rps
+  구간에도 제대로 못 미쳤을 가능성이 높다.
+- **Tomcat Thread Pool (Idle/Busy/Total)**: 약 21:01:30~21:03:30 구간, **Busy=400(=설정
+  max) / Idle=0**이 약 2분간 그대로 유지됨 — 워커 스레드가 완전히 바닥남. 시나리오 A(1000VU
+  스파이크, 최대 사용량 225/400)에서는 없었던 현상.
+- **DB Connection Pool Status**: 같은 시간대에 활성 커넥션이 max(10)까지 채워짐.
+  **DB Connection Pending Requests**에 짧게 2건씩 대기가 몇 차례 발생.
+  **DB Connection Acquisition Time**: p95 mean 80.7ms/max 533ms, p99 mean 330ms/**max 1.90s**.
+- **CPU Utilization (JVM Process)**: 평소 ~0.2% → 부하 구간 **최대 92.9%**까지 상승. 시나리오
+  A(스파이크, 최대 11%대)와 확연히 다르다 — 지속 부하가 걸리니 CPU도 실제 병목 후보로 등장.
+- **Heap / Old Gen**: 안정적, IHOP 임계치(45%, 1.01GiB) 근처도 안 감 — 메모리 누수 신호 없음.
+- **GC 빈도/일시정지**: Minor GC 빈도는 부하 구간에서 최대 0.5 ops/s로 증가했지만, 정지시간
+  자체는 p99 기준 98~99ms대로 부하 전후 거의 변화 없음 — GC는 병목이 아님.
+- **HTTP Latency (서버 사이드, p95/p99)**: p95 mean 309ms/max 845ms, p99 mean 467ms/max
+  1.84s — **k6가 잰 `stress_hold_duration`(p95 4.04s)보다 훨씬 작다.** 시나리오 A에서 확인한
+  "서버가 요청 처리를 시작한 이후만 잰 시간과 클라이언트 왕복 시간 사이의 큰 gap"이 이번에도
+  재현됨 — 스레드 풀이 바닥난 상태에서 "연결은 됐지만 처리할 워커 스레드를 못 받고 대기"하는
+  구간이 이 gap의 상당 부분을 차지하는 것으로 추정.
+- **HTTP Error Rate (4xx)**: 평균 33.2%, 최대 96.9% — 좌석 경합 설계상 정상.
 
-### 4) 코드 확인 — 헬스체크가 왜 굶었는가
+### 종합
 
-```java
-// global/health/HealthCheckController.java
-@RestController
-public class HealthCheckController {
-    @GetMapping("/health")
-    public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("OK");
-    }
-}
-```
+이번 조건(replica=1, DBCP=10)에서는 **1500rps라는 목표 상한까지 갈 필요도 없이, 실측 ~400rps
+근처에서 Tomcat 스레드 풀 · DB 커넥션 풀 · CPU가 거의 동시에 한계에 부딪히는 지점**을 확인했다.
+DBCP=10은 애초에 "replica 2대 전제"로 줄여둔 값을 replica 1대에 그대로 적용한 상태라 이 결과가
+어느 정도는 예견된 것이지만, 그걸 감안해도 **지속 부하에서는 CPU까지 실제로 밀린다**는 건 시나리오
+A에서는 보지 못했던 새로운 발견이다.
 
-Spring Boot Actuator가 아니라 **일반 `@RestController`**다(`build.gradle`에 actuator 의존성도
-없음). 즉 `/health`도 `/reservations/holds` 같은 다른 API와 **완전히 동일한 포트(8080), 동일한
-내장 Tomcat 스레드풀**을 공유한다. 실제 로그에서도 헬스체크 요청이 `http-nio-8080-exec-*`라는,
-비즈니스 요청과 똑같은 이름의 스레드로 처리된 것이 확인됨.
+## 핵심 수치 한눈에 보기
 
----
+| 조건 | 설정 (replica / DBCP / thread max) | 실측 최대 RPS | p95 (`stress_hold_duration`) | dropped_iterations | Tomcat 스레드 풀 포화 | CPU 최대 |
+|---|---|---|---|---|---|---|
+| 1. 최초 실행 | 1 / 10 / 400 | 421 req/s | 4.04s | 31,227 (25%) | 예 (~2분 지속) | 92.9% |
 
-## 결론 — 정확한 인과관계
+## 다음 조건 후보 (미정 — 실행하면서 채워나감)
 
-1. 부하가 증가하면서(200→400→800rps 구간 어딘가) Tomcat 요청 큐에 처리 못 한 요청이 쌓이기 시작
-2. `/health` 요청도 예외 없이 같은 큐에서 순서를 기다려야 했고, 큐가 충분히 밀리자
-   ALB 헬스체크 타임아웃 안에 응답을 못 받는 상황 발생
-3. ALB가 연속 실패 임계치를 넘기자 target을 unhealthy로 판정
-4. ECS가 SIGTERM으로 task를 정상 종료(코드 143) → 새 task로 교체
-
-**앱 자체는 한 번도 에러를 낸 적이 없다.** 메모리 부족으로 뻗은 것도, 코드가 예외를 던진 것도
-아니다. "너무 바빠서 헬스체크에 응답할 스레드 자리조차 못 잡았을 뿐"인데, 오케스트레이터는 이걸
-"죽었다"고 오판해서 멀쩡히 살아있던 프로세스를 강제 재시작시켰다.
-
-**이건 좌석락 코드(`0e8a4b8`)의 결함이 아니다.** 원인은 헬스체크 엔드포인트가 Actuator의 별도
-management 포트를 쓰지 않고 메인 트래픽과 스레드/큐를 공유하는 **인프라·구성상의 결함**이다.
-
-또한 이 결함 때문에 **지금까지 얻은 "몇 rps부터 깨지는가" 하는 정밀한 숫자는 의미가 제한적이다.**
-그 숫자는 "이 헬스체크 구조가 그대로인 상태에서 오판성 강제종료가 시작되는 지점"이지, 시스템의
-진짜 처리 용량 한계가 아니기 때문이다.
-
-## 다음 단계 (예정)
-
-1. `application.yml`에 `management.server.port` 분리 설정 추가 (헬스체크 전용 커넥터로 분리)
-2. ALB/ECS 헬스체크 대상을 새 포트로 변경
-3. 재배포 후 동일한 100~1500rps 스윕을 재실행 → 이번엔 헬스체크 기아 없이 **진짜 처리 용량 한계**를
-   측정
-4. 1차(수정 전) vs 2차(수정 후) 결과를 종합해서 트러블슈팅 문서로 정리
+- [ ] DBCP를 20으로 복원 (replica=1 유지) — DB 풀이 진짜 병목이었는지 분리 검증
+- [ ] Tomcat `threads.max`를 400보다 더 올려보기 — 지속 부하에서도 스레드 풀 확장이 유효한지
+- [ ] replica 2대로 확장(시나리오 A 최종 조건과 동일) — 지속 부하에서도 수평 확장이 스파이크와
+      비슷한 폭으로 개선을 주는지 확인
+- [ ] 위 항목 중 CPU 92.9%가 실제 상한으로 작용하는 조건이 있는지 확인 (그렇다면 vCPU 증설이
+      다음 후보)
