@@ -1,112 +1,47 @@
-# 좌석 선점 스파이크 테스트 결과 (모니터링 재구축 후 재실행)
+# 좌석 선점 스파이크 테스트 결과 — 원인 조사 및 튜닝 기록
 
 - 작성일: 2026-07-20
 - 대상 브랜치: `test/add-k6-performance-test`
-- 대상 커밋: `0893854`
 - 테스트 스크립트: `k6/scenarios/a-seat-hold-spike.js`
-- 테스트 환경: dev ECS Fargate + RDS MySQL `db.t4g.micro`(2 vCPU, 1GiB) + Redis + OTel Java agent/Collector 사이드카 → Prometheus → Grafana
+- 테스트 환경: dev ECS Fargate(앱 컨테이너 **1.5 vCPU / 3GB**, OTel Collector 사이드카 0.5 vCPU / 1GB — 모든 단계에서 고정) + RDS MySQL `db.t4g.micro`(2 vCPU / 1GiB) + Redis + OTel Java agent/Collector → Prometheus → Grafana
+- 시나리오: 40석 상영에 **1000 VU**가 동시에 좌석 홀드 시도(`per-vu-iterations`, VU당 정확히 1회, 좌석당 평균 25명 경쟁 = **25배 오버서브스크립션**)
+- 임계값: `seat_hold_duration p(95)<800ms` — 모든 단계에서 미달했지만, 애초에 25배 오버서브스크립션이라는 극단적 조건이라 절대 통과보다는 **단계별 개선 폭**을 보는 데 의미가 있다.
 
-> 이전 스파이크 결과(`refactor/seat-lock-redis` 브랜치, 2026-07-10 실시분)는 CloudWatch를 직접 조회하며 사후분석한 결과였다.
-> 이번엔 OTel + Prometheus + Grafana 모니터링 스택이 갖춰진 상태에서 같은 스크립트를 재실행하며 진행 중이다.
-> 아직 원인 조사 단계이며, 조치(HikariCP 풀 크기 조정 등) 후 재테스트 결과는 추후 이 문서에 트러블슈팅 형식으로 추가할 예정.
+## 조사 개요
 
-## 테스트 시나리오
+"서버 자원(CPU/메모리/GC)이나 처리 속도 자체는 문제없어 보이는데, 개별 요청 체감 지연은 심각하다"는 첫 관찰에서 출발해서, 병목을 DB 커넥션 풀 → Tomcat 스레드 풀 → (요청을 받는) 인스턴스 자체 수 순서로 하나씩 좁혀가며 튜닝했다. 각 단계는 "이전 결과에서 발견한 단서 → 원인 가설 → 조치 → 재테스트로 검증" 순서로 진행됐다.
 
-| 항목 | 내용 |
-|---|---|
-| 도구 | k6 (`per-vu-iterations` executor, VU당 정확히 1회 실행) |
-| 대상 | `POST /reservations/holds` (좌석 선점) |
-| 시나리오 | 40석 상영에 **1000 VU**가 거의 동시에 좌석 홀드 시도 (좌석당 평균 25명 경쟁) |
-| 측정 구간 | 로그인·CSRF·좌석 목록 조회는 `setup()`에서 미리 끝내고, `default()`는 홀드 POST 1회만 측정 |
-| 픽스처 | k6 `setup()`이 Admin API로 테스트 전용 40석 상영관+상영을 매 실행마다 새로 생성 |
+## 단계별 기록
 
-## 결과 (2026-07-20 13:25 실행)
+| 단계 | 조치 전 관찰 / 원인 판단 경위 | 조치 | 결과 (k6 클라이언트 기준) | 다음 단계로 이어진 단서 |
+|---|---|---|---|---|
+| **1. 아무것도 안 건드리고 실행** | (기준선) 아무 설정도 바꾸지 않은 상태에서 1000 VU 스파이크를 쏴서 문제가 실재하는지부터 확인 | 없음 (HikariCP `maximum-pool-size` 기본값 10, Tomcat `threads.max` 기본값 200, replica 1대) | `http_req_duration` p95 **4.88s** (성공만: avg 623ms / p95 1.32s) · 전체 처리시간(wall time) 6.1s · CPU 최대 11%대, 힙/GC 정상 | CPU·힙·GC는 전부 여유 있는데 개별 요청은 초 단위로 밀림 → 컴퓨팅 자원이 아니라 **대기열**에서 문제 발생 중이라 판단. `SeatHoldFacade.holdSeats()`가 Redis 락 전에 `validateBookable()`로 DB를 먼저 치는 구조라, 1000개 요청 전부가 DB 커넥션을 최소 1번씩 요구함 → `DB Connection Acquisition Time` 패널이 부하 구간에서 크게 튀는 것 확인, HikariCP 풀(기본 10)이 유력 용의자로 지목됨 |
+| **2. HikariCP 풀 크기 확대** | DB Connection Acquisition Time이 부하 순간 정상 대비 수배~수십배 튐. RDS가 2vCPU라는 점을 고려해도 기본값 10은 협소해 보임 | `application-dev.yml`에 `spring.datasource.hikari.maximum-pool-size: 20` 추가 | `http_req_duration` p95 **5.53s** (오히려 소폭 증가, 오차범위) · 성공만: avg 687ms / p95 1.59s · 전체 처리시간 7.9s · **DB Connection Acquisition Time은 극적으로 개선**(p99 mean 659ms→46ms, max 1.56s→78ms, 약 15~20배) | DB 쪽 지표는 확실히 좋아졌는데 **정작 사용자 체감 p95는 안 바뀜** → "DB 커넥션 대기가 병목의 일부일 뿐, 주범이 아니다"로 결론. 같은 화면의 `Tomcat Thread Pool` 그래프가 여전히 기본 max(200)에 딱 붙어 있는 게 눈에 띔 → 다음 용의자를 Tomcat 워커 스레드로 전환 |
+| **3. Tomcat 스레드 풀 확대** | 이 작업은 I/O-bound(DB/Redis 대기가 대부분, CPU 11%로 여유)라 코어 수보다 스레드 수를 늘리는 게 정석이라는 논의 후 결정. 1000개 요청이 거의 동시에 도착하는데 워커 스레드가 200개뿐이라 나머지는 accept 큐에서 대기 중이라 판단 | `application-dev.yml`에 `server.tomcat.threads.max: 400`, `accept-count: 200` 추가 | `http_req_duration` p95 **4.84s** (재실행 시 3.19s, 실행 간 편차 있음) · 성공만 p95 1.74s · `Tomcat Thread Pool` 최대 사용량 225로, 새 천장(400)엔 안 닿음 → **Tomcat 워커 스레드 자체는 더 이상 병목 아님 확인** · 대신 **DB Acquisition Time이 다시 악화**(p99 mean 46→85ms) — 더 많은 요청이 동시에 앱까지 들어와서 DB 풀(20)로 몰린 것 | 세부 타이밍(`blocked`/`connecting`/`waiting`)을 쪼개 재보니 연결 수립(`blocked`+`connecting`)은 ~200ms로 작고 **`waiting`(TTFB)이 전체(3초대)의 97% 이상** 차지 → 네트워크 연결 문제는 기각. 근데 Grafana `HTTP Latency`(서버가 요청 처리를 시작한 뒤부터 잰 시간)는 항상 수십~수백ms대로 작았음 → "TCP 연결은 됐고 서버 처리 자체도 빠른데, 그 사이 어딘가에 숨은 지연"이 있다고 판단. 처음엔 "ECS task가 1vCPU를 collector와 공유해서"로 추정했으나, 실제 task definition 확인 결과 앱 컨테이너는 **1.5vCPU 전용**이라 이 가설은 기각. 대신 Tomcat의 연결 수락 담당 스레드(acceptor)가 기본 1개뿐이라, 코어 수와 무관하게 **1000개 연결을 한 인스턴스가 순차적으로 받아야 하는 구조적 한계**로 재추정 → 근본적으로 "1대가 25배 부하를 혼자 감당"하는 구조 자체가 문제라고 보고 **replica 확장**으로 방향 전환 |
+| **4. ECS app 컨테이너 replica 1 → 2대 확장** | Tomcat accept 병목이 CPU/스레드 설정이 아니라 "인스턴스 1대가 모든 연결을 받아야 하는 구조" 때문이라면, 인스턴스를 늘려 요청을 물리적으로 나눠 받는 게 근본 해법이라 판단. DB는 replica들이 공유하는 자원이므로, 총 커넥션 상한은 기존에 검증된 수준(~20)을 유지하기 위해 인스턴스당 풀 크기를 절반으로 조정 | ECS 서비스 desired count 1 → 2, `maximum-pool-size` 20 → **10**(인스턴스당, 총합 ~20 유지), Tomcat 스레드 설정은 유지(인스턴스별 독립 자원이라 부하가 반으로 나뉘면 자연히 여유 생김) | (배포 전환 중 실행된 1차 시도는 두 인스턴스 트래픽 분배가 불안정해 결과 제외) 배포 안정화 후 재실행: `http_req_duration` p95 **2.16s** (직전 단계 대비 약 **55% 개선**, 최초 기준선 대비 약 **56% 개선**) · 성공만: avg 445ms / p95 **1.07s** · 전체 처리시간 3.7s (6.5s → 거의 절반) · DB Acquisition Time p99 mean 178ms/max 458ms(약간 상승했지만 여전히 건강한 수준) · Grafana `HTTP Latency`가 이전보다 커짐(p99 max 1.97s) — 예전에 "안 보이던" 지연 구간이 줄면서 그만큼이 계측 가능한 구간 안으로 들어온 것으로 해석 | 여기까지가 이번 조사에서 다룬 범위. 남은 지연은 이제 서버 사이드 계측(OTel span)으로 직접 추적 가능한 상태라, 더 파고들 경우 여기서부터 이어가면 됨 |
 
-```
-checks_total.......: 1000    141.707611/s
-checks_succeeded...: 100.00% 1000 out of 1000
-checks_failed......: 0.00%   0 out of 1000
+## 핵심 수치 한눈에 보기
 
-seat_hold_conflict.............: 960    136.039306/s
-seat_hold_duration.............: avg=3.5s     min=325.85ms med=3.66s    max=5.76s p(90)=5.38s p(95)=5.59s
-seat_hold_success..............: 40     5.668304/s
-seat_hold_unexpected_error.....: 0      0/s
+| 단계 | 설정 (풀 크기 / 스레드 max / replica) | p95 (client, `http_req_duration`) | 성공(302)만 p95 | 전체 처리시간(wall time) |
+|---|---|---|---|---|
+| 1. 기준선 | 10 / 200 / 1 | 4.88s | 1.32s | 6.1s |
+| 2. DBCP↑ | 20 / 200 / 1 | 5.53s | 1.59s | 7.9s |
+| 3. Thread↑ | 20 / 400 / 1 | 4.84s (재실행 3.19s) | 1.74s (재실행 0.55s) | 6.5s (재실행 4.0s) |
+| 4. Replica↑ | 10×2 / 400 / 2 | **2.16s** | **1.07s** | **3.7s** |
 
-http_req_duration..............: avg=3.46s    min=17.2ms   med=3.65s    max=5.76s p(90)=5.37s p(95)=5.58s
-  { expected_response:true }...: avg=790.29ms min=17.2ms   med=909.95ms max=2.05s p(90)=1.59s p(95)=1.66s
-http_req_failed................: 94.86% 960 out of 1012
-http_reqs......................: 1012   143.408102/s
+정합성(같은 좌석 중복 배정 여부)은 모든 단계에서 문제없었다 — 매 실행마다 정확히 좌석 수(40)만큼만 성공, `unexpected_error=0`.
 
-iterations......................: 1000   141.707611/s
-running (0m07.1s), 0000/1000 VUs, 1000 complete and 0 interrupted iterations
-spike ✓ [===================] 1000 VUs  0m05.8s/2m0s  1000/1000 iters, 1 per VU
-```
+## 조사 중 확인한 부수적 사실 (참고)
 
-- **정합성: 통과** — `seat_hold_success=40`, `seat_hold_conflict=960`, `unexpected_error=0`. 1000 VU가 40석을 놓고 경쟁했는데 정확히 좌석 수만큼만 성공.
-- **전체 실행 시간: 7.1초** (`per-vu-iterations`라 1000 VU가 병렬로 동시 실행되므로 총 소요시간 자체는 짧음). `seat_hold_duration` threshold(`p95<800ms`)는 미달.
+- **Grafana 대시보드의 "약 4분 지속" 표시는 실제 서버 이벤트 길이와 무관한 것으로 추정된다.** k6 자체 실행 시간은 매번 4~8초였는데, `DB Connection Acquisition Time` 등 패널은 매번 공교롭게 약 4분짜리 사각형 plateau로 나타났다. 이벤트의 실제 심각도·길이와 무관하게 매번 폭이 똑같다는 건 Grafana 쿼리가 넓은 range window(추정 4~5분)로 스무딩하면서 수 초짜리 이벤트를 화면상 늘려 보여주는 아티팩트일 가능성이 높다. 애플리케이션 문제는 아니라고 보고 있으나, 별도로 쿼리 window 점검이 필요하다.
+- **k6 클라이언트 지연시간과 Grafana 서버 사이드 지연시간은 서로 다른 구간을 잰다.** k6 `http_req_duration`은 로컬 PC 기준 전체 왕복 시간(네트워크 → ALB → Tomcat accept → 앱 처리 → 응답)이고, Grafana `HTTP Latency`는 OTel 계측이 시작되는 시점(Tomcat이 요청 처리를 시작한 뒤)부터만 잰다. 3단계 이전까지는 이 둘의 격차가 매우 컸는데(서버 사이드는 항상 수십~수백ms, k6는 초 단위), 4단계(replica 확장) 이후 격차가 크게 줄었다.
+- **HTTP Error Rate(4xx) 패널에 높은 수치가 찍히는 건 정상이다.** 1000개 중 960개가 의도된 `SEAT_ALREADY_HELD`(400) 응답이라, 4xx 비율이 90%를 넘게 찍히는 게 정상 동작이다. k6의 `checks_succeeded=100%`, `unexpected_error=0`으로 실제 오류가 아님을 매 단계 확인했다.
 
-## 원인 조사
+## 아직 안 한 것 / 다음 액션
 
-### 1. 서버 자원(CPU/메모리/GC)은 문제 없음
-
-같은 시각 Grafana 지표:
-
-| 메트릭 | 값 | 비고 |
-|---|---|---|
-| CPU Utilization (JVM) | max 11.4%, mean 1.45% | 여유 충분 |
-| Heap / Old Gen | Old Gen 최대 119MiB (IHOP 임계치 1.01GiB) | 누수 신호 없음 |
-| HTTP Error Rate (4xx/5xx 중 5xx) | 0% | 애플리케이션 에러 없음 |
-| DB Connection Pool Max Size | 10 (HikariCP 기본값, 커스텀 설정 없음) | |
-
-CPU·힙·GC 전부 여유 있는 걸 보면 "처리 속도" 자체는 문제가 아니다.
-
-### 2. 개별 요청 체감 지연은 심각 — 성공보다 실패가 더 느림
-
-- 전체 `http_req_duration`: avg 3.46s, **p95 5.58s**
-- 성공(302)만: avg 790ms, **p95 1.66s** — 훨씬 빠름
-
-실패(400, `SEAT_ALREADY_HELD`)가 성공보다 느리다는 건 "실패 로직이 느려서"가 아니라, **대기열에서 늦게 처리된 요청일수록 이미 다른 요청이 좌석을 채간 뒤라 패배할 확률이 높다는 선택 편향**으로 해석된다. 즉 진짜 원인은 대기열 자체다.
-
-`SeatHoldFacade.holdSeats()`(`SeatHoldFacade.java:24-38`)를 보면 Redis 락 승패가 갈리기 **전에** 모든 요청이 `validateBookable()`로 DB 읽기 트랜잭션을 한 번씩 거친다. 1000개 요청이 거의 동시에 몰리면:
-
-1. Tomcat 워커 스레드(Spring Boot 기본 `max=200`)에서 1차 대기 — 200개까지만 앱 코드 진입, 나머지는 accept 큐 대기
-2. 그 200개 중에서도 DB 커넥션(HikariCP 기본 `max=10`)에서 2차 대기
-
-40석에 1000명(25배 오버서브스크립션)이 몰리는 구조라, 이 이중 대기열에서 수 초씩 지연이 발생하는 것으로 보인다.
-
-### 3. (참고) Grafana 대시보드의 "약 4분 지속" 표시는 실제 서버 이벤트 길이와 다른 것으로 추정
-
-이번 실행에서 `DB Connection Acquisition Time` 패널은 13:26:00~13:30:00 약 **4분간** 평평하게 상승한 뒤(p95 mean 316ms/max 723ms, p99 mean 659ms/max 1.56s) 뚝 떨어지는 사각형 형태로 나타났다. `HTTP Latency`, `GC Frequency` 패널도 같은 구간에서 유사하게 반응했다.
-
-그런데 k6 자체 실행 시간은 7.1초였고, 과거 두 차례 재실행(2026-07-19 22:09, 23:44)에서도 k6는 매번 6~7초 만에 끝났는데 Grafana 상의 "영향 구간"은 매번 공교롭게 약 4분으로 나타났다. 서버 사이드 부작용의 실제 길이가 세 번 모두 우연히 4분으로 일치할 가능성은 낮다.
-
-같은 화면의 `Tomcat Thread Pool` 패널(200→40→10으로 **약 90초에 걸쳐 삼각형으로 자연 감소** — Tomcat 기본 idle timeout과 부합하는 실제 물리적 감쇠 형태)과 모양이 다르다는 것도 방증이다. 같은 사건의 여파라면 감쇠 곡선 모양이 비슷해야 하는데, `DB Connection Acquisition Time` 쪽만 사각형(뚝 오르고 뚝 떨어짐)인 건 실제 현상이라기보단 **Grafana 패널 쿼리가 넓은 range window(추정 5분)로 스무딩하면서 수 초짜리 이벤트를 화면상 4분짜리로 "번짐" 처리하는 아티팩트**일 가능성이 높다.
-
-`seat-hold.minutes=5`(DB hold 만료), `seat-hold.lock-ttl-seconds=15`(Redis 락 TTL, `application.yml:19-21`) 둘 다 4분과 맞아떨어지지 않아 "홀드 TTL 때문에 4분간 뭔가 계속 돈다"는 가설도 기각했다.
-
-→ 애플리케이션 문제는 아니라고 보고 있으나, Grafana 쿼리의 range window를 스크레이프 주기에 맞게 좁혀서 별도로 검증 필요.
-
-### 4. (참고) k6 지연시간과 Grafana 지연시간이 서로 다른 구간을 재고 있음 — 직접 비교 금지
-
-- k6 `http_req_duration`(med 3.65s, p90 5.37s, p95 5.58s)은 **로컬 PC 기준 전체 왕복 시간**(인터넷 → ALB → OS accept 큐 → Tomcat 워커 배정 → 앱 로직/DB → 응답)이다.
-- Grafana `HTTP Latency` 패널(p95 mean 38.5ms/max 90.3ms, p99 mean 51.9ms/max 157ms)은 **OTel 계측이 시작되는 시점(Tomcat이 요청을 이미 받아 처리를 시작한 순간)부터만** 잰다. 인터넷 왕복, ALB 처리, TCP 연결 수립, OS 소켓 accept 큐 대기 시간은 포함되지 않는다.
-- 이번 시나리오는 `per-vu-iterations`라 1000개 VU가 매번 **새 TCP 연결**을 맺으므로, 1000개의 동시 신규 연결이 ALB/OS 단에 몰리는 구간이 존재하는데 이건 현재 어떤 패널에도 안 잡힌다. k6(5.5초대)와 Grafana 서버 사이드(백여 ms대) 사이의 큰 간극 상당 부분이 여기 있을 가능성이 높다.
-- 추가로 `HTTP Latency` p99 최댓값(157ms)이 `DB Connection Acquisition Time` p99 최댓값(1.56s)보다 작다는 모순도 있다 — 커넥션 대기 시간은 논리적으로 전체 처리 시간의 일부여야 하므로, 두 패널이 서로 다른 요청 집합/윈도우를 집계하고 있을 가능성이 있다. 3번 항목의 range window 검증과 함께 확인 필요.
-- **결론**: 실사용자 체감 지연은 k6 숫자(중앙값 3.65s, p90 5.37s)가 더 신뢰도 높은 근거다. Grafana 서버 사이드 패널들은 측정 구간이 좁고 패널 간 정합성도 아직 안 맞아서, 지금 시점에는 "심각한 지연이 있다"는 방향성만 보조 근거로 쓰고 절대값은 그대로 인용하지 않는다.
-
-## 종합 결론 (조사 단계)
-
-1. **좌석락 코드의 정합성은 문제 없음** — 매 실행마다 정확히 좌석 수만큼만 성공, 중복 배정 0건.
-2. **서버 자원(CPU/메모리/GC)도 문제 없음** — 전부 여유 있게 관측됨.
-3. **개별 요청 지연(p95 5.5초대)이 진짜 문제** — Tomcat 스레드 풀(max 200)과 HikariCP 커넥션 풀(max 10)의 이중 대기열이 유력한 원인. 1000 VU가 40석(25배 오버서브스크립션)에 몰리는 이 테스트 조건 자체가 가혹하긴 하지만, 그걸 감안해도 대기열 큐잉 시간이 크다.
-4. Grafana 대시보드에 나타나는 "4분 지속" 표시는 별도의 모니터링 쿼리 이슈로 분리해서 다룬다 (애플리케이션 성능 문제와 무관).
-
-## 다음 액션 (TODO)
-
-- [ ] HikariCP `maximum-pool-size`를 기본값 10 → **20**으로 올려 재테스트 (`application-dev.yml`) — RDS `db.t4g.micro` 2vCPU/1GiB 스펙 대비 값은 실측 기반으로 단계적으로 늘려가며 CloudWatch RDS CPU/커넥션 지표와 함께 확인
-- [ ] 재테스트 결과가 개선되면 이 문서에 트러블슈팅 형식(조치 → 재검증 결과)으로 추가
-- [ ] Grafana `DB Connection Acquisition Time` 등 패널의 쿼리 range window 점검 (스파이크성 이벤트가 실제보다 길게 표시되는 문제)
 - [ ] 시나리오 B(Stress), C(조회 Load) 재실행 및 결과 반영
+- [ ] Grafana 쿼리 range window 점검 (스파이크성 이벤트가 실제보다 길게 표시되는 문제)
+- [ ] (선택) 4단계 이후 계측 가능해진 서버 사이드 지연(OTel span, p99 최대 1.97s)을 트레이스 레벨에서 더 파고들지 여부 판단
 
 ## DB 검증 쿼리 (참고)
 
@@ -117,8 +52,8 @@ FROM reserved_seats
 WHERE screening_id = {screeningId} AND status IN ('HOLD', 'CONFIRMED')
 GROUP BY screening_id, seat_id
 HAVING COUNT(*) > 1;
--- 결과: 0건
+-- 결과: 0건 (모든 단계)
 
 SELECT COUNT(*) FROM reserved_seats WHERE screening_id = {screeningId} AND status = 'HOLD';
--- 결과: 40
+-- 결과: 40 (모든 단계)
 ```
