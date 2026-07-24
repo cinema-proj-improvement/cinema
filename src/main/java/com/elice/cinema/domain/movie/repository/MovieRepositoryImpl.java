@@ -160,9 +160,14 @@ public class MovieRepositoryImpl implements MovieRepositoryCustom {
         return movie.genres.any().in(genres);
     }
 
+    // LIKE '%keyword%'(선행 와일드카드)는 인덱스를 못 타는 풀스캔이라
+    // startsWithIgnoreCase(LIKE 'keyword%')로 제한한다. LOWER()는 그대로 유지해
+    // MySQL(컬럼 콜레이션 ci)과 H2(로컬/테스트, 콜레이션 기본 cs) 간 대소문자
+    // 처리 차이가 생기지 않게 한다 - 인덱스는 V3 마이그레이션의
+    // LOWER(title) 함수 인덱스가 담당.
     private BooleanExpression titleContains(String keyword) {
         return StringUtils.hasText(keyword)
-                ? movie.title.containsIgnoreCase(keyword)
+                ? movie.title.startsWithIgnoreCase(keyword)
                 : null;
     }
 

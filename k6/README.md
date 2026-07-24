@@ -100,7 +100,41 @@ A와 마찬가지로 로그인/CSRF/좌석목록은 `setup()`에서 미리 끝�
   꽤 낮은 rps 구간에서부터 한계 징후가 나타날 가능성이 높다 — 나쁜 결과가 아니라 이 사이즈의 실측 한계를
   숫자로 남기는 게 목적이다.
 
-## 정리 (cleanup)
+## 시나리오 C — Load Test (조회 트래픽, 평시 부하)
+
+A/B(순간 폭증·지속 스트레스)와 달리 **정상 범위의 트래픽에서 SLA를 만족하는지**가 목적이다.
+영화 목록/상세, 예매 화면 진입, 스케줄 조회처럼 상시 발생하는 조회 흐름을 재현한다.
+
+```bash
+k6 run k6/scenarios/c-browse-load.js \
+  -e BASE_URL=https://<dev-서버-주소> \
+  -e VU_COUNT=100 -e DURATION=3m
+```
+
+**"동시 사용자 수"를 그대로 rps로 착각하면 안 된다.** 실제 사용자는 페이지 사이사이 생각할
+시간이 있으므로, 이 스크립트는 각 액션(목록→상세→예매화면→스케줄조회) 사이에 1~5초의
+think-time(`sleep`)을 넣어서 VU 수를 올려도 실질 rps는 낮게 유지되도록 설계했다. think-time
+없이 VU_COUNT만 높이면 "평시 트래픽 재현"이 아니라 또 다른 스트레스 테스트가 되어버려서
+[`docs/healthcheck-actuator-port-separation.md`](../docs/healthcheck-actuator-port-separation.md)에서
+다루는 헬스체크 기아 문제(시나리오 B에서 확인, 의도적으로 남겨둔 동작)를 다시 건드릴 수 있다.
+
+대상 엔드포인트가 전부 GET이라 CSRF는 필요 없다. 로그인은 A/B와 동일하게 `setup()`에서
+한 번만 하고 세션을 재사용한다. 영화 id는 하드코딩하지 않고 `/movies` 응답 HTML에서 그때그때
+파싱해서 쓰므로, dev DB에 어떤 영화가 있든(테스트로 만든 것 포함) 알아서 탐색한다.
+
+### 결과 해석 (C)
+
+- `browse_unexpected_error` — 0이어야 함 (200 외 응답)
+- `browse_movie_list_duration` / `browse_movie_detail_duration` / `browse_reservation_page_duration` /
+  `browse_schedule_duration` — 엔드포인트별 지연시간. 어느 화면이 유독 느린지 구분 가능
+- `http_req_duration` p95 < 500ms 기준으로 threshold 설정해둠
+
+### 정리 (cleanup) — 필요 없음
+
+A/B와 달리 상영관/상영 같은 픽스처를 만들지 않고 기존 DB 데이터를 조회만 한다. `setup()`에서
+발급받는 로그인 세션 외에는 쓰기 작업이 없어 dev DB에 흔적이 남지 않는다.
+
+## 정리 (cleanup, 시나리오 A/B)
 
 관리자 화면에는 상영관 삭제 기능이 없다(물리적 자산으로 취급되어 등록/수정만 가능).
 상영(screening)은 `SCHEDULED` 상태일 때만 관리자 화면에서 삭제 가능하고, 이번 테스트로 만든
@@ -127,4 +161,4 @@ DELETE FROM screens WHERE id = {screenId};
 
 ## 다음 단계
 
-시나리오 C(조회 Load), D(로그인 Stress)는 아직 스크립트화하지 않았다.
+시나리오 D(로그인 Stress)는 아직 스크립트화하지 않았다.
