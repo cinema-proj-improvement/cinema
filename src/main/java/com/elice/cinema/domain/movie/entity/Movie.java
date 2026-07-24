@@ -22,6 +22,12 @@ import java.util.Set;
                 @Index(
                         name = "idx_movie_status_end_date",
                         columnList = "status, end_date"
+                ),
+
+                // 제목 검색(LIKE 'keyword%') 인덱스
+                @Index(
+                        name = "idx_movie_title",
+                        columnList = "title"
                 )
         })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
