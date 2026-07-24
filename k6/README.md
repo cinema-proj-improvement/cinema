@@ -83,10 +83,9 @@ k6 run k6/scenarios/b-seat-hold-stress.js \
 rps를 `100 → 200 → 400 → 800 → 1500`으로 단계별 30초씩 유지하며 올린다 (총 ~3분 20초).
 A와 마찬가지로 로그인/CSRF/좌석목록은 `setup()`에서 미리 끝낸다.
 
-> 처음엔 5~100rps로 낮게 시작했는데 100rps까지도 전혀 안 무너져서(p95 217ms, 에러 0건)
-> 상한선을 1500rps까지 올렸다. 각 단계를 30초씩 유지하는 이유는 `db.t4g.micro`가 버스터블
-> 인스턴스라 CPU 크레딧이 바닥나면 갑자기 성능이 꺾이는 특성이 있는데, 단계가 너무 짧으면
-> 이런 "크레딧 고갈형 절벽"을 놓칠 수 있어서다.
+> 각 단계를 30초씩 유지하는 이유는 `db.t4g.micro`가 버스터블 인스턴스라 CPU 크레딧이
+> 바닥나면 갑자기 성능이 꺾이는 특성이 있는데, 단계가 너무 짧으면 이런 "크레딧 고갈형
+> 절벽"을 놓칠 수 있어서다.
 
 ### 결과 해석 (B)
 
@@ -129,10 +128,18 @@ think-time(`sleep`)을 넣어서 VU 수를 올려도 실질 rps는 낮게 유지
   `browse_schedule_duration` — 엔드포인트별 지연시간. 어느 화면이 유독 느린지 구분 가능
 - `http_req_duration` p95 < 500ms 기준으로 threshold 설정해둠
 
-### 정리 (cleanup) — 필요 없음
+### 정리 (cleanup) — 기본은 필요 없음, 대량 시드를 썼다면 필요
 
-A/B와 달리 상영관/상영 같은 픽스처를 만들지 않고 기존 DB 데이터를 조회만 한다. `setup()`에서
-발급받는 로그인 세션 외에는 쓰기 작업이 없어 dev DB에 흔적이 남지 않는다.
+`c-browse-load.js` 자체는 A/B와 달리 상영관/상영 같은 픽스처를 만들지 않고 기존 DB 데이터를
+조회만 한다. `setup()`에서 발급받는 로그인 세션 외에는 쓰기 작업이 없어 dev DB에 흔적이
+남지 않는다.
+
+다만 `k6/fixtures/seed-bulk-movies.sql`(30만 건) / `seed-realistic-movies.sql`(30건)로 대량
+영화 데이터를 미리 넣고 테스트했다면 얘기가 다르다 — 이 픽스처들은 `title` 컬럼 인덱스
+성능을 규모별로 검증하기 위해 별도로 만든 것으로(자세한 배경은
+[`load-test-results.md`](./load-test-results.md) 참고), `title LIKE 'K6-PERF-MOVIE-%'`로
+찾을 수 있는 실제 `movies` 행을 만든다. 테스트 후 반드시
+`k6/fixtures/cleanup-bulk-movies.sql`로 정리한다.
 
 ## 정리 (cleanup, 시나리오 A/B)
 
@@ -158,7 +165,3 @@ DELETE FROM screens WHERE id = {screenId};
   영화의 `release_date`~`end_date` 범위 밖일 수 있음. 다른 영화로 시도.
 - `seat_hold_unexpected_error`가 0이 아님: 콘솔에 찍힌 status/body를 보고 원인 파악. 흔한 원인은
   세션 만료(테스트가 너무 오래 걸림) 또는 `EnvironmentPolicy.maxReservationCount` 관련 검증.
-
-## 다음 단계
-
-시나리오 D(로그인 Stress)는 아직 스크립트화하지 않았다.
