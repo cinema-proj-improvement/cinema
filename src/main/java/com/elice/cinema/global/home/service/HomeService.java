@@ -1,6 +1,7 @@
 package com.elice.cinema.global.home.service;
 
 import com.elice.cinema.domain.movie.repository.MovieRepository;
+import com.elice.cinema.global.common.file.FileService;
 import com.elice.cinema.global.home.dto.response.HomeMovieResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +15,7 @@ import java.util.List;
 public class HomeService {
 
     private final MovieRepository movieRepository;
+    private final FileService fileService;
 
     @Transactional(readOnly = true)
     public List<HomeMovieResponse> getTop4Movies() {
@@ -25,7 +27,7 @@ public class HomeService {
                         row.getMovieId(),
                         row.getTitle(),
                         row.getSynopsis(),
-                        row.getThumbnail(),
+                        fileService.toImageUrl(row.getThumbnail()),
                         row.getAdvanceReservationRate()
                 ))
                 .toList();

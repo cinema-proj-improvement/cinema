@@ -104,7 +104,9 @@ public class Payment {
     }
 
     public void markCancelFailed(String reason) {
-        // TODO: canChangeTo 사용해야하나 고민해보기
+        if (!this.status.canChangeTo(PaymentStatus.CANCEL_FAILED)) {
+            throw new BusinessException(ErrorCode.PAYMENT_CANCEL_NOT_ALLOWED);
+        }
         this.status = PaymentStatus.CANCEL_FAILED;
         this.failureMessage = reason;
     }

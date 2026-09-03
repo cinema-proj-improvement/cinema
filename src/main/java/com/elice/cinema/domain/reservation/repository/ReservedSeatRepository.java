@@ -1,6 +1,5 @@
 package com.elice.cinema.domain.reservation.repository;
 
-import com.elice.cinema.domain.reservation.dto.SeatLockInfoDto;
 import com.elice.cinema.domain.reservation.entity.ReservationStatus;
 import com.elice.cinema.domain.reservation.entity.ReservedSeat;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,18 +11,6 @@ import java.util.Collection;
 import java.util.List;
 
 public interface ReservedSeatRepository extends JpaRepository<ReservedSeat, Long> {
-    // 넘어온 예매들 각각에 해당하는 예매 좌석들 중 HOLD 상태인 것들을 대상으로 redis lock 관련 정보 조회하는 query (상영 id, 좌석 id)
-    @Query("""
-        select new com.elice.cinema.domain.reservation.dto.SeatLockInfoDto(
-            rs.screening.id,
-            rs.seat.id
-        )
-        from ReservedSeat rs
-        where rs.reservation.id in :reservationIds
-          and rs.status = com.elice.cinema.domain.reservation.entity.ReservationStatus.HOLD
-    """)
-    List<SeatLockInfoDto> findSeatLocksByReservationIds(@Param("reservationIds") List<Long> reservationIds);
-
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
         delete from ReservedSeat rs

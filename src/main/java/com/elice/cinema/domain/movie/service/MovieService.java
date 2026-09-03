@@ -7,18 +7,18 @@ import com.elice.cinema.domain.movie.dto.request.MovieUpdateRequest;
 import com.elice.cinema.domain.movie.dto.response.*;
 import com.elice.cinema.domain.movie.entity.Movie;
 import com.elice.cinema.domain.movie.entity.MovieStatus;
-import com.elice.cinema.domain.movie.event.MovieImagesStorageEvent;
 import com.elice.cinema.domain.movie.mapper.MovieMapper;
 import com.elice.cinema.domain.movie.repository.AdminMovieJoinQueryRepository;
 import com.elice.cinema.domain.movie.repository.MovieRepository;
+import com.elice.cinema.domain.movieImage.dto.MovieImageUploadResult;
 import com.elice.cinema.domain.movieImage.entity.MovieImage;
 import com.elice.cinema.domain.movieImage.repository.MovieImageRepository;
 import com.elice.cinema.domain.movieImage.service.MovieImageService;
 import com.elice.cinema.domain.screening.service.ScreeningService;
+import com.elice.cinema.global.common.file.FileService;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -36,26 +36,25 @@ import java.util.List;
 public class MovieService {
     private final MovieRepository movieRepository;
     private final MovieMapper movieMapper;
-    private final ApplicationEventPublisher publisher;
     private final MovieImageRepository movieImageRepository;
     private final AdminMovieJoinQueryRepository adminMovieJoinQueryRepository;
-
     private final MovieImageService movieImageService;
     private final ScreeningService screeningService;
+    private final FileService fileService;
 
-    // 관리자 - 영화 생성 요청을 받아 영화를 생성하고 DB에 저장하는 메서드
     @Transactional
-    public Long createMovie(MovieCreateRequest req) {
+    public Long saveMovieWithImages(MovieCreateRequest req, MovieImageUploadResult uploadResult) {
         validateDates(req.getReleaseDate(), req.getEndDate());
 
         Movie movie = movieMapper.toEntity(req);
         movieRepository.save(movie);
 
-        publisher.publishEvent(MovieImagesStorageEvent.of(
-                movie.getId(),
-                req.getThumbnailImage(),
-                req.getExtraImages()
-        ));
+        movieImageRepository.save(MovieImage.thumbnail(movie, uploadResult.thumbnailKey()));
+
+        int order = 1;
+        for (String key : uploadResult.extraKeys()) {
+            movieImageRepository.save(MovieImage.extra(movie, key, order++));
+        }
 
         return movie.getId();
     }
@@ -87,21 +86,25 @@ public class MovieService {
 
         List<AdminMovieListResponse> contents =
                 AdminMovieListResponse.fromRows(rows);
+        contents.forEach(dto -> dto.setThumbnail(fileService.toImageUrl(dto.getThumbnail())));
 
         return new PageImpl<>(contents, pageable, totalCount);
     }
 
     // 관리자 상세 조회
     public MovieDetailResponse getAdminMovieDetail(Long movieId) {
-
         Movie movie = findMovieById(movieId);
 
         String thumbnail = movieImageRepository
                 .findThumbnailUrlByMovieId(movieId)
+                .map(fileService::toImageUrl)
                 .orElse(null);
 
         List<String> images = movieImageRepository
-                .findExtraImagesByMovieId(movieId);
+                .findExtraImagesByMovieId(movieId)
+                .stream()
+                .map(fileService::toImageUrl)
+                .toList();
 
         return movieMapper.toMovieDetailResponse(movie, thumbnail, images);
     }
@@ -112,19 +115,18 @@ public class MovieService {
 
         MovieUpdateFormResponse movieUpdateFormResponse = movieMapper.toMovieUpdateFormResponse(movie);
 
-        // MovieImage 조회해서 썸네일/extra 계산
         List<MovieImage> images = movieImageRepository.findByMovieIdOrderByDisplayOrderAsc(movieId);
 
         String thumbnailUrl = images.stream()
                 .filter(MovieImage::isThumbnail)
                 .findFirst()
-                .map(MovieImage::getImageUrl)
+                .map(mi -> fileService.toImageUrl(mi.getImageUrl()))
                 .orElse(null);
 
         List<String> extraImages = images.stream()
                 .filter(mi -> !mi.isThumbnail())
                 .sorted(Comparator.comparing(MovieImage::getDisplayOrder))
-                .map(MovieImage::getImageUrl)
+                .map(mi -> fileService.toImageUrl(mi.getImageUrl()))
                 .toList();
 
         movieUpdateFormResponse.setThumbnailImageUrl(thumbnailUrl);
@@ -133,8 +135,21 @@ public class MovieService {
         return movieUpdateFormResponse;
     }
 
+    // 이미지 변경이 없는 수정 (텍스트/장르/상영타입만)
     @Transactional
     public void updateMovie(Long movieId, MovieUpdateRequest req) {
+        applyBasicInfoChange(movieId, req);
+    }
+
+    // 이미지 변경이 있는 수정 - 이미지는 이미 업로드가 끝난 상태(uploadResult)로 전달받아 DB 작업만 수행
+    // 반환값: 교체되어 더 이상 필요 없는 기존 이미지 key 목록 (파일 삭제는 호출자 책임)
+    @Transactional
+    public List<String> updateMovieWithImages(Long movieId, MovieUpdateRequest req, MovieImageUploadResult uploadResult) {
+        Movie movie = applyBasicInfoChange(movieId, req);
+        return movieImageService.replaceImages(movie, uploadResult);
+    }
+
+    private Movie applyBasicInfoChange(Long movieId, MovieUpdateRequest req) {
         Movie movie = findMovieById(movieId);
 
         if(!movie.getRunningTimeMinutes().equals(req.getRunningTimeMinutes())) {  // 러닝타임 변경 관련 business rule
@@ -153,9 +168,7 @@ public class MovieService {
         movie.changeGenres(new HashSet<>(req.getGenres()));
         movie.changeScreeningTypes(new HashSet<>(req.getScreeningTypes()));
 
-        if(req.hasAnyImageChange()) {
-            movieImageService.updateImages(movieId, req.getThumbnailImage(), req.getExtraImages());
-        }
+        return movie;
     }
 
 
@@ -179,23 +192,31 @@ public class MovieService {
             Pageable pageable
     ) {
         return movieRepository.findUserMovies(keyword, sort, pageable)
-                .map(movieMapper::toMovieListResponse);
+                .map(row -> new MovieListResponse(
+                        row.getId(),
+                        fileService.toImageUrl(row.getThumbnail()),
+                        row.getTitle(),
+                        row.getReleaseDate(),
+                        row.getAdvanceReservationRate(),
+                        row.getAvgScore()
+                ));
     }
 
     // 사용자 영화 상세 조회
     public MovieDetailResponse getUserMovieDetail(Long movieId) {
-
         Movie movie = movieRepository.findUserMovieById(movieId)
-                .orElseThrow(() ->
-                        new BusinessException(ErrorCode.MOVIE_NOT_FOUND)
-                );
+                .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_NOT_FOUND));
 
         String thumbnail = movieImageRepository
                 .findThumbnailUrlByMovieId(movieId)
+                .map(fileService::toImageUrl)
                 .orElse(null);
 
         List<String> images = movieImageRepository
-                .findExtraImagesByMovieId(movieId);
+                .findExtraImagesByMovieId(movieId)
+                .stream()
+                .map(fileService::toImageUrl)
+                .toList();
 
         return movieMapper.toMovieDetailResponse(movie, thumbnail, images);
     }

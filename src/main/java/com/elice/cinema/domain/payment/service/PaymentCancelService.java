@@ -86,8 +86,7 @@ public class PaymentCancelService {
             }
         }
         // 취소 실패 에러 로그
-        log.warn("PG cancel failed after {} attempts., paymentKey={}",
-                maxAttempts, paymentKey, lastEx);
+        log.warn("[PaymentCancel] PG 취소 실패 ({}회 재시도): paymentKey={}", maxAttempts, paymentKey, lastEx);
         return false;
     }
 

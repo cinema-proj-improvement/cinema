@@ -1,4 +1,4 @@
-package com.elice.cinema.domain.reservation.service;
+package com.elice.cinema.domain.reservation.facade;
 
 import com.elice.cinema.domain.policy.service.EnvironmentPolicyService;
 import com.elice.cinema.domain.reservation.dto.response.seatselection.ScreenInfo;
@@ -6,6 +6,7 @@ import com.elice.cinema.domain.reservation.dto.response.seatselection.ScreeningI
 import com.elice.cinema.domain.reservation.dto.response.seatselection.SeatInfo;
 import com.elice.cinema.domain.reservation.dto.response.seatselection.SeatSelectionResponse;
 import com.elice.cinema.domain.reservation.entity.ReservationStatus;
+import com.elice.cinema.domain.reservation.service.ReservedSeatService;
 import com.elice.cinema.domain.screen.entity.Seat;
 import com.elice.cinema.domain.screen.mapper.ScreenMapper;
 import com.elice.cinema.domain.screen.mapper.SeatMapper;

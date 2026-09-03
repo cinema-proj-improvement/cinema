@@ -67,6 +67,15 @@ dependencies {
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'  // Lombok + MapStruct 충돌 방지
 
+    // 10. flyway
+    implementation 'org.flywaydb:flyway-mysql'
+
+    // 11. AWS SDK v2 - S3
+    implementation platform('software.amazon.awssdk:bom:2.29.26')
+    implementation 'software.amazon.awssdk:s3'
+
+    // 12. Logging
+    implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
 }
 
 
@@ -87,6 +96,10 @@ tasks.withType(JavaCompile).configureEach {
     ]
 }
 
+
+bootJar {
+    archiveFileName = "app.jar"
+}
 
 tasks.named('test') {
     useJUnitPlatform()

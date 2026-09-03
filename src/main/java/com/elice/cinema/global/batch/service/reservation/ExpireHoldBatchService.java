@@ -1,25 +1,22 @@
 package com.elice.cinema.global.batch.service.reservation;
 
-import com.elice.cinema.domain.reservation.dto.SeatLockInfoDto;
-import com.elice.cinema.domain.reservation.repository.ReservationLockRepository;
 import com.elice.cinema.domain.reservation.repository.ReservationRepository;
 import com.elice.cinema.domain.reservation.repository.ReservedSeatRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExpireHoldBatchService {
     private final ReservationRepository reservationRepository;
     private final ReservedSeatRepository reservedSeatRepository;
-    private final ReservationLockRepository reservationLockRepository;
 
     private static final int BATCH_SIZE = 500;
     private static final int MAX_BATCHES_PER_RUN = 5;
@@ -33,6 +30,7 @@ public class ExpireHoldBatchService {
             if(processed == 0) {
                 return;
             }
+            log.info("HOLD 만료 처리: batch={}, processed={}건", i + 1, processed);
         }
     }
 
@@ -44,22 +42,7 @@ public class ExpireHoldBatchService {
             return 0;
         }
 
-        // 2) 좌석 락 해제용 (screeningId, seatId) 조회
-        List<SeatLockInfoDto> locks = reservedSeatRepository.findSeatLocksByReservationIds(reservationIds);
-
-        // 3) screeningId별로 좌석들을 묶기 (reservationLockRepository.unlockAll() 쓰기 위한 사전작업)
-        Map<Long, List<Long>> seatIdsByScreeningId = locks.stream()
-                .collect(Collectors.groupingBy(
-                        SeatLockInfoDto::getScreeningId,
-                        Collectors.mapping(SeatLockInfoDto::getSeatId, Collectors.toList())
-                ));
-
-        // 4) redis lock 해제
-        for (Map.Entry<Long, List<Long>> e : seatIdsByScreeningId.entrySet()) {
-            reservationLockRepository.unlockAll(e.getKey(), e.getValue());
-        }
-
-        // 5) DB 정리 (예매 좌석 삭제 + 예매 만료 처리)
+        // redis lock은 holdSeats() 처리 직후 이미 해제되어 있으므로(SeatHoldFacade), 여기서는 DB 정리만 하면 됨.
         reservedSeatRepository.bulkDeleteHoldSeatsByReservationIds(reservationIds);
         reservationRepository.bulkExpireHoldReservations(reservationIds);
 

@@ -33,9 +33,6 @@ public interface MovieMapper {
             List<String> images
     );
 
-    default MovieListResponse toMovieListResponse(MovieListResponse response) {
-        return response;
-    }
     MovieSelectResponse toMovieSelectResponse(Movie movie);
     ReservationMovieSelectResponse toReservationMovieSelectResponse(Movie movie);
 }

@@ -10,6 +10,7 @@ import com.elice.cinema.domain.payment.repository.PaymentRepository;
 import com.elice.cinema.domain.policy.dto.response.RefundCalculationResult;
 import com.elice.cinema.domain.refund.service.RefundService;
 import com.elice.cinema.domain.reservation.entity.Reservation;
+import com.elice.cinema.domain.reservation.entity.ReservationStatus;
 import com.elice.cinema.domain.reservation.entity.ReservedSeat;
 import com.elice.cinema.domain.reservation.repository.ReservationRepository;
 import com.elice.cinema.global.error.ErrorCode;
@@ -69,6 +70,7 @@ class PaymentTxServiceTest {
         when(paymentRepository.existsByPaymentKey("payKey-10")).thenReturn(false);
 
         Reservation reservation = mock(Reservation.class);
+        when(reservation.getStatus()).thenReturn(ReservationStatus.HOLD);
         when(reservation.getTotalPrice()).thenReturn(15000);
 
         ReservedSeat seat1 = mock(ReservedSeat.class);
@@ -105,6 +107,7 @@ class PaymentTxServiceTest {
         when(paymentRepository.existsByPaymentKey("payKey-x")).thenReturn(false);
 
         Reservation reservation = mock(Reservation.class);
+        when(reservation.getStatus()).thenReturn(ReservationStatus.HOLD);
         when(reservation.getTotalPrice()).thenReturn(14000);
 
         when(reservation.getReservedSeats()).thenReturn(List.of(mock(ReservedSeat.class)));

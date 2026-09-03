@@ -7,6 +7,7 @@ import com.elice.cinema.domain.member.repository.MemberRepository;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.Period;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -28,10 +30,12 @@ public class MemberService {
         }
 
         if (memberRepository.existsByEmail(req.getEmail())) {
+            log.warn("회원 가입 실패 - 이메일 중복: email={}", req.getEmail());
             throw new BusinessException(ErrorCode.MEMBER_EMAIL_DUPLICATED);
         }
 
         if (memberRepository.existsByNickname(req.getNickname())) {
+            log.warn("회원 가입 실패 - 닉네임 중복: nickname={}", req.getNickname());
             throw new BusinessException(ErrorCode.MEMBER_NICKNAME_DUPLICATED);
         }
 
@@ -46,7 +50,9 @@ public class MemberService {
                 .role(Role.USER)
                 .build();
 
-        return memberRepository.save(member).getId();
+        Long memberId = memberRepository.save(member).getId();
+        log.info("회원 가입 성공: memberId={}, email={}", memberId, req.getEmail());
+        return memberId;
     }
 
     private int calculateAge(LocalDate birthDate) {

@@ -16,7 +16,6 @@ import com.elice.cinema.domain.reservation.entity.Reservation;
 import com.elice.cinema.domain.reservation.entity.ReservationStatus;
 import com.elice.cinema.domain.reservation.entity.ReservedSeat;
 import com.elice.cinema.domain.reservation.mapper.ReservationMapper;
-import com.elice.cinema.domain.reservation.repository.ReservationLockRepository;
 import com.elice.cinema.domain.reservation.repository.ReservationRepository;
 import com.elice.cinema.domain.reservation.repository.ReservedSeatRepository;
 import com.elice.cinema.domain.screen.entity.Seat;
@@ -25,24 +24,26 @@ import com.elice.cinema.domain.screening.dto.response.ReservationScheduleRespons
 import com.elice.cinema.domain.screening.entity.Screening;
 import com.elice.cinema.domain.screening.mapper.ScreeningMapper;
 import com.elice.cinema.domain.screening.repository.ScreeningRepository;
+import com.elice.cinema.global.common.file.FileService;
 import com.elice.cinema.global.config.properties.SeatHoldProperties;
 import com.elice.cinema.global.error.ErrorCode;
 import com.elice.cinema.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -56,7 +57,6 @@ public class ReservationService {
     private final ScreeningRepository screeningRepository;
     private final ReservedSeatRepository reservedSeatRepository;
     private final ReservationRepository reservationRepository;
-    private final ReservationLockRepository reservationLockRepository;
     private final MemberRepository memberRepository;
     private final SeatRepository seatRepository;
     private final MovieImageRepository movieImageRepository;
@@ -66,51 +66,37 @@ public class ReservationService {
     private final MovieMapper movieMapper;
     private final ScreeningMapper screeningMapper;
     private final ReservationMapper reservationMapper;
+    private final FileService fileService;
 
+    // DB 작업 전용(redis lock은 SeatHoldFacade가 트랜잭션 밖에서 담당) - 좌석 가용성은 이미 SeatHoldFacade가 검증/락 완료한 상태
     @Transactional
-    public Long holdSeats(Long screeningId, List<Long> seatIds, Long memberId) {
-        validateSeatCount(seatIds);
-        validateBookable(screeningId, seatIds);
-
+    public Long createHoldReservation(Long screeningId, List<Long> seatIds, Long memberId) {
         final int holdMinutes = seatHoldProperties.getMinutes();
-        final int graceMinutes = seatHoldProperties.getRedisGraceMinutes();
 
         List<Seat> seats = getSeats(seatIds);
         Screening screening = getScreeningWithMovieAndScreen(screeningId);
         Member member = getMember(memberId);
 
-        // 선택한 좌석에 redis lock 처리
-        List<Long> locked = new ArrayList<>();
+        int totalPrice = calculateTotalPrice(seats);
+        Reservation reservation = Reservation.createHoldReservation(screening, member, totalPrice, Duration.ofMinutes(holdMinutes));
+        Reservation savedReservation = reservationRepository.save(reservation);
+
+        List<ReservedSeat> reservedSeats = seats.stream()
+                .map(seat -> ReservedSeat.createHoldReservedSeat(screening, seat))
+                .peek(reservation::addReservedSeat)  // 양방향 세팅
+                .toList();
+
         try {
-            for (Long seatId : seatIds) {
-                boolean ok = reservationLockRepository.lock(  // FIXME: seatId들을 한 번에 모아서 lock 걸도록 수정하기
-                        screeningId,
-                        seatId,
-                        memberId,
-                        holdMinutes + graceMinutes,
-                        TimeUnit.MINUTES
-                );
-                if (!ok) {  // 이미 lock이 걸린 좌석을 선택한 경우 이전에 lock 걸었던 좌석들의 lock을 풀어주고 예외를 던짐
-                    throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
-                }
-                locked.add(seatId);  // 성공한 것만 기록
-            }
-
-            int totalPrice = calculateTotalPrice(seats);
-            Reservation reservation = Reservation.createHoldReservation(screening, member, totalPrice, Duration.ofMinutes(holdMinutes));
-            Reservation savedReservation = reservationRepository.save(reservation);
-
-            List<ReservedSeat> reservedSeats = seats.stream()
-                    .map(seat -> ReservedSeat.createHoldReservedSeat(screening, seat))
-                    .peek(reservation::addReservedSeat)  // 양방향 세팅
-                    .toList();
             reservedSeatRepository.saveAll(reservedSeats);  // FIXME: ReservedSeat의 PK 전략이 현재 IDENTIFY -> saveAll 날리면 컬렉션처럼 루프로 하나씩 insert됨
-
-            return savedReservation.getId();
-        } finally {  // 성공하든 실패하든 lock은 반드시 반환해줘야 함
-            // 내가 잡은 redis lock만 해제
-            reservationLockRepository.unlockAll(screeningId, locked);
+        } catch (DataIntegrityViolationException e) {
+            // redis lock으로 대부분 걸러지지만, 커밋 타이밍상의 좁은 경쟁 창에서 진 경우의 안전망
+            log.warn("좌석 선점 실패 - DB 유니크 제약 위반(동시 경합): screeningId={}, seatIds={}, memberId={}", screeningId, seatIds, memberId);
+            throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
         }
+
+        Long reservationId = savedReservation.getId();
+        log.info("좌석 선점(HOLD) 성공: reservationId={}, screeningId={}, memberId={}, seatIds={}", reservationId, screeningId, memberId, seatIds);
+        return reservationId;
     }
 
     @Transactional
@@ -119,6 +105,7 @@ public class ReservationService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
         if(!target.getMemberId().equals(memberId)) {
+            log.warn("예매 취소 권한 없음 - 타인 예매 취소 시도: reservationId={}, 예매memberId={}, 요청memberId={}", reservationId, target.getMemberId(), memberId);
             throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
         }
 
@@ -131,6 +118,7 @@ public class ReservationService {
         }
 
         reservationRepository.deleteById(reservationId);  // HOLD라면 삭제 - 연관된 reservedSeat들은 delete cascade로 삭제됨
+        log.info("HOLD 예매 취소 처리: reservationId={}, memberId={}", reservationId, memberId);
     }
 
     public int calculateTotalPrice(List<Seat> seats) {
@@ -145,18 +133,20 @@ public class ReservationService {
     }
 
     // 좌석 개수 검증 (선택한 좌석의 개수가 개인이 예매할 수 있는 최대 좌석수를 넘기지 않았는지 검증)
-    private void validateSeatCount(List<Long> seatIds) {
+    public void validateSeatCount(List<Long> seatIds) {
         int max = environmentPolicyService.getMaxReservationCount();
         if (seatIds == null || seatIds.isEmpty() || seatIds.size() > max) {
+            log.warn("좌석 선점 실패 - 최대 좌석 수 초과: 요청={}, max={}", seatIds == null ? 0 : seatIds.size(), max);
             throw new BusinessException(ErrorCode.RESERVATION_SEAT_LIMIT_EXCEEDED);
         }
     }
 
     // 요청으로 들어온 좌석들이 실제로 예매 가능한지 검사 (이미 선점되거나 예매된 좌석인지 검사)
-    private void validateBookable(Long screeningId, List<Long> seatIds) {
+    public void validateBookable(Long screeningId, List<Long> seatIds) {
         List<Long> blocked = reservedSeatRepository.findBlockedSeatIdsIn(screeningId, seatIds, ReservationStatus.blocked());
 
         if (!blocked.isEmpty()) {  // 이미 선점되었거나 예매된 좌석이 포함된 요청임을 의미
+            log.warn("좌석 선점 실패 - 이미 예매/선점된 좌석 포함: screeningId={}, 요청seatIds={}, blockedSeatIds={}", screeningId, seatIds, blocked);
             throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
         }
     }
@@ -196,13 +186,18 @@ public class ReservationService {
                 .toList();
     }
 
-    public ReservationCheckoutResponse getCheckoutPage(Long reservationId) {
+    public ReservationCheckoutResponse getCheckoutPage(Long reservationId, Long memberId) {
         Reservation reservation = reservationRepository.findByIdWithScreeningAndMovie(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        if (!reservation.getMember().getId().equals(memberId)) {
+            throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
+        }
 
         Movie movie = reservation.getScreening().getMovie();
 
         String movieThumbnail = movieImageRepository.findThumbnailUrlByMovieId(movie.getId())
+                .map(fileService::toImageUrl)
                 .orElse(null);
         /*String movieThumbnail = movieImageRepository.findThumbnailUrlByMovieId(movie.getId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.MOVIE_THUMBNAIL_NOT_FOUND));*/
@@ -212,9 +207,14 @@ public class ReservationService {
         return reservationMapper.toReservationCheckoutResponse(reservation, movieThumbnail, seatCodes);
     }
 
-    public TossPaymentReservationResponse getTossPage(Long reservationId) {
+    public TossPaymentReservationResponse getTossPage(Long reservationId, Long memberId) {
         Reservation reservation = reservationRepository.findByIdAndStatus(reservationId, ReservationStatus.HOLD)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        if (!reservation.getMember().getId().equals(memberId)) {
+            throw new BusinessException(ErrorCode.RESERVATION_FORBIDDEN);
+        }
+
         String orderId = reservation.getReservationCode();
         return reservationMapper.toPaymentReservationResponse(reservation, orderId, tossClientKey);
     }
@@ -262,6 +262,6 @@ public class ReservationService {
     private int calculateRemainingSeats(Screening sc, Map<Long, Long> reservedCountMap) {
         int totalSeats = sc.getScreen().getTotalSeats();
         long reservedCount = reservedCountMap.getOrDefault(sc.getId(), 0L);
-        return (int) (totalSeats - reservedCount); // 방어적으로 0 미만 방지
+        return (int) Math.max(0, totalSeats - reservedCount);
     }
 }

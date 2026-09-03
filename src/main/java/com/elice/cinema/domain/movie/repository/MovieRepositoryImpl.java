@@ -160,9 +160,16 @@ public class MovieRepositoryImpl implements MovieRepositoryCustom {
         return movie.genres.any().in(genres);
     }
 
+    // LIKE '%keyword%'(선행 와일드카드)는 인덱스를 못 타는 풀스캔이라
+    // LIKE 'keyword%'로 제한한다. LOWER()로 감싸면 MySQL 함수 인덱스로도
+    // LIKE 최적화가 안 돼(공식 문서: 생성 컬럼 인덱스는 =,<,<=,>,>=,BETWEEN,IN()에만
+    // 적용, LIKE는 미지원) 평범한 title 컬럼 인덱스(V4, idx_movie_title)를 그대로
+    // 타도록 startsWith를 쓴다. 대소문자 처리는 MySQL 컬럼 콜레이션(ci)에 위임 -
+    // dev/운영은 기존과 동일하게 대소문자 무관 검색되고, H2(local/test)만
+    // 대소문자를 구분한다(실사용자에게 영향 없는 로컬 한정 차이).
     private BooleanExpression titleContains(String keyword) {
         return StringUtils.hasText(keyword)
-                ? movie.title.containsIgnoreCase(keyword)
+                ? movie.title.startsWith(keyword)
                 : null;
     }
 

@@ -1,0 +1,68 @@
+# =============================================================
+# ECS Fargate 사이드카용 OTel Collector 설정
+#
+# 흐름: 앱 컨테이너의 otel-javaagent(localhost:4317/4318, task 내부 네트워크 공유)
+#       -> 이 collector -> EC2 Prometheus로 remote_write push
+#
+# Fargate는 task마다 IP가 바뀌고 고정된 스크래핑 대상 목록을 관리할 방법이 없어서
+# Prometheus가 직접 스크래핑(pull)할 수 없음 -> collector가 push하는 방향으로 뒤집음.
+#
+# 필요한 사전 조건 (앱 저장소 범위 밖, EC2/인프라 쪽에서 처리):
+#   - Prometheus를 --web.enable-remote-write-receiver 플래그로 기동해야
+#     /api/v1/write 엔드포인트가 열림 (기본값은 비활성화)
+#   - EC2 인스턴스가 ECS task와 같은 VPC/서브넷에 있고, 보안그룹에서
+#     ECS task 보안그룹발 9090 인바운드를 허용해야 함
+#
+# PROMETHEUS_REMOTE_WRITE_ENDPOINT는 Task Definition의 이 collector 컨테이너
+# environment로 주입 (앱 컨테이너 environment와는 별개)
+#   예: http://<EC2 프라이빗 IP 또는 내부 DNS>:9090/api/v1/write
+#
+# Task 총 용량: CPU 1024(1 vCPU, 앱과 공유, 컨테이너별 cpu 미지정) / 메모리 3072MB
+#   (앱 2048MB hard limit 유지 + collector 1024MB hard limit 신규 할당)
+# memory_limiter의 limit_mib/spike_limit_mib는 collector hard limit(1024MB)의 ~80%로 설정.
+# =============================================================
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  # 파이프라인 맨 앞에 위치해야 함 - 순서대로 실행되므로 뒤에 두면 이미 늦음
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 800
+    spike_limit_mib: 200
+  batch:
+    timeout: 15s
+  # ECS task 메타데이터(cluster/task ARN 등)를 리소스 속성으로 자동 부착
+  resourcedetection/ecs:
+    detectors: [ecs]
+    timeout: 2s
+
+exporters:
+  prometheusremotewrite:
+    endpoint: "${env:PROMETHEUS_REMOTE_WRITE_ENDPOINT}"
+    # VPC 내부 트래픽이라 TLS 없이 http로 push. 외부 노출 시엔 반드시 변경할 것
+    tls:
+      insecure: true
+  # 트레이스 백엔드(Tempo/Jaeger 등)는 아직 구축 전 - 일단 collector 로그로만 확인
+  debug:
+    verbosity: basic
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, resourcedetection/ecs, batch]
+      exporters: [prometheusremotewrite]
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug]
+  telemetry:
+    logs:
+      level: info
